@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 xmlns:loc="clr-namespace:TileTextureGenerator.Frontend.UI.Services;assembly=TileTextureGenerator.Frontend.UI"
+			 xmlns:vm="clr-namespace:TileTextureGenerator.Frontend.UI.ViewModels"
+			 xmlns:models="clr-namespace:TileTextureGenerator.Frontend.UI.Models"
+			 xmlns:converters="clr-namespace:TileTextureGenerator.Frontend.UI.Converters"
+			 x:Class="TileTextureGenerator.Frontend.UI.Views.ProjectSelectorView">
+
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			<converters:IsNullConverter x:Key="IsNullConverter" />
+			<converters:IsNotNullConverter x:Key="IsNotNullConverter" />
+			<converters:ByteArrayToImageSourceConverter x:Key="ByteArrayToImageSourceConverter" />
+		</ResourceDictionary>
+	</ContentPage.Resources>
+
+	<ScrollView>
+		<VerticalStackLayout Padding="20" Spacing="12">
+
+			<!-- Title -->
+			<Label Text="{loc:Translate ProjectSelector_Title}"
+				   Style="{StaticResource Headline}"
+				   HorizontalOptions="Center" />
+
+            <!-- Project selection -->
+            <Frame Padding="12" HasShadow="True">
+                <Grid RowSpacing="8" ColumnSpacing="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Project Name -->
+                    <Label Text="{loc:Translate ProjectSelector_ProjectName}" 
+					       Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" />
+                    <Entry x:Name="ProjectNameEntry"
+					       Text="{Binding ProjectName}" 
+					       Placeholder="MyProject" 
+					       Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" />
+
+					<!-- Project Type - Responsive layout -->
+					<Label x:Name="ProjectTypeLabel" 
+						   Text="{loc:Translate ProjectSelector_ProjectType}" 
+						   Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" />
+					<Picker x:Name="ProjectTypePicker"
+							ItemsSource="{Binding ProjectTypes}"
+							SelectedItem="{Binding ProjectType}"
+							ItemDisplayBinding="{Binding Localized}"
+							IsEnabled="{Binding IsProjectTypeEnabled}"
+							Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" />
+
+                    <!-- Button - Responsive layout -->
+                    <Button x:Name="CreateOpenButton"
+					        Text="{Binding CreateOpenButtonText}"
+					        Command="{Binding CreateOrOpenProjectCommand}"
+					        BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}"
+					        TextColor="White"
+					        Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" />
+
+                    <!-- Visual States for responsive design -->
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup>
+                            <VisualState x:Name="Wide">
+                                <VisualState.StateTriggers>
+                                    <AdaptiveTrigger MinWindowWidth="600" />
+                                </VisualState.StateTriggers>
+                                <VisualState.Setters>
+                                    <!-- Project Name spans first column only on wide screens -->
+                                    <Setter TargetName="ProjectNameEntry" Property="Grid.ColumnSpan" Value="1" />
+
+                                    <!-- Project Type label moves to row 0, column 1 -->
+                                    <Setter TargetName="ProjectTypeLabel" Property="Grid.Row" Value="0" />
+                                    <Setter TargetName="ProjectTypeLabel" Property="Grid.Column" Value="1" />
+                                    <Setter TargetName="ProjectTypeLabel" Property="Grid.ColumnSpan" Value="1" />
+
+                                    <!-- Project Type picker in row 1, column 1 -->
+                                    <Setter TargetName="ProjectTypePicker" Property="Grid.Row" Value="1" />
+                                    <Setter TargetName="ProjectTypePicker" Property="Grid.Column" Value="1" />
+                                    <Setter TargetName="ProjectTypePicker" Property="Grid.ColumnSpan" Value="1" />
+
+                                    <!-- Button in row 2, spans both columns -->
+                                    <Setter TargetName="CreateOpenButton" Property="Grid.Row" Value="2" />
+                                    <Setter TargetName="CreateOpenButton" Property="Grid.Column" Value="0" />
+                                    <Setter TargetName="CreateOpenButton" Property="Grid.ColumnSpan" Value="2" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                </Grid>
+            </Frame>
+
+			<!-- Existing projects grid -->
+			<Label Text="{loc:Translate ProjectSelector_ChooseProject}" 
+				   FontAttributes="Bold" 
+				   Margin="0,12,0,0" />
+
+			<CollectionView x:Name="ProjectsCollection"
+				ItemsSource="{Binding Projects}"
+				SelectionMode="None">
+
+                <!-- Grid layout with responsive column count -->
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical" 
+                    				 Span="1"
+                    				 HorizontalItemSpacing="12"
+                    				 VerticalItemSpacing="12" />
+                </CollectionView.ItemsLayout>
+
+				<!-- Project card template -->
+				<CollectionView.ItemTemplate>
+					<DataTemplate x:DataType="models:ProjectDisplayItem">
+						<Frame Padding="16" 
+							   HasShadow="True"
+							   CornerRadius="8"
+							   BorderColor="{AppThemeBinding Light=#E0E0E0, Dark=#404040}">
+							<Frame.GestureRecognizers>
+								<TapGestureRecognizer 
+									Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProjectSelectorViewModel}}, Path=SelectProjectCommand}"
+									CommandParameter="{Binding .}" />
+							</Frame.GestureRecognizers>
+							<Grid RowSpacing="8">
+								<Grid.RowDefinitions>
+									<RowDefinition Height="Auto" />
+									<RowDefinition Height="Auto" />
+									<RowDefinition Height="120" />
+									<RowDefinition Height="Auto" />
+								</Grid.RowDefinitions>
+
+								<!-- Project Name (Bold, larger) -->
+								<Label Text="{Binding Name}" 
+									   Grid.Row="0"
+									   FontAttributes="Bold"
+									   FontSize="20"
+									   HorizontalOptions="Center"
+									   HorizontalTextAlignment="Center"
+									   Margin="0,0,0,8" />
+
+								<!-- Project Type and Status -->
+								<Grid Grid.Row="1" ColumnSpacing="8">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="*" />
+										<ColumnDefinition Width="*" />
+									</Grid.ColumnDefinitions>
+
+									<!-- Type (left aligned) -->
+									<Label Text="{Binding TypeLabel}" 
+										   Grid.Column="0"
+										   FontSize="14"
+										   TextColor="{AppThemeBinding Light=#666666, Dark=#AAAAAA}"
+										   HorizontalOptions="Start"
+										   VerticalOptions="Center" />
+
+									<!-- Status (right aligned) -->
+									<Label Text="{Binding StatusLabel}" 
+										   Grid.Column="1"
+										   FontSize="14"
+										   TextColor="{AppThemeBinding Light=#666666, Dark=#AAAAAA}"
+										   HorizontalOptions="End"
+										   VerticalOptions="Center" />
+								</Grid>
+
+								<!-- Display image or placeholder -->
+								<Border Grid.Row="2"
+										BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2A2A2A}"
+										StrokeThickness="1"
+										Stroke="{AppThemeBinding Light=#E0E0E0, Dark=#404040}"
+										Margin="0,8,0,8">
+									<Grid>
+										<!-- Actual image if available -->
+										<Image Source="{Binding DisplayImage, Converter={StaticResource ByteArrayToImageSourceConverter}}"
+											   Aspect="AspectFit"
+											   IsVisible="{Binding DisplayImage, Converter={StaticResource IsNotNullConverter}}"
+											   HorizontalOptions="Center"
+											   VerticalOptions="Center" />
+
+										<!-- Placeholder when no image -->
+										<Label Text="🖼️" 
+											   FontSize="48"
+											   HorizontalOptions="Center"
+											   VerticalOptions="Center"
+											   Opacity="0.3"
+											   IsVisible="{Binding DisplayImage, Converter={StaticResource IsNullConverter}}" />
+									</Grid>
+								</Border>
+
+								<!-- Delete button (bottom right) -->
+								<Button Grid.Row="3"
+										Text="🗑️"
+										Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProjectSelectorViewModel}}, Path=DeleteProjectCommand}"
+										CommandParameter="{Binding .}"
+										HorizontalOptions="End"
+										VerticalOptions="Center"
+										WidthRequest="40"
+										HeightRequest="40"
+										FontSize="20"
+										Padding="0"
+										CornerRadius="20"
+										BackgroundColor="{AppThemeBinding Light=#FFEBEE, Dark=#3A2020}"
+										TextColor="{AppThemeBinding Light=#D32F2F, Dark=#FF6666}"
+										BorderColor="{AppThemeBinding Light=#FFCDD2, Dark=#5A3030}"
+										BorderWidth="1" />
+
+							</Grid>
+						</Frame>
+					</DataTemplate>
+				</CollectionView.ItemTemplate>
+
+                <!-- Empty state -->
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout HorizontalOptions="Center" 
+					                     VerticalOptions="Center"
+					                     Padding="40">
+                        <Label Text="📁" 
+						       FontSize="48" 
+						       HorizontalOptions="Center" />
+                        <Label Text="{loc:Translate ProjectSelector_ChooseProject}"
+						       FontSize="16"
+						       TextColor="{AppThemeBinding Light=#999999, Dark=#666666}"
+						       HorizontalOptions="Center"
+						       Margin="0,8,0,0" />
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
