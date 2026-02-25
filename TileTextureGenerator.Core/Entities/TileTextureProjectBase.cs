@@ -118,44 +118,42 @@ namespace TileTextureGenerator.Core.Entities
 
         /// <summary>
         /// Starts the project workflow (called when project is created or opened with New status)
-        /// This is a template method that calls OnStart for specific logic, then triggers save
+        /// Returns a WorkflowAction that indicates which use case the orchestrator should execute
         /// </summary>
-        public async Task StartAsync()
+        public async Task<WorkflowAction> StartAsync()
         {
             // Execute specific workflow logic in derived classes
-            await OnStartAsync();
-
-            // Note: Save is handled by the UseCase layer to respect hexagonal architecture
+            return await OnStartAsync();
         }
 
         /// <summary>
         /// Continues the project workflow (called when project is opened with status other than New)
-        /// This is a template method that calls OnContinue for specific logic, then triggers save
+        /// Returns a WorkflowAction that indicates which use case the orchestrator should execute
         /// </summary>
-        public async Task ContinueAsync()
+        public async Task<WorkflowAction> ContinueAsync()
         {
             // Execute specific workflow logic in derived classes
-            await OnContinueAsync();
-
-            // Note: Save is handled by the UseCase layer to respect hexagonal architecture
+            return await OnContinueAsync();
         }
 
         /// <summary>
         /// Override this method in derived classes to implement Start workflow logic
+        /// Return the appropriate WorkflowAction to execute
         /// </summary>
-        protected virtual Task OnStartAsync()
+        protected virtual Task<WorkflowAction> OnStartAsync()
         {
-            // Base implementation does nothing
-            return Task.CompletedTask;
+            // Base implementation: no workflow action
+            return Task.FromResult(WorkflowAction.None);
         }
 
         /// <summary>
         /// Override this method in derived classes to implement Continue workflow logic
+        /// Return the appropriate WorkflowAction to execute
         /// </summary>
-        protected virtual Task OnContinueAsync()
+        protected virtual Task<WorkflowAction> OnContinueAsync()
         {
-            // Base implementation does nothing
-            return Task.CompletedTask;
+            // Base implementation: no workflow action
+            return Task.FromResult(WorkflowAction.None);
         }
     }
 }

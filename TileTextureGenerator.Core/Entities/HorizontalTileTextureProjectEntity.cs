@@ -65,22 +65,20 @@ public sealed class HorizontalTileTextureProjectEntity : TileTextureProjectBase
     /// <summary>
     /// Starts the horizontal tile texture generation workflow
     /// </summary>
-    protected override async Task OnStartAsync()
+    protected override async Task<WorkflowAction> OnStartAsync()
     {
-        // TODO: Implement specific start logic for horizontal tile workflow
-        // This will be called BEFORE the base class saves the project
-
+        // Return the workflow action to indicate that the UseCase should start horizontal tile generation
         await Task.CompletedTask;
+        return WorkflowAction.StartHorizontalTileGeneration;
     }
 
     /// <summary>
     /// Continues the horizontal tile texture generation workflow
     /// </summary>
-    protected override async Task OnContinueAsync()
+    protected override async Task<WorkflowAction> OnContinueAsync()
     {
-        // TODO: Implement specific continue logic for horizontal tile workflow
-        // This will be called BEFORE the base class saves the project
-
+        // Return the workflow action to indicate that the UseCase should continue horizontal tile generation
         await Task.CompletedTask;
+        return WorkflowAction.ContinueHorizontalTileGeneration;
     }
 }
