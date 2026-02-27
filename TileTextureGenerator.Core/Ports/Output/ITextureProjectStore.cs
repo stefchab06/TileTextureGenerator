@@ -10,5 +10,10 @@ namespace TileTextureGenerator.Core.Ports.Output
         Task<bool> DeleteProjectAsync(string projectName);
         Task<IReadOnlyList<TileTextureProjectBase>> LoadProjectListAsync();
         Task<bool> SaveProjectAsync(TileTextureProjectBase project);
+
+        /// <summary>
+        /// Loads lightweight project summaries for list display (no full entity instantiation)
+        /// </summary>
+        Task<IReadOnlyList<TileTextureProjectSummary>> LoadProjectSummariesAsync();
     }
 }

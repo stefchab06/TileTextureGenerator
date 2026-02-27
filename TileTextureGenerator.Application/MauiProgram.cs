@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using TileTextureGenerator.Core.Registries;
+using TileTextureGenerator.Adapters.UseCases.Registries;
 using TileTextureGenerator.Application.DependencyInjection;
 using System.Reflection;
 
@@ -25,10 +26,16 @@ namespace TileTextureGenerator.Application
             // Automatic dependency registration
             ConfigureDependencyInjection(builder.Services);
 
-            // Initialize project registry
-            TextureProjectRegistry.ForceAutoRegistrationFromCore();
+            // Build the app first to get IServiceProvider
+            var app = builder.Build();
 
-            return builder.Build();
+            // Initialize registries with service provider
+            TextureProjectRegistry.ForceAutoRegistrationFromCore();
+            WorkflowRegistry.ForceAutoRegistration(
+                Assembly.Load("TileTextureGenerator.Adapters.UseCases"),
+                app.Services);
+
+            return app;
         }
 
         private static void ConfigureDependencyInjection(IServiceCollection services)

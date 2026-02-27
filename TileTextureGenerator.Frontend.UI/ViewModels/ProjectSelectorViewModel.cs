@@ -15,11 +15,6 @@ public partial class ProjectSelectorViewModel : ObservableObject
 {
     private readonly IProjectSelectionUseCase _projectSelectionUseCase;
 
-
-    private List<LocalizedValue<string>> _projectType = [];
-    private List<LocalizedValue<string>> _projectStatus = [];
-    private IReadOnlyList<ProjectDisplayItem> _projects = [];
-
     [ObservableProperty]
     private string projectName = string.Empty;
 
@@ -45,11 +40,7 @@ public partial class ProjectSelectorViewModel : ObservableObject
     {
         _projectSelectionUseCase = projectSelectionUseCase;
 
-        var statusValues = _projectSelectionUseCase.GetProjectStatusList();
-        var localizedStatus = statusValues.Select(v => new LocalizedValue<string>(v, LocalizationService.Instance.GetString("ProjectStatus_" + v)));
-        _projectStatus = localizedStatus.ToList();
-
-        // Initialize button text using the backing field (lowercase)
+        // Initialize button text
         createOpenButtonText = LocalizationService.Instance.GetString("ProjectSelector_Create");
     }
     public async Task InitializeAsync()
@@ -78,8 +69,8 @@ public partial class ProjectSelectorViewModel : ObservableObject
         System.Diagnostics.Debug.WriteLine($"InitializeAsync: ProjectTypes collection now has {ProjectTypes.Count} items");
 #endif
 
-        // Load existing projects
-        var projectsList = await _projectSelectionUseCase.GetProjectListAsync();
+        // Load existing projects (using optimized summaries)
+        var projectsList = await _projectSelectionUseCase.GetProjectSummariesAsync();
 
 #if DEBUG
         System.Diagnostics.Debug.WriteLine($"InitializeAsync: Found {projectsList.Count} existing projects");
@@ -147,7 +138,7 @@ public partial class ProjectSelectorViewModel : ObservableObject
             return;
         }
 
-        var exists = _projects.Any(p =>
+        var exists = Projects.Any(p =>
             string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
 
         if (exists)
@@ -210,7 +201,11 @@ public partial class ProjectSelectorViewModel : ObservableObject
             return;
         }
 
-        // Navigate to project view or start workflow
+        // Refresh list and clear form
+        await InitializeAsync();
+        ProjectName = string.Empty;
+        ProjectType = null;
+        UpdateCreateOpenButton();
     }
 
     private async Task CreateProjectAsync(string name)
@@ -224,7 +219,7 @@ public partial class ProjectSelectorViewModel : ObservableObject
             return;
         }
 
-        var dto = new Adapters.UseCases.Dto.TextureProjectDto(name, ProjectType.Value, "Active");
+        var dto = new Adapters.UseCases.Dto.TextureProjectDto(name, ProjectType.Value, "Unexisting");
         var created = await _projectSelectionUseCase.CreateAsync(dto);
 
         if (created is null)

@@ -7,7 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TileTextureGenerator.Adapters.Persistence\TileTextureGenerator.Adapters.Persistence.csproj" />
+    <ProjectReference Include="..\TileTextureGenerator.Core\TileTextureGenerator.Core.csproj" />
   </ItemGroup>
 
 </Project>

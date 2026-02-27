@@ -117,7 +117,7 @@ internal class ProjectPersister : IProjectPersister
 
         var name = root.GetProperty("Name").GetString() ?? projectName;
         var type = root.GetProperty("Type").GetString() ?? "Unknown";
-        var status = root.GetProperty("Status").GetString() ?? "Active";
+        var status = root.GetProperty("Status").GetString() ?? "Unexisting";
 
         // Load DisplayImageFile if present (persistence detail)
         byte[] imageBytes = null;
@@ -230,7 +230,7 @@ internal class ProjectPersister : IProjectPersister
 
                     var name = root.GetProperty("Name").GetString() ?? projectName;
                     var typeValue = root.GetProperty("Type").GetString() ?? "Unknown";
-                    var statusValue = root.GetProperty("Status").GetString() ?? "Active";
+                    var statusValue = root.GetProperty("Status").GetString() ?? "Unexisting";
 
                     // Load DisplayImageFile if present
                     byte[]? displayImage= null;
@@ -260,6 +260,103 @@ internal class ProjectPersister : IProjectPersister
             }
 
             return projectInfos;
+        });
+    }
+
+    public async Task<IList<ProjectSummaryDto>> GetProjectSummariesAsync()
+    {
+        return await Task.Run(async () =>
+        {
+            var summaries = new List<ProjectSummaryDto>();
+
+            if (!Directory.Exists(_basePath))
+            {
+                return summaries;
+            }
+
+            var projectDirectories = Directory.GetDirectories(_basePath);
+
+            foreach (var projectDir in projectDirectories)
+            {
+                var projectName = Path.GetFileName(projectDir);
+                var projectFile = Path.Combine(projectDir, $"{projectName}.json");
+
+                if (!File.Exists(projectFile))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var content = await File.ReadAllTextAsync(projectFile);
+                    var jsonDoc = JsonDocument.Parse(content);
+                    var root = jsonDoc.RootElement;
+
+                    var name = root.GetProperty("Name").GetString() ?? projectName;
+                    var typeValue = root.GetProperty("Type").GetString() ?? "Unknown";
+                    var statusValue = root.GetProperty("Status").GetString() ?? "Unexisting";
+
+                    // Load LastModifiedDate
+                    var lastModifiedDate = DateTime.UtcNow;
+                    if (root.TryGetProperty("LastModifiedDate", out var dateElement))
+                    {
+                        if (DateTime.TryParse(dateElement.GetString(), out var date))
+                        {
+                            lastModifiedDate = date;
+                        }
+                    }
+
+                    // Load DisplayImage if available
+                    byte[]? displayImage = null;
+                    if (root.TryGetProperty("DisplayImageFile", out var displayImageFileElement))
+                    {
+                        var displayImageFile = displayImageFileElement.GetString();
+                        if (displayImageFile != null)
+                        {
+                            var absoluteImagePath = Path.Combine(projectDir, displayImageFile);
+                            if (File.Exists(absoluteImagePath))
+                            {
+                                displayImage = await File.ReadAllBytesAsync(absoluteImagePath);
+                            }
+                        }
+                    }
+
+                    summaries.Add(new ProjectSummaryDto(name, typeValue, statusValue, lastModifiedDate)
+                    {
+                        DisplayImage = displayImage
+                    });
+                }
+                catch
+                {
+                    // Skip corrupted files
+                    continue;
+                }
+            }
+
+            return summaries;
+        });
+    }
+
+    public async Task<string> SaveSourceImageAsync(string projectName, byte[] imageData, string filename = "SourceImage.png")
+    {
+        return await Task.Run(() =>
+        {
+            var projectFolder = GetProjectFolderName(projectName);
+            var sourcesFolder = Path.Combine(projectFolder, "Sources");
+
+            // Ensure Sources folder exists
+            if (!Directory.Exists(sourcesFolder))
+            {
+                Directory.CreateDirectory(sourcesFolder);
+            }
+
+            var targetPath = Path.Combine(sourcesFolder, filename);
+
+            // Save the image
+            File.WriteAllBytes(targetPath, imageData);
+
+            // Return relative path from project root
+            return Path.Combine("Sources", filename);
         });
     }
 }

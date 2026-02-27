@@ -76,10 +76,24 @@ internal class TextureProjectStore : ITextureProjectStore
     {
         throw new NotImplementedException();
     }
-    public async Task<Boolean> DeleteProjectAsync(string projectName)
+    public async Task<bool> DeleteProjectAsync(string projectName)
     {
         return await _persister.DeleteProjectAsync(projectName);
     }
+
+    public async Task<IReadOnlyList<TileTextureProjectSummary>> LoadProjectSummariesAsync()
+    {
+        var summaries = await _persister.GetProjectSummariesAsync();
+
+        return summaries.Select(dto => new TileTextureProjectSummary(
+            name: dto.ProjectName,
+            type: dto.ProjectType,
+            status: dto.ProjectStatus,
+            lastModifiedDate: dto.LastModifiedDate,
+            displayImage: dto.DisplayImage
+        )).ToList();
+    }
+
     public async Task<IReadOnlyList<TileTextureProjectBase>> LoadProjectListAsync()
     {
         var lst = await _persister.GetProjectList();

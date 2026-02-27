@@ -16,10 +16,10 @@ public sealed class HorizontalTileTextureProjectEntity : TileTextureProjectBase
         );
     }
 
-    // Example custom property specific to horizontal tiles
-    public int TileWidth { get; set; } = 256;
-    public int TileHeight { get; set; } = 256;
-    public bool SeamlessMode { get; set; } = false;
+    /// <summary>
+    /// Relative path to the source image (e.g., "Input\SourceImage.png")
+    /// </summary>
+    public string? SourceImagePath { get; set; }
 
     public HorizontalTileTextureProjectEntity(string name)
         : base(name)
@@ -34,9 +34,10 @@ public sealed class HorizontalTileTextureProjectEntity : TileTextureProjectBase
     {
         base.AddCustomPropertiesToJson(jsonObject);
 
-        jsonObject["TileWidth"] = TileWidth;
-        jsonObject["TileHeight"] = TileHeight;
-        jsonObject["SeamlessMode"] = SeamlessMode;
+        if (!string.IsNullOrEmpty(SourceImagePath))
+        {
+            jsonObject["SourceImagePath"] = SourceImagePath;
+        }
     }
 
     /// <summary>
@@ -46,39 +47,9 @@ public sealed class HorizontalTileTextureProjectEntity : TileTextureProjectBase
     {
         base.LoadCustomPropertiesFromJson(rootElement);
 
-        if (rootElement.TryGetProperty("TileWidth", out var tileWidth))
+        if (rootElement.TryGetProperty("SourceImagePath", out var sourceImagePath))
         {
-            TileWidth = tileWidth.GetInt32();
+            SourceImagePath = sourceImagePath.GetString();
         }
-
-        if (rootElement.TryGetProperty("TileHeight", out var tileHeight))
-        {
-            TileHeight = tileHeight.GetInt32();
-        }
-
-        if (rootElement.TryGetProperty("SeamlessMode", out var seamlessMode))
-        {
-            SeamlessMode = seamlessMode.GetBoolean();
-        }
-    }
-
-    /// <summary>
-    /// Starts the horizontal tile texture generation workflow
-    /// </summary>
-    protected override async Task<WorkflowAction> OnStartAsync()
-    {
-        // Return the workflow action to indicate that the UseCase should start horizontal tile generation
-        await Task.CompletedTask;
-        return WorkflowAction.StartHorizontalTileGeneration;
-    }
-
-    /// <summary>
-    /// Continues the horizontal tile texture generation workflow
-    /// </summary>
-    protected override async Task<WorkflowAction> OnContinueAsync()
-    {
-        // Return the workflow action to indicate that the UseCase should continue horizontal tile generation
-        await Task.CompletedTask;
-        return WorkflowAction.ContinueHorizontalTileGeneration;
     }
 }

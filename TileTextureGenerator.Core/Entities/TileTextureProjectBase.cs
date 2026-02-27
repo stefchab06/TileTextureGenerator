@@ -1,4 +1,5 @@
 ﻿using TileTextureGenerator.Core.Enums;
+using TileTextureGenerator.Core.Services;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -27,13 +28,21 @@ namespace TileTextureGenerator.Core.Entities
         {
             Name = name;
         }
-        protected void SetDisplayImageFromFile(string imageFile)
+
+        /// <summary>
+        /// Sets the display image from raw image data (not file path)
+        /// Converts to PNG 256x256 for display purposes
+        /// </summary>
+        protected void SetDisplayImageFromImageData(byte[] imageData, IImageProcessingService imageProcessor)
         {
-            // Read image file
-            // Convert to png format if not aready done
-            // Resize to 256x256 if needed
-            // Covert to byte array and set DisplayImage property
-            throw new NotImplementedException();
+            if (imageData == null || imageData.Length == 0)
+                throw new ArgumentException("Image data cannot be null or empty", nameof(imageData));
+
+            if (imageProcessor == null)
+                throw new ArgumentNullException(nameof(imageProcessor));
+
+            // Convert to PNG 256x256 for DisplayImage
+            DisplayImage = imageProcessor.ConvertToPng(imageData, 256, 256);
         }
 
         /// <summary>
@@ -114,46 +123,6 @@ namespace TileTextureGenerator.Core.Entities
         protected virtual void LoadCustomPropertiesFromJson(JsonElement rootElement)
         {
             // Base implementation does nothing
-        }
-
-        /// <summary>
-        /// Starts the project workflow (called when project is created or opened with New status)
-        /// Returns a WorkflowAction that indicates which use case the orchestrator should execute
-        /// </summary>
-        public async Task<WorkflowAction> StartAsync()
-        {
-            // Execute specific workflow logic in derived classes
-            return await OnStartAsync();
-        }
-
-        /// <summary>
-        /// Continues the project workflow (called when project is opened with status other than New)
-        /// Returns a WorkflowAction that indicates which use case the orchestrator should execute
-        /// </summary>
-        public async Task<WorkflowAction> ContinueAsync()
-        {
-            // Execute specific workflow logic in derived classes
-            return await OnContinueAsync();
-        }
-
-        /// <summary>
-        /// Override this method in derived classes to implement Start workflow logic
-        /// Return the appropriate WorkflowAction to execute
-        /// </summary>
-        protected virtual Task<WorkflowAction> OnStartAsync()
-        {
-            // Base implementation: no workflow action
-            return Task.FromResult(WorkflowAction.None);
-        }
-
-        /// <summary>
-        /// Override this method in derived classes to implement Continue workflow logic
-        /// Return the appropriate WorkflowAction to execute
-        /// </summary>
-        protected virtual Task<WorkflowAction> OnContinueAsync()
-        {
-            // Base implementation: no workflow action
-            return Task.FromResult(WorkflowAction.None);
         }
     }
 }

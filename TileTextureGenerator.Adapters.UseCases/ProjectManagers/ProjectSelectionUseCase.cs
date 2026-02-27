@@ -1,5 +1,6 @@
 ﻿using TileTextureGenerator.Adapters.UseCases.Dto;
 using TileTextureGenerator.Adapters.UseCases.Ports.Input;
+using TileTextureGenerator.Adapters.UseCases.Registries;
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Ports.Output;
@@ -10,12 +11,10 @@ namespace TileTextureGenerator.Adapters.UseCases.ProjectManagers;
 internal class ProjectSelectionUseCase: IProjectSelectionUseCase
 {
     private readonly ITextureProjectStore _ProjectStore;
-    private readonly IHorizontalTileTextureWorkflow _horizontalTileWorkflow;
 
-    public ProjectSelectionUseCase(ITextureProjectStore projectStore, IHorizontalTileTextureWorkflow horizontalTileWorkflow)
+    public ProjectSelectionUseCase(ITextureProjectStore projectStore)
     {
         _ProjectStore = projectStore;
-        _horizontalTileWorkflow = horizontalTileWorkflow;
     }
     private TileTextureProjectBase ToCoreProject(TextureProjectDto project)
     {
@@ -55,11 +54,11 @@ internal class ProjectSelectionUseCase: IProjectSelectionUseCase
             // Save the updated project with new status
             await _ProjectStore.SaveProjectAsync(createdProject);
 
-            // Start the project workflow and get the action to execute
-            var action = await createdProject.StartAsync();
+            // Get the workflow for this project type
+            var workflow = WorkflowRegistry.GetWorkflow(createdProject);
 
-            // Orchestrate: execute the appropriate workflow use case
-            await ExecuteWorkflowActionAsync(action, createdProject);
+            // Initialize the project using its specific workflow
+            await workflow.InitializeAsync(createdProject);
 
             // Save after workflow execution
             await _ProjectStore.SaveProjectAsync(createdProject);
@@ -67,26 +66,27 @@ internal class ProjectSelectionUseCase: IProjectSelectionUseCase
 
         return ToProjectDto(createdProject);
     }
+
     public async Task<TextureProjectDto> OpenAsync(TextureProjectDto project)
     {
-        var openedProject = await _ProjectStore.OpenProjectAsync(ToCoreProject(project));
+        // Load the full project from storage (not just create a new empty one)
+        var tempProject = TextureProjectRegistry.Create(project.Type, project.Name);
+        var openedProject = await _ProjectStore.OpenProjectAsync(tempProject);
 
         if (openedProject != null)
         {
-            WorkflowAction action;
+            // Get the workflow for this project type
+            var workflow = WorkflowRegistry.GetWorkflow(openedProject);
 
-            // Start workflow if status is New, otherwise continue existing workflow
+            // Initialize or continue based on project status
             if (openedProject.Status == ProjectStatus.New)
             {
-                action = await openedProject.StartAsync();
+                await workflow.InitializeAsync(openedProject);
             }
             else
             {
-                action = await openedProject.ContinueAsync();
+                await workflow.ContinueWorkAsync(openedProject);
             }
-
-            // Orchestrate: execute the appropriate workflow use case
-            await ExecuteWorkflowActionAsync(action, openedProject);
 
             // Save after workflow execution
             await _ProjectStore.SaveProjectAsync(openedProject);
@@ -143,32 +143,19 @@ internal class ProjectSelectionUseCase: IProjectSelectionUseCase
             .ToList();
     }
 
-    /// <summary>
-    /// Orchestrates workflow execution based on the WorkflowAction returned by the entity
-    /// This respects hexagonal architecture: Core returns action, Adapters orchestrate
-    /// </summary>
-    private async Task ExecuteWorkflowActionAsync(WorkflowAction action, TileTextureProjectBase project)
+    public async Task<IReadOnlyList<TextureProjectSummaryDto>> GetProjectSummariesAsync()
     {
-        switch (action)
-        {
-            case WorkflowAction.StartHorizontalTileGeneration:
-                if (project is HorizontalTileTextureProjectEntity horizontalProject)
-                {
-                    await _horizontalTileWorkflow.StartGenerationAsync(horizontalProject);
-                }
-                break;
+        var summaries = await _ProjectStore.LoadProjectSummariesAsync();
 
-            case WorkflowAction.ContinueHorizontalTileGeneration:
-                if (project is HorizontalTileTextureProjectEntity horizontalContinue)
-                {
-                    await _horizontalTileWorkflow.ContinueGenerationAsync(horizontalContinue);
-                }
-                break;
-
-            case WorkflowAction.None:
-            default:
-                // No workflow action needed
-                break;
-        }
+        // Sort by LastModifiedDate descending (most recent first)
+        return summaries
+            .Select(s => new TextureProjectSummaryDto(
+                name: s.Name,
+                type: s.Type,
+                status: s.Status,
+                lastModifiedDate: s.LastModifiedDate,
+                displayImage: s.DisplayImage))
+            .OrderByDescending(s => s.LastModifiedDate)
+            .ToList();
     }
 }

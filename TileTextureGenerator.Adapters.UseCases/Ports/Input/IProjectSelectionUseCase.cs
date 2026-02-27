@@ -12,4 +12,9 @@ public interface IProjectSelectionUseCase
     Task<IReadOnlyList<string>> GetProjectTypeListAsync();
     List<string> GetProjectStatusList();
     Task<IReadOnlyList<TextureProjectDto>> GetProjectListAsync();
+
+    /// <summary>
+    /// Get lightweight project summaries for list display (optimized, no full entity loading)
+    /// </summary>
+    Task<IReadOnlyList<TextureProjectSummaryDto>> GetProjectSummariesAsync();
 }
