@@ -1,6 +1,5 @@
 using TileTextureGenerator.Adapters.UseCases.Ports.Input;
 using TileTextureGenerator.Adapters.UseCases.Registries;
-using TileTextureGenerator.Adapters.Persistence.Ports.Output;
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Ports.Input;
@@ -14,18 +13,15 @@ namespace TileTextureGenerator.Adapters.UseCases.Workflows;
 [WorkflowFor(typeof(HorizontalTileTextureProjectEntity))]
 internal class HorizontalTileTextureWorkflow : IProjectWorkflow
 {
-    private readonly IImageSelectionService _imageSelectionService;
+    private readonly IImageInitializationService _imageInitializationService;
     private readonly IImageProcessingService _imageProcessingService;
-    private readonly IProjectPersister _projectPersister;
 
     public HorizontalTileTextureWorkflow(
-        IImageSelectionService imageSelectionService,
-        IImageProcessingService imageProcessingService,
-        IProjectPersister projectPersister)
+        IImageInitializationService imageInitializationService,
+        IImageProcessingService imageProcessingService)
     {
-        _imageSelectionService = imageSelectionService;
+        _imageInitializationService = imageInitializationService;
         _imageProcessingService = imageProcessingService;
-        _projectPersister = projectPersister;
     }
 
     public async Task InitializeAsync(TileTextureProjectBase project)
@@ -34,7 +30,7 @@ internal class HorizontalTileTextureWorkflow : IProjectWorkflow
             throw new ArgumentException($"Expected HorizontalTileTextureProjectEntity, got {project.GetType().Name}");
 
         // Check if already initialized (has source image)
-        if (!string.IsNullOrEmpty(horizontalProject.SourceImagePath))
+        if (horizontalProject.SourceImage != null && horizontalProject.SourceImage.Length > 0)
         {
 #if DEBUG
             System.Diagnostics.Debug.WriteLine($"[Workflow] Project already initialized, skipping image selection");
@@ -44,55 +40,50 @@ internal class HorizontalTileTextureWorkflow : IProjectWorkflow
             return;
         }
 
-        // 1. Let user select an image
-        var rawImageData = await _imageSelectionService.PickImageFromFileAsync();
+        // Open the initialization view
+        var result = await _imageInitializationService.InitializeImageAsync();
 
-        if (rawImageData == null)
+        if (result.WasCancelled || result.ImageData == null)
         {
 #if DEBUG
-            System.Diagnostics.Debug.WriteLine($"[Workflow] User cancelled image selection");
+            System.Diagnostics.Debug.WriteLine($"[Workflow] User cancelled initialization");
 #endif
-            return; // User cancelled
+            return;
         }
 
 #if DEBUG
-        System.Diagnostics.Debug.WriteLine($"[Workflow] Image selected, size: {rawImageData.Length} bytes");
+        System.Diagnostics.Debug.WriteLine($"[Workflow] Image initialized, size: {result.ImageData.Length} bytes, shape: {result.TileShape}");
 #endif
 
-        // 2. Convert to PNG (keeping original resolution)
-        var pngImageData = _imageProcessingService.ConvertToPng(rawImageData);
+        // Convert to PNG (keeping original resolution)
+        var pngImageData = _imageProcessingService.ConvertToPng(result.ImageData);
 
 #if DEBUG
         System.Diagnostics.Debug.WriteLine($"[Workflow] Image converted to PNG, size: {pngImageData.Length} bytes");
 #endif
 
-        // 3. Save to Sources/SourceImage.png
-        var sourcePath = await _projectPersister.SaveSourceImageAsync(
-            horizontalProject.Name, 
-            pngImageData, 
-            "SourceImage.png");
+        // Store the source image in the domain entity (as byte[])
+        horizontalProject.SourceImage = pngImageData;
+        horizontalProject.TileShape = result.TileShape;
 
 #if DEBUG
-        System.Diagnostics.Debug.WriteLine($"[Workflow] Source image saved to: {sourcePath}");
+        System.Diagnostics.Debug.WriteLine($"[Workflow] Source image and tile shape stored in domain entity");
 #endif
 
-        // Update project with source image path
-        horizontalProject.SourceImagePath = sourcePath;
-
-        // 4. Generate DisplayImage (PNG 256x256)
-        horizontalProject.SetDisplayImage(rawImageData, _imageProcessingService);
+        // Generate DisplayImage (PNG 256x256)
+        horizontalProject.SetDisplayImage(result.ImageData, _imageProcessingService);
 
 #if DEBUG
         System.Diagnostics.Debug.WriteLine($"[Workflow] DisplayImage generated, size: {horizontalProject.DisplayImage?.Length ?? 0} bytes");
 #endif
 
-        // 5. Change status to Pending
+        // Change status to Pending
         horizontalProject.Status = ProjectStatus.Pending;
         horizontalProject.LastModifiedDate = DateTime.UtcNow;
 
 #if DEBUG
         System.Diagnostics.Debug.WriteLine($"[Workflow] Initialized horizontal tile project: {project.Name}");
-        System.Diagnostics.Debug.WriteLine($"  Source image: {sourcePath}");
+        System.Diagnostics.Debug.WriteLine($"  Tile Shape: {horizontalProject.TileShape}");
         System.Diagnostics.Debug.WriteLine($"  Status: {horizontalProject.Status}");
 #endif
     }

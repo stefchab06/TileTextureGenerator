@@ -68,9 +68,11 @@ namespace TileTextureGenerator.Application
         {
             // ViewModels
             services.AddTransient<TileTextureGenerator.Frontend.UI.ViewModels.ProjectSelectorViewModel>();
+            services.AddTransient<TileTextureGenerator.Frontend.UI.ViewModels.SingleTileTextureInitializationViewModel>();
 
             // Views
             services.AddTransient<TileTextureGenerator.Frontend.UI.Views.ProjectSelectorView>();
+            services.AddTransient<TileTextureGenerator.Frontend.UI.Views.SingleTileTextureInitializationView>();
         }
     }
 }

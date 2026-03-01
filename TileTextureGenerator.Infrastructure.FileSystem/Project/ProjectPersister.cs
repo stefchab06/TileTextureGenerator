@@ -119,25 +119,40 @@ internal class ProjectPersister : IProjectPersister
         var type = root.GetProperty("Type").GetString() ?? "Unknown";
         var status = root.GetProperty("Status").GetString() ?? "Unexisting";
 
-        // Load DisplayImageFile if present (persistence detail)
-        byte[] imageBytes = null;
-        string ? displayImageFile = null;
-        if (root.TryGetProperty("DisplayImageFile", out var imageElement))
+        // Load DisplayImageFile if present
+        byte[]? displayImageBytes = null;
+        if (root.TryGetProperty("DisplayImageFile", out var displayImageElement))
         {
-            displayImageFile = imageElement.GetString();
-            if (displayImageFile != null)
-            {     var absoluteImagePath = Path.Combine(GetProjectFolderName(projectName), displayImageFile);
-                if (File.Exists(absoluteImagePath))
+            var displayImageFile = displayImageElement.GetString();
+            if (!string.IsNullOrEmpty(displayImageFile))
+            {
+                var absoluteDisplayImagePath = Path.Combine(GetProjectFolderName(projectName), displayImageFile);
+                if (File.Exists(absoluteDisplayImagePath))
                 {
-                    imageBytes = await File.ReadAllBytesAsync(absoluteImagePath);
-
+                    displayImageBytes = await File.ReadAllBytesAsync(absoluteDisplayImagePath);
                 }
+            }
+        }
+
+        // Load SourceImageFile if present (e.g., "Sources\SourceImage.png")
+        byte[]? sourceImageBytes = null;
+        string? sourceImageFile = null;
+        if (root.TryGetProperty("HasSourceImage", out var hasSourceElement) && hasSourceElement.GetBoolean())
+        {
+            // Default source image path
+            sourceImageFile = Path.Combine("Sources", "SourceImage.png");
+            var absoluteSourceImagePath = Path.Combine(GetProjectFolderName(projectName), sourceImageFile);
+            if (File.Exists(absoluteSourceImagePath))
+            {
+                sourceImageBytes = await File.ReadAllBytesAsync(absoluteSourceImagePath);
             }
         }
 
         return new ProjectDataDto(name, type, status, jsonContent)
         {
-            DisplayImage = imageBytes
+            DisplayImage = displayImageBytes,
+            SourceImage = sourceImageBytes,
+            SourceImageFile = sourceImageFile
         };
     }
 

@@ -17,9 +17,15 @@ public sealed class HorizontalTileTextureProjectEntity : TileTextureProjectBase
     }
 
     /// <summary>
-    /// Relative path to the source image (e.g., "Input\SourceImage.png")
+    /// Source image data (PNG format, full resolution)
+    /// Core domain uses byte[] - persistence details handled in adapters
     /// </summary>
-    public string? SourceImagePath { get; set; }
+    public byte[]? SourceImage { get; set; }
+
+    /// <summary>
+    /// Shape of the tile (Full, HalfHorizontal, HalfVertical)
+    /// </summary>
+    public TileShape TileShape { get; set; } = TileShape.Full;
 
     public HorizontalTileTextureProjectEntity(string name)
         : base(name)
@@ -29,27 +35,37 @@ public sealed class HorizontalTileTextureProjectEntity : TileTextureProjectBase
 
     /// <summary>
     /// Override to add custom properties specific to horizontal tile projects
+    /// Note: SourceImage is NOT serialized here (too large) - handled by persistence layer
     /// </summary>
     protected override void AddCustomPropertiesToJson(JsonObject jsonObject)
     {
         base.AddCustomPropertiesToJson(jsonObject);
 
-        if (!string.IsNullOrEmpty(SourceImagePath))
+        jsonObject["TileShape"] = TileShape.ToString();
+
+        // Store a flag indicating if source image exists
+        if (SourceImage != null && SourceImage.Length > 0)
         {
-            jsonObject["SourceImagePath"] = SourceImagePath;
+            jsonObject["HasSourceImage"] = true;
         }
     }
 
     /// <summary>
     /// Override to load custom properties specific to horizontal tile projects
+    /// Note: SourceImage is loaded separately by persistence layer
     /// </summary>
     protected override void LoadCustomPropertiesFromJson(JsonElement rootElement)
     {
         base.LoadCustomPropertiesFromJson(rootElement);
 
-        if (rootElement.TryGetProperty("SourceImagePath", out var sourceImagePath))
+        if (rootElement.TryGetProperty("TileShape", out var tileShapeElement))
         {
-            SourceImagePath = sourceImagePath.GetString();
+            if (Enum.TryParse<TileShape>(tileShapeElement.GetString(), out var tileShape))
+            {
+                TileShape = tileShape;
+            }
         }
+
+        // SourceImage will be loaded by the persistence layer
     }
 }

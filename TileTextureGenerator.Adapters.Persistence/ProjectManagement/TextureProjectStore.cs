@@ -64,10 +64,16 @@ internal class TextureProjectStore : ITextureProjectStore
             }
         }
 
+        // Map DisplayImage from persistence to domain
         if (projectData.DisplayImage != null)
         {
-            var property = typeof(TileTextureProjectBase).GetProperty("DisplayImage");
-            property?.SetValue(project, projectData.DisplayImage);
+            project.DisplayImage = projectData.DisplayImage;
+        }
+
+        // Map SourceImage from persistence to domain (if HorizontalTileTextureProject)
+        if (project is HorizontalTileTextureProjectEntity horizontalProject && projectData.SourceImage != null)
+        {
+            horizontalProject.SourceImage = projectData.SourceImage;
         }
 
         return project;
@@ -117,6 +123,15 @@ internal class TextureProjectStore : ITextureProjectStore
     public async Task<bool> SaveProjectAsync(TileTextureProjectBase project)
     {
         var dto = new ProjectDataDto(project);
+
+        // If SourceImage exists, save it to file and store the path
+        if (dto.SourceImage != null && dto.SourceImage.Length > 0)
+        {
+            dto.SourceImageFile = await _persister.SaveSourceImageAsync(
+                project.Name, 
+                dto.SourceImage, 
+                "SourceImage.png");
+        }
 
         return await _persister.SaveProjectAsync(dto);
     }

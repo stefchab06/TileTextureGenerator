@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TileTextureGenerator.Frontend.UI.ViewModels"
+             xmlns:enums="clr-namespace:TileTextureGenerator.Core.Enums;assembly=TileTextureGenerator.Core"
+             xmlns:converters="clr-namespace:TileTextureGenerator.Frontend.UI.Converters"
+             x:Class="TileTextureGenerator.Frontend.UI.Views.SingleTileTextureInitializationView"
+             Title="Initialisation de l'image">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:TileShapeToBorderConverter x:Key="TileShapeToBorderConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="10">
+
+        <!-- Row 0: Image Acquisition Buttons -->
+        <HorizontalStackLayout Grid.Row="0" Spacing="10" HorizontalOptions="Center" Margin="0,0,0,20">
+            <Button Text="Charger" 
+                    Command="{Binding LoadImageCommand}"
+                    WidthRequest="120"/>
+            <Button Text="Coller" 
+                    Command="{Binding PasteImageCommand}"
+                    IsEnabled="{Binding CanPaste}"
+                    WidthRequest="120"/>
+            <Button Text="Numériser" 
+                    Command="{Binding ScanImageCommand}"
+                    IsEnabled="{Binding CanScan}"
+                    WidthRequest="120"/>
+        </HorizontalStackLayout>
+
+        <!-- Row 1: Tile Shape Selection -->
+        <VerticalStackLayout Grid.Row="1" Spacing="10" Margin="0,0,0,20">
+            <Label Text="Forme de la tuile" 
+                   FontSize="16" 
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"/>
+
+            <HorizontalStackLayout Spacing="20" HorizontalOptions="Center">
+                <!-- Full (Square) -->
+                <Border BackgroundColor="{AppThemeBinding Light=#F0F0F0, Dark=#2A2A2A}"
+                        StrokeThickness="2"
+                        Stroke="{Binding SelectedTileShape, Converter={StaticResource TileShapeToBorderConverter}, ConverterParameter={x:Static enums:TileShape.Full}}"
+                        Padding="10">
+                    <Frame WidthRequest="60" 
+                           HeightRequest="60" 
+                           BackgroundColor="Black"
+                           CornerRadius="5">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SelectTileShapeCommand}" 
+                                                 CommandParameter="{x:Static enums:TileShape.Full}"/>
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                </Border>
+
+                <!-- HalfHorizontal (Wide Rectangle) -->
+                <Border BackgroundColor="{AppThemeBinding Light=#F0F0F0, Dark=#2A2A2A}"
+                        StrokeThickness="2"
+                        Stroke="{Binding SelectedTileShape, Converter={StaticResource TileShapeToBorderConverter}, ConverterParameter={x:Static enums:TileShape.HalfHorizontal}}"
+                        Padding="10">
+                    <Frame WidthRequest="80" 
+                           HeightRequest="40" 
+                           BackgroundColor="Black"
+                           CornerRadius="5">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SelectTileShapeCommand}" 
+                                                 CommandParameter="{x:Static enums:TileShape.HalfHorizontal}"/>
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                </Border>
+
+                <!-- HalfVertical (Tall Rectangle) -->
+                <Border BackgroundColor="{AppThemeBinding Light=#F0F0F0, Dark=#2A2A2A}"
+                        StrokeThickness="2"
+                        Stroke="{Binding SelectedTileShape, Converter={StaticResource TileShapeToBorderConverter}, ConverterParameter={x:Static enums:TileShape.HalfVertical}}"
+                        Padding="10">
+                    <Frame WidthRequest="40" 
+                           HeightRequest="80" 
+                           BackgroundColor="Black"
+                           CornerRadius="5">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SelectTileShapeCommand}" 
+                                                 CommandParameter="{x:Static enums:TileShape.HalfVertical}"/>
+                        </Frame.GestureRecognizers>
+                    </Frame>
+                </Border>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+
+        <!-- Row 2: Image Work Area -->
+        <Grid Grid.Row="2" Margin="0,0,0,20" x:Name="WorkArea">
+            <!-- Responsive layout: Tools left/top depending on orientation -->
+
+            <!-- Landscape: Tools on left, Image on right -->
+            <Grid x:Name="LandscapeLayout" IsVisible="False">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Tools Panel - Vertical Compact with ScrollView -->
+                <Border Grid.Column="0" 
+                        BackgroundColor="{AppThemeBinding Light=#F0F0F0, Dark=#2A2A2A}"
+                        Stroke="{AppThemeBinding Light=#CCCCCC, Dark=#444444}"
+                        StrokeThickness="1"
+                        Padding="5"
+                        Margin="0,0,5,0"
+                        IsVisible="{Binding IsToolbarVisible}">
+                    <ScrollView Orientation="Vertical" WidthRequest="100">
+                        <VerticalStackLayout Spacing="3">
+
+                            <!-- Zoom Entry -->
+                            <HorizontalStackLayout Spacing="2" HorizontalOptions="Center">
+                                <Entry Text="{Binding ZoomLevel}" 
+                                       Keyboard="Numeric"
+                                       WidthRequest="40"
+                                       HeightRequest="35"
+                                       HorizontalTextAlignment="Center"/>
+                                <Label Text="%" VerticalOptions="Center" FontSize="12"/>
+                            </HorizontalStackLayout>
+
+                            <!-- Zoom Slider -->
+                            <Slider x:Name="ZoomSliderVertical"
+                                    Minimum="50"
+                                    Maximum="200"
+                                    Value="{Binding ZoomLevel}"
+                                    Rotation="270"
+                                    WidthRequest="120"
+                                    HeightRequest="40"
+                                    HorizontalOptions="Center"
+                                    Margin="0,50,0,50"/>
+
+                            <!-- Separator -->
+                            <BoxView HeightRequest="10" Color="Transparent"/>
+
+                            <!-- Rotation Angle Entry -->
+                            <HorizontalStackLayout Spacing="2" HorizontalOptions="Center">
+                                <Entry Text="{Binding RotationAngle}" 
+                                       Keyboard="Numeric"
+                                       WidthRequest="40"
+                                       HeightRequest="35"
+                                       HorizontalTextAlignment="Center"/>
+                                <Label Text="°" VerticalOptions="Center" FontSize="12"/>
+                            </HorizontalStackLayout>
+
+                            <!-- Rotation Counter-Clockwise -->
+                            <Button Text="↺" 
+                                    Command="{Binding RotateCounterClockwiseCommand}"
+                                    WidthRequest="50"
+                                    HeightRequest="35"
+                                    Padding="0"
+                                    FontSize="18"
+                                    HorizontalOptions="Center"/>
+
+                            <!-- Rotation Clockwise -->
+                            <Button Text="↻" 
+                                    Command="{Binding RotateClockwiseCommand}"
+                                    WidthRequest="50"
+                                    HeightRequest="35"
+                                    Padding="0"
+                                    FontSize="18"
+                                    HorizontalOptions="Center"/>
+
+                            <!-- Separator -->
+                            <BoxView HeightRequest="10" Color="Transparent"/>
+
+                            <!-- Translation Pixels Entry -->
+                            <HorizontalStackLayout Spacing="2" HorizontalOptions="Center">
+                                <Entry Text="{Binding TranslationPixels}" 
+                                       Keyboard="Numeric"
+                                       WidthRequest="40"
+                                       HeightRequest="35"
+                                       HorizontalTextAlignment="Center"/>
+                                <Label Text="px" VerticalOptions="Center" FontSize="12"/>
+                            </HorizontalStackLayout>
+
+                            <!-- Move Left -->
+                            <Button Text="◀"
+                                    Command="{Binding MoveLeftCommand}"
+                                    WidthRequest="50"
+                                    HeightRequest="35"
+                                    Padding="0"
+                                    FontSize="18"
+                                    HorizontalOptions="Center"/>
+
+                            <!-- Move Right -->
+                            <Button Text="▶"
+                                    Command="{Binding MoveRightCommand}"
+                                    WidthRequest="50"
+                                    HeightRequest="35"
+                                    Padding="0"
+                                    FontSize="18"
+                                    HorizontalOptions="Center"/>
+
+                            <!-- Move Up -->
+                            <Button Text="▲"
+                                    Command="{Binding MoveUpCommand}"
+                                    WidthRequest="50"
+                                    HeightRequest="35"
+                                    Padding="0"
+                                    FontSize="18"
+                                    HorizontalOptions="Center"/>
+
+                            <!-- Move Down -->
+                            <Button Text="▼"
+                                    Command="{Binding MoveDownCommand}"
+                                    WidthRequest="50"
+                                    HeightRequest="35"
+                                    Padding="0"
+                                    FontSize="18"
+                                    HorizontalOptions="Center"/>
+
+                        </VerticalStackLayout>
+                    </ScrollView>
+                </Border>
+
+                <!-- Image Canvas -->
+                <Border Grid.Column="1"
+                        BackgroundColor="{AppThemeBinding Light=#FAFAFA, Dark=#1A1A1A}"
+                        Stroke="{AppThemeBinding Light=#CCCCCC, Dark=#444444}"
+                        StrokeThickness="1">
+                    <Label Text="Zone de l'image&#x0a;(Canvas SkiaSharp)" 
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           TextColor="{AppThemeBinding Light=#999999, Dark=#666666}"/>
+                </Border>
+            </Grid>
+
+            <!-- Portrait: Tools on top, Image on bottom -->
+            <Grid x:Name="PortraitLayout" IsVisible="False">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Tools Panel - Horizontal Compact with ScrollView -->
+                <Border Grid.Row="0"
+                        BackgroundColor="{AppThemeBinding Light=#F0F0F0, Dark=#2A2A2A}"
+                        Stroke="{AppThemeBinding Light=#CCCCCC, Dark=#444444}"
+                        StrokeThickness="1"
+                        Padding="5"
+                        Margin="0,0,0,5"
+                        IsVisible="{Binding IsToolbarVisible}">
+                    <ScrollView Orientation="Horizontal" HeightRequest="50">
+                        <HorizontalStackLayout Spacing="5" VerticalOptions="Center">
+
+                            <!-- Zoom Entry -->
+                            <HorizontalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Entry Text="{Binding ZoomLevel}" 
+                                       Keyboard="Numeric"
+                                       WidthRequest="40"
+                                       HeightRequest="35"
+                                       HorizontalTextAlignment="Center"
+                                       VerticalOptions="Center"/>
+                                <Label Text="%" VerticalOptions="Center" FontSize="12"/>
+                            </HorizontalStackLayout>
+
+                            <!-- Zoom Slider -->
+                            <Slider x:Name="ZoomSliderHorizontal"
+                                    Minimum="50"
+                                    Maximum="200"
+                                    Value="{Binding ZoomLevel}"
+                                    Orientation="Horizontal"
+                                    WidthRequest="100"
+                                    HeightRequest="30"
+                                    VerticalOptions="Center"/>
+
+                            <!-- Separator -->
+                            <BoxView WidthRequest="10" Color="Transparent"/>
+
+                            <!-- Rotation Angle Entry -->
+                            <HorizontalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Entry Text="{Binding RotationAngle}" 
+                                       Keyboard="Numeric"
+                                       WidthRequest="40"
+                                       HeightRequest="35"
+                                       HorizontalTextAlignment="Center"
+                                       VerticalOptions="Center"/>
+                                <Label Text="°" VerticalOptions="Center" FontSize="12"/>
+                            </HorizontalStackLayout>
+
+                            <!-- Rotation Counter-Clockwise -->
+                            <Button Text="↺" 
+                                    Command="{Binding RotateCounterClockwiseCommand}"
+                                    WidthRequest="40"
+                                    HeightRequest="35"
+                                    Padding="0"
+                                    FontSize="18"
+                                    VerticalOptions="Center"/>
+
+                            <!-- Rotation Clockwise -->
+                            <Button Text="↻" 
+                                    Command="{Binding RotateClockwiseCommand}"
+                                    WidthRequest="40"
+                                    HeightRequest="35"
+                                    Padding="0"
+                                    FontSize="18"
+                                    VerticalOptions="Center"/>
+
+                            <!-- Separator -->
+                            <BoxView WidthRequest="10" Color="Transparent"/>
+
+                            <!-- Translation Pixels Entry -->
+                            <HorizontalStackLayout Spacing="2" VerticalOptions="Center">
+                                <Entry Text="{Binding TranslationPixels}" 
+                                       Keyboard="Numeric"
+                                       WidthRequest="40"
+                                       HeightRequest="35"
+                                       HorizontalTextAlignment="Center"
+                                       VerticalOptions="Center"/>
+                                <Label Text="px" VerticalOptions="Center" FontSize="12"/>
+                            </HorizontalStackLayout>
+
+                            <!-- Move Left -->
+                            <Button Text="◀"
+                                    Command="{Binding MoveLeftCommand}"
+                                    WidthRequest="40"
+                                    HeightRequest="35"
+                                    Padding="0"
+                                    FontSize="18"
+                                    VerticalOptions="Center"/>
+
+                            <!-- Move Right -->
+                            <Button Text="▶"
+                                    Command="{Binding MoveRightCommand}"
+                                    WidthRequest="40"
+                                    HeightRequest="35"
+                                    Padding="0"
+                                    FontSize="18"
+                                    VerticalOptions="Center"/>
+
+                            <!-- Move Up -->
+                            <Button Text="▲"
+                                    Command="{Binding MoveUpCommand}"
+                                    WidthRequest="40"
+                                    HeightRequest="35"
+                                    Padding="0"
+                                    FontSize="18"
+                                    VerticalOptions="Center"/>
+
+                            <!-- Move Down -->
+                            <Button Text="▼"
+                                    Command="{Binding MoveDownCommand}"
+                                    WidthRequest="40"
+                                    HeightRequest="35"
+                                    Padding="0"
+                                    FontSize="18"
+                                    VerticalOptions="Center"/>
+
+                        </HorizontalStackLayout>
+                    </ScrollView>
+                </Border>
+
+                <!-- Image Canvas -->
+                <Border Grid.Row="1"
+                        BackgroundColor="{AppThemeBinding Light=#FAFAFA, Dark=#1A1A1A}"
+                        Stroke="{AppThemeBinding Light=#CCCCCC, Dark=#444444}"
+                        StrokeThickness="1">
+                    <Label Text="Zone de l'image&#x0a;(Canvas SkiaSharp)" 
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           TextColor="{AppThemeBinding Light=#999999, Dark=#666666}"/>
+                </Border>
+            </Grid>
+
+        </Grid>
+
+        <!-- Row 3: Validate Button -->
+        <Button Grid.Row="3"
+                Text="Valider"
+                Command="{Binding ValidateCommand}"
+                HorizontalOptions="Center"
+                WidthRequest="200"
+                HeightRequest="50"
+                FontSize="18"
+                FontAttributes="Bold"/>
+    </Grid>
+</ContentPage>

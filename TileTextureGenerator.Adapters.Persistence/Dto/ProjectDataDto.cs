@@ -11,9 +11,19 @@ public class ProjectDataDto
     public byte[]? DisplayImage { get; set; }
 
     /// <summary>
+    /// Source image data (from Core domain)
+    /// </summary>
+    public byte[]? SourceImage { get; set; }
+
+    /// <summary>
     /// Relative path to display image file (persistence detail)
     /// </summary>
     public string? DisplayImageFile { get; set; }
+
+    /// <summary>
+    /// Relative path to source image file (persistence detail)
+    /// </summary>
+    public string? SourceImageFile { get; set; }
 
     /// <summary>
     /// Last modification date
@@ -36,5 +46,11 @@ public class ProjectDataDto
         ProjectDataJson = coreProject.ToJson();
         DisplayImage = coreProject.DisplayImage;
         LastModifiedDate = coreProject.LastModifiedDate;
+
+        // Extract SourceImage if it's a HorizontalTileTextureProjectEntity
+        if (coreProject is HorizontalTileTextureProjectEntity horizontalProject)
+        {
+            SourceImage = horizontalProject.SourceImage;
+        }
     }
 }
