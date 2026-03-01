@@ -11,8 +11,28 @@ public interface IImageSelectionService
     /// </summary>
     /// <returns>Image data as byte array, or null if cancelled</returns>
     Task<byte[]?> PickImageFromFileAsync();
-    
-    // Future: Add more methods
-    // Task<byte[]?> PickImageFromClipboardAsync();
-    // Task<byte[]?> CaptureImageFromCameraAsync();
+
+    /// <summary>
+    /// Gets image from clipboard if available
+    /// </summary>
+    /// <returns>Image data as byte array, or null if no image in clipboard</returns>
+    Task<byte[]?> GetImageFromClipboardAsync();
+
+    /// <summary>
+    /// Checks if clipboard contains an image
+    /// </summary>
+    /// <returns>True if clipboard has an image</returns>
+    Task<bool> HasImageInClipboardAsync();
+
+    /// <summary>
+    /// Checks if device has scanning/camera capabilities
+    /// </summary>
+    /// <returns>True if device can scan/capture images</returns>
+    Task<bool> CanScanOrCaptureAsync();
+
+    /// <summary>
+    /// Subscribe to clipboard content changes
+    /// </summary>
+    /// <param name="callback">Action to invoke when clipboard changes</param>
+    void OnClipboardChanged(Action callback);
 }

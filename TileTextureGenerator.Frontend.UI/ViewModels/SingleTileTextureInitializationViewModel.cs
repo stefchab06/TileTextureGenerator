@@ -29,10 +29,13 @@ public partial class SingleTileTextureInitializationViewModel : ObservableObject
     private double zoomLevel = 100;
 
     [ObservableProperty]
-    private int translationPixels = 10;
+    private double scaleX = 1.0;
 
     [ObservableProperty]
-    private bool isToolbarVisible = true;
+    private double scaleY = 1.0;
+
+    [ObservableProperty]
+    private bool isSnapEnabled = true;
 
     [ObservableProperty]
     private bool canPaste = false;
@@ -44,13 +47,15 @@ public partial class SingleTileTextureInitializationViewModel : ObservableObject
     {
         _imageSelectionService = imageSelectionService;
 
-        // Hide toolbar on touch devices
-        IsToolbarVisible = DeviceInfo.Idiom != DeviceIdiom.Phone && 
-                          DeviceInfo.Idiom != DeviceIdiom.Tablet;
-
         // Check if clipboard and scan are available (platform-specific)
         CheckClipboardAvailability();
         CheckScanAvailability();
+
+        // Subscribe to clipboard changes
+        _imageSelectionService.OnClipboardChanged(async () =>
+        {
+            CanPaste = await _imageSelectionService.HasImageInClipboardAsync();
+        });
     }
 
     [RelayCommand]
@@ -60,65 +65,34 @@ public partial class SingleTileTextureInitializationViewModel : ObservableObject
         if (imageData != null)
         {
             CurrentImage = imageData;
-            ResetTransformations();
         }
     }
 
     [RelayCommand]
     private async Task PasteImageAsync()
     {
-        // TODO: Implement paste from clipboard
-        await Task.CompletedTask;
+        var imageData = await _imageSelectionService.GetImageFromClipboardAsync();
+        if (imageData != null)
+        {
+            CurrentImage = imageData;
+        }
+        else
+        {
+            await Shell.Current.DisplayAlertAsync("Information", "No image in clipboard", "OK");
+        }
     }
 
     [RelayCommand]
     private async Task ScanImageAsync()
     {
-        // TODO: Implement scan/capture
-        await Task.CompletedTask;
+        // TODO: Implement scan/capture from camera
+        await Shell.Current.DisplayAlertAsync("Information", "Scan feature coming soon", "OK");
     }
 
     [RelayCommand]
     private void SelectTileShape(TileShape shape)
     {
         SelectedTileShape = shape;
-        ResetTransformations();
-    }
-
-    [RelayCommand]
-    private void RotateClockwise()
-    {
-        RotationAngle = (RotationAngle + 15) % 360;
-    }
-
-    [RelayCommand]
-    private void RotateCounterClockwise()
-    {
-        RotationAngle = (RotationAngle - 15 + 360) % 360;
-    }
-
-    [RelayCommand]
-    private void MoveUp()
-    {
-        TranslationY -= TranslationPixels;
-    }
-
-    [RelayCommand]
-    private void MoveDown()
-    {
-        TranslationY += TranslationPixels;
-    }
-
-    [RelayCommand]
-    private void MoveLeft()
-    {
-        TranslationX -= TranslationPixels;
-    }
-
-    [RelayCommand]
-    private void MoveRight()
-    {
-        TranslationX += TranslationPixels;
     }
 
     [RelayCommand]
@@ -126,7 +100,7 @@ public partial class SingleTileTextureInitializationViewModel : ObservableObject
     {
         if (CurrentImage == null)
         {
-            await Shell.Current.DisplayAlertAsync("Erreur", "Veuillez sélectionner une image", "OK");
+            await Shell.Current.DisplayAlertAsync("Error", "Please select an image", "OK");
             return;
         }
 
@@ -159,31 +133,13 @@ public partial class SingleTileTextureInitializationViewModel : ObservableObject
         await Shell.Current.GoToAsync("..");
     }
 
-    private void ResetTransformations()
-    {
-        TranslationX = 0;
-        TranslationY = 0;
-        RotationAngle = 0;
-        ZoomLevel = 100;
-    }
-
     private async void CheckClipboardAvailability()
     {
-        try
-        {
-            // Clipboard.HasImage is not available in .NET 10 yet
-            CanPaste = false; // TODO: Check clipboard when API available
-        }
-        catch
-        {
-            CanPaste = false;
-        }
+        CanPaste = await _imageSelectionService.HasImageInClipboardAsync();
     }
 
-    private void CheckScanAvailability()
+    private async void CheckScanAvailability()
     {
-        // Scan/Camera typically available on mobile
-        CanScan = DeviceInfo.Platform == DevicePlatform.Android || 
-                  DeviceInfo.Platform == DevicePlatform.iOS;
+        CanScan = await _imageSelectionService.CanScanOrCaptureAsync();
     }
 }

@@ -3,6 +3,7 @@ using TileTextureGenerator.Core.Registries;
 using TileTextureGenerator.Adapters.UseCases.Registries;
 using TileTextureGenerator.Application.DependencyInjection;
 using System.Reflection;
+using SkiaSharp.Views.Maui.Controls.Hosting;
 
 namespace TileTextureGenerator.Application
 {
@@ -13,6 +14,7 @@ namespace TileTextureGenerator.Application
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseSkiaSharp()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
