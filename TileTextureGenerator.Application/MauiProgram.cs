@@ -33,6 +33,7 @@ namespace TileTextureGenerator.Application
 
             // Initialize registries with service provider
             TextureProjectRegistry.ForceAutoRegistrationFromCore();
+            TransformationTypeRegistry.RegisterAll();
             WorkflowRegistry.ForceAutoRegistration(
                 Assembly.Load("TileTextureGenerator.Adapters.UseCases"),
                 app.Services);
@@ -61,6 +62,9 @@ namespace TileTextureGenerator.Application
 
             // Manual registration for Views and ViewModels (MAUI best practice)
             RegisterViewsAndViewModels(services);
+
+            // Manual registration for infrastructure services
+            services.AddSingleton<TileTextureGenerator.Infrastructure.FileSystem.Transformation.TransformationImageService>();
 
             // Alternative: registration by prefix
             // services.RegisterDependenciesFromPrefix("TileTextureGenerator", enableLogging: true);

@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using TileTextureGenerator.Adapters.Persistence.Dto;
 using TileTextureGenerator.Adapters.Persistence.Ports.Output;
+using TileTextureGenerator.Core.Extensions;
 
 namespace TileTextureGenerator.Infrastructure.FileSystem.Project;
 
@@ -67,7 +68,7 @@ internal class ProjectPersister : IProjectPersister
                 Type = project.ProjectType,
                 Status = project.ProjectStatus
             };
-            jsonContent = JsonSerializer.Serialize(projectJson, new JsonSerializerOptions { WriteIndented = true });
+            jsonContent = JsonSerializer.Serialize(projectJson, JsonOptionsExtensions.GetDefaultOptions());
         }
 
         File.WriteAllText(projectFileName, jsonContent);
@@ -188,7 +189,7 @@ internal class ProjectPersister : IProjectPersister
                         jsonObject["DisplayImageFile"] = JsonSerializer.SerializeToElement(relativeImagePath);
                     }
 
-                    jsonContent = JsonSerializer.Serialize(jsonObject, new JsonSerializerOptions { WriteIndented = true });
+                    jsonContent = JsonSerializer.Serialize(jsonObject, JsonOptionsExtensions.GetDefaultOptions());
                 }
                 else
                 {
