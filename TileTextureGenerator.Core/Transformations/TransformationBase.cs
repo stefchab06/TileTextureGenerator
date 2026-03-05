@@ -10,6 +10,17 @@ namespace TileTextureGenerator.Core.Transformations;
 public abstract class TransformationBase
 {
     /// <summary>
+    /// Standard border width for blank flaps (in pixels).
+    /// </summary>
+    protected const float BlankBorderWidth = 2f;
+
+    /// <summary>
+    /// Maximum tile dimension in inches (for standard tiles).
+    /// Used to calculate DPI from image dimensions.
+    /// </summary>
+    protected const double MaxTileDimensionInInches = 2.0;
+
+    /// <summary>
     /// Unique identifier for this transformation instance.
     /// </summary>
     public Guid Id { get; set; } = Guid.NewGuid();

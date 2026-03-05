@@ -190,6 +190,7 @@ public class TransformationEntityJsonConverter : JsonConverter<TransformationEnt
 
     /// <summary>
     /// Serializes a single EdgeFlapConfiguration.
+    /// Note: TextureImage (byte[]) is not serialized - managed separately by persistence layer.
     /// </summary>
     private void SerializeEdgeFlapConfig(
         Utf8JsonWriter writer,
@@ -211,14 +212,8 @@ public class TransformationEntityJsonConverter : JsonConverter<TransformationEnt
             writer.WriteNull("Color");
         }
 
-        if (config.TextureWorkspacePath != null)
-        {
-            writer.WriteString("TextureWorkspacePath", config.TextureWorkspacePath);
-        }
-        else
-        {
-            writer.WriteNull("TextureWorkspacePath");
-        }
+        // TextureImage (byte[]) is NOT serialized here
+        // It's managed by the persistence layer separately
 
         writer.WriteEndObject();
     }
@@ -247,6 +242,7 @@ public class TransformationEntityJsonConverter : JsonConverter<TransformationEnt
 
     /// <summary>
     /// Deserializes a single EdgeFlapConfiguration.
+    /// Note: TextureImage will be loaded separately by the persistence layer.
     /// </summary>
     private EdgeFlapConfiguration DeserializeEdgeFlapConfig(JsonElement element)
     {
@@ -262,10 +258,7 @@ public class TransformationEntityJsonConverter : JsonConverter<TransformationEnt
             config.Color = color.GetString();
         }
 
-        if (element.TryGetProperty("TextureWorkspacePath", out var texPath) && texPath.ValueKind != JsonValueKind.Null)
-        {
-            config.TextureWorkspacePath = texPath.GetString();
-        }
+        // TextureImage will be loaded by the persistence layer
 
         return config;
     }

@@ -19,9 +19,9 @@ public class EdgeFlapConfiguration
     public string? Color { get; set; }
 
     /// <summary>
-    /// Relative path to texture image in Workspace/ directory when Mode = Texture.
-    /// Format: "guid.png"
+    /// Texture image data when Mode = Texture.
+    /// Not serialized in JSON - managed separately by the persistence layer.
     /// Null if not applicable.
     /// </summary>
-    public string? TextureWorkspacePath { get; set; }
+    public byte[]? TextureImage { get; set; }
 }
