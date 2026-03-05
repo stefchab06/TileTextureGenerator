@@ -65,6 +65,7 @@ namespace TileTextureGenerator.Application
 
             // Manual registration for infrastructure services
             services.AddSingleton<TileTextureGenerator.Infrastructure.FileSystem.Transformation.TransformationImageService>();
+            services.AddSingleton<TileTextureGenerator.Core.Ports.Output.INavigationService, TileTextureGenerator.Frontend.UI.Services.NavigationService>();
 
             // Alternative: registration by prefix
             // services.RegisterDependenciesFromPrefix("TileTextureGenerator", enableLogging: true);
@@ -75,10 +76,12 @@ namespace TileTextureGenerator.Application
             // ViewModels
             services.AddTransient<TileTextureGenerator.Frontend.UI.ViewModels.ProjectSelectorViewModel>();
             services.AddTransient<TileTextureGenerator.Frontend.UI.ViewModels.SingleTileTextureInitializationViewModel>();
+            services.AddTransient<TileTextureGenerator.Frontend.UI.ViewModels.TransformationsManagementViewModel>();
 
             // Views
             services.AddTransient<TileTextureGenerator.Frontend.UI.Views.ProjectSelectorView>();
             services.AddTransient<TileTextureGenerator.Frontend.UI.Views.SingleTileTextureInitializationView>();
+            services.AddTransient<TileTextureGenerator.Frontend.UI.Views.TransformationsManagementView>();
         }
     }
 }

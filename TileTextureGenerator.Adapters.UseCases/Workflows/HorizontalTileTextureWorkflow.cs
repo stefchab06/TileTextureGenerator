@@ -3,6 +3,7 @@ using TileTextureGenerator.Adapters.UseCases.Registries;
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Ports.Input;
+using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Services;
 
 namespace TileTextureGenerator.Adapters.UseCases.Workflows;
@@ -15,13 +16,16 @@ internal class HorizontalTileTextureWorkflow : IProjectWorkflow
 {
     private readonly IImageInitializationService _imageInitializationService;
     private readonly IImageProcessingService _imageProcessingService;
+    private readonly INavigationService _navigationService;
 
     public HorizontalTileTextureWorkflow(
         IImageInitializationService imageInitializationService,
-        IImageProcessingService imageProcessingService)
+        IImageProcessingService imageProcessingService,
+        INavigationService navigationService)
     {
         _imageInitializationService = imageInitializationService;
         _imageProcessingService = imageProcessingService;
+        _navigationService = navigationService;
     }
 
     public async Task InitializeAsync(TileTextureProjectBase project)
@@ -93,15 +97,12 @@ internal class HorizontalTileTextureWorkflow : IProjectWorkflow
         if (project is not HorizontalTileTextureProjectEntity horizontalProject)
             throw new ArgumentException($"Expected HorizontalTileTextureProjectEntity, got {project.GetType().Name}");
 
-        // TODO: Implement continue workflow
-        // - Show UI to add/modify/remove image transformations
-        // - Apply transformations to generate workspace images
-
-        await Task.CompletedTask;
-
 #if DEBUG
         System.Diagnostics.Debug.WriteLine($"[Workflow] Continuing horizontal tile project: {project.Name}");
 #endif
+
+        // Navigate to transformations management view
+        await _navigationService.NavigateToTransformationsManagementAsync(horizontalProject);
     }
 
     public async Task GeneratePdfAsync(TileTextureProjectBase project)

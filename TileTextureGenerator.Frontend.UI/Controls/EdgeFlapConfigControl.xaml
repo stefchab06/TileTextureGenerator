@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:enums="clr-namespace:TileTextureGenerator.Core.Enums;assembly=TileTextureGenerator.Core"
+             x:Class="TileTextureGenerator.Frontend.UI.Controls.EdgeFlapConfigControl">
+    
+    <Border StrokeThickness="1"
+            Stroke="{StaticResource Gray300}"
+            StrokeShape="RoundRectangle 8"
+            Padding="10"
+            Margin="0,5">
+        <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+            
+            <!-- Direction label -->
+            <Label Grid.Row="0"
+                   Text="{Binding DirectionLabel}"
+                   FontSize="16"
+                   FontAttributes="Bold"/>
+            
+            <!-- Mode picker -->
+            <HorizontalStackLayout Grid.Row="1" Spacing="10">
+                <Label Text="Mode:" VerticalOptions="Center" WidthRequest="60"/>
+                <Picker x:Name="ModePicker"
+                        ItemsSource="{Binding ModeOptions}"
+                        SelectedItem="{Binding SelectedMode}"
+                        WidthRequest="150"/>
+            </HorizontalStackLayout>
+            
+            <!-- Configuration based on mode -->
+            <StackLayout Grid.Row="2" Spacing="10">
+                
+                <!-- Color picker (visible when Mode = Color) -->
+                <HorizontalStackLayout Spacing="10" 
+                                       IsVisible="{Binding IsColorMode}">
+                    <Label Text="Color:" VerticalOptions="Center" WidthRequest="60"/>
+                    <Entry Text="{Binding ColorValue}"
+                           Placeholder="#808080"
+                           WidthRequest="100"/>
+                    <BoxView Color="{Binding ColorValue}"
+                             WidthRequest="30"
+                             HeightRequest="30"
+                             CornerRadius="4"/>
+                </HorizontalStackLayout>
+                
+                <!-- Texture picker (visible when Mode = Texture) -->
+                <HorizontalStackLayout Spacing="10"
+                                       IsVisible="{Binding IsTextureMode}">
+                    <Label Text="Texture:" VerticalOptions="Center" WidthRequest="60"/>
+                    <Button Text="Select Image"
+                            Command="{Binding SelectTextureCommand}"
+                            HorizontalOptions="Start"/>
+                    <Label Text="{Binding TextureFileName}"
+                           VerticalOptions="Center"
+                           TextColor="{StaticResource Gray600}"/>
+                </HorizontalStackLayout>
+                
+            </StackLayout>
+            
+        </Grid>
+    </Border>
+    
+</ContentView>

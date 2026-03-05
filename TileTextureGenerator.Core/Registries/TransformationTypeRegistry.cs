@@ -168,6 +168,63 @@ public static class TransformationTypeRegistry
     }
 
     /// <summary>
+    /// Gets the icon resource path for a transformation type.
+    /// Creates a temporary instance to retrieve the icon path.
+    /// </summary>
+    /// <param name="type">The transformation type</param>
+    /// <returns>The icon resource path</returns>
+    public static string GetIconResourcePath(Type type)
+    {
+        if (!type.IsSubclassOf(typeof(TransformationBase)))
+            return string.Empty;
+
+        try
+        {
+            var instance = (TransformationBase)Activator.CreateInstance(type)!;
+            return instance.GetIconResourcePath();
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Gets the icon resource path for a transformation type by name.
+    /// </summary>
+    /// <param name="typeName">The name of the transformation type</param>
+    /// <returns>The icon resource path</returns>
+    public static string GetIconResourcePath(string typeName)
+    {
+        var type = GetTypeByName(typeName);
+        return type != null ? GetIconResourcePath(type) : string.Empty;
+    }
+
+    /// <summary>
+    /// Gets available transformation types that can still be added to a project.
+    /// Filters out types that have reached their cardinality limit.
+    /// </summary>
+    /// <param name="existingTransformations">Existing transformations in the project</param>
+    /// <returns>List of available transformation types</returns>
+    public static IEnumerable<Type> GetAvailableTypes(
+        IEnumerable<Entities.TransformationEntity> existingTransformations)
+    {
+        EnsureInitialized();
+
+        var result = new List<Type>();
+
+        foreach (var type in _types.Values)
+        {
+            if (CanAddInstance(existingTransformations, type.Name))
+            {
+                result.Add(type);
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
     /// Clears all registrations. Primarily for testing purposes.
     /// </summary>
     internal static void Clear()
