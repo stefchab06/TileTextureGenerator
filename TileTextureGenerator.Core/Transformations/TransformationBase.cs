@@ -29,6 +29,7 @@ public abstract class TransformationBase
     /// Edge flap configurations for all four sides of the tile.
     /// Defines how borders (to be folded) should be rendered.
     /// </summary>
+    [TransformationProperty]
     public EdgeFlapsCollection EdgeFlaps { get; set; } = new();
 
     /// <summary>
@@ -65,6 +66,7 @@ public abstract class TransformationBase
 
     /// <summary>
     /// Serializes all properties marked with [TransformationProperty] to a dictionary.
+    /// Complex objects are pre-serialized to preserve JSON options.
     /// </summary>
     public virtual Dictionary<string, object> SerializeProperties()
     {
@@ -78,7 +80,23 @@ public abstract class TransformationBase
             var value = prop.GetValue(this);
             if (value != null)
             {
-                dict[prop.Name] = value;
+                // For complex objects (classes), serialize to JSON element to preserve options
+                if (prop.PropertyType.IsClass && prop.PropertyType != typeof(string))
+                {
+                    // Serialize to JSON string then parse to JsonElement
+                    var jsonString = System.Text.Json.JsonSerializer.Serialize(
+                        value,
+                        value.GetType(),
+                        Extensions.JsonOptionsExtensions.GetDefaultOptions());
+
+                    var jsonDoc = System.Text.Json.JsonDocument.Parse(jsonString);
+                    dict[prop.Name] = jsonDoc.RootElement.Clone();
+                }
+                else
+                {
+                    // Simple types can be added directly
+                    dict[prop.Name] = value;
+                }
             }
         }
         return dict;

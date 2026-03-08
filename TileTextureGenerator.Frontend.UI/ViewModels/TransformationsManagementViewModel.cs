@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using TileTextureGenerator.Adapters.Persistence.Ports.Output;
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Registries;
 
@@ -10,6 +11,7 @@ namespace TileTextureGenerator.Frontend.UI.ViewModels;
 public partial class TransformationsManagementViewModel : ObservableObject
 {
     private readonly HorizontalTileTextureProjectEntity _project;
+    private readonly IProjectPersister _projectPersister;
 
     [ObservableProperty]
     private ObservableCollection<TransformationTypeItem> _availableTypes = new();
@@ -20,9 +22,12 @@ public partial class TransformationsManagementViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<TransformationItemViewModel> _transformations = new();
 
-    public TransformationsManagementViewModel(HorizontalTileTextureProjectEntity project)
+    public TransformationsManagementViewModel(
+        HorizontalTileTextureProjectEntity project,
+        IProjectPersister projectPersister)
     {
         _project = project;
+        _projectPersister = projectPersister;
         LoadAvailableTypes();
         LoadTransformations();
     }
@@ -74,9 +79,13 @@ public partial class TransformationsManagementViewModel : ObservableObject
     {
         _transformations.Clear();
 
+        // Get project folder path
+        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var projectFolder = Path.Combine(appData, "TileTextureGenerator", _project.Name);
+
         foreach (var transformationEntity in _project.Transformations.OrderBy(t => t.DisplayOrder))
         {
-            var viewModel = new TransformationItemViewModel(transformationEntity, _project);
+            var viewModel = new TransformationItemViewModel(transformationEntity, _project, projectFolder);
             _transformations.Add(viewModel);
         }
     }
@@ -90,7 +99,9 @@ public partial class TransformationsManagementViewModel : ObservableObject
         // Open configuration view for the selected transformation type
         if (_selectedType.TypeName == "FlatHorizontalTransformation")
         {
-            var configViewModel = new FlatHorizontalTransformationConfigViewModel(_project);
+            var configViewModel = new FlatHorizontalTransformationConfigViewModel(
+                _project,
+                _projectPersister);
             var configView = new TileTextureGenerator.Frontend.UI.Views.FlatHorizontalTransformationConfigView(configViewModel);
             await Microsoft.Maui.Controls.Application.Current!.MainPage!.Navigation.PushAsync(configView);
         }
@@ -133,6 +144,7 @@ public partial class TransformationItemViewModel : ObservableObject
 {
     private readonly TransformationEntity _entity;
     private readonly HorizontalTileTextureProjectEntity _project;
+    private readonly string _projectFolder;
 
     [ObservableProperty]
     private string _displayName = string.Empty;
@@ -146,10 +158,14 @@ public partial class TransformationItemViewModel : ObservableObject
     [ObservableProperty]
     private bool _isGenerated;
 
-    public TransformationItemViewModel(TransformationEntity entity, HorizontalTileTextureProjectEntity project)
+    public TransformationItemViewModel(
+        TransformationEntity entity,
+        HorizontalTileTextureProjectEntity project,
+        string projectFolder)
     {
         _entity = entity;
         _project = project;
+        _projectFolder = projectFolder;
 
         LoadDisplayInfo();
     }
@@ -161,6 +177,10 @@ public partial class TransformationItemViewModel : ObservableObject
         {
             var transformation = TransformationTypeRegistry.Create(_entity.TransformationType);
             transformation.DeserializeProperties(_entity.Properties);
+
+            // Load EdgeFlap textures from workspace
+            LoadEdgeFlapTextures(transformation);
+
             _displayName = transformation.GetDisplayName();
             _iconResourcePath = transformation.GetIconResourcePath();
         }
@@ -173,6 +193,40 @@ public partial class TransformationItemViewModel : ObservableObject
         _isGenerated = _entity.IsGenerated;
 
         // TODO: Load generated image if exists
+    }
+
+    private async void LoadEdgeFlapTextures(Core.Transformations.TransformationBase transformation)
+    {
+        var directions = new[] {
+            Core.Enums.CardinalDirection.North,
+            Core.Enums.CardinalDirection.South,
+            Core.Enums.CardinalDirection.East,
+            Core.Enums.CardinalDirection.West
+        };
+
+        foreach (var direction in directions)
+        {
+            var config = transformation.EdgeFlaps[direction];
+
+            if (config.Mode == Core.Enums.EdgeFlapMode.Texture && !string.IsNullOrEmpty(config.Texture))
+            {
+                try
+                {
+                    // Texture path is relative to project folder (e.g., "Workspace\guid.png")
+                    var fullPath = Path.Combine(_projectFolder, config.Texture);
+
+                    if (File.Exists(fullPath))
+                    {
+                        var imageData = await File.ReadAllBytesAsync(fullPath);
+                        config.TextureImage = imageData;
+                    }
+                }
+                catch
+                {
+                    // Ignore errors loading individual textures
+                }
+            }
+        }
     }
 
     [RelayCommand]

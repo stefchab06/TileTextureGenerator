@@ -6,8 +6,12 @@
 - [ ] **Color Picker visuel** : Ajouter un vrai color picker au lieu d'une Entry hexa
   - Actuellement : Entry avec valeur hexa (#808080)
   - Souhaité : Dialog avec palette de couleurs visuelles
-  - Options : Package NuGet (ColorPicker control) ou custom control
+  - Options packages NuGet :
+    - `Plugin.Maui.ColorPicker` (https://github.com/nor0x/Maui.ColorPicker)
+    - `SimpleColorPicker.Maui`
   - Référence : `EdgeFlapConfigControl.xaml` ligne ~30
+  - Implémentation : Créer ColorPickerDialog ou utiliser package
+- [x] **Miniature texture** : Afficher preview de l'image texture sélectionnée ✅
 
 ### Image Snap Issues
 - [ ] **Snap au resize** : L'aimantation ne fonctionne pas pendant le redimensionnement

@@ -10,7 +10,8 @@ namespace TileTextureGenerator.Core.Extensions;
 /// </summary>
 public static class JsonOptionsExtensions
 {
-    private static JsonSerializerOptions? _defaultOptions;
+    // Force null to ensure cache is rebuilt with new settings
+    private static JsonSerializerOptions? _defaultOptions = null;
 
     /// <summary>
     /// Gets the default JsonSerializerOptions configured with all custom converters.
@@ -24,7 +25,7 @@ public static class JsonOptionsExtensions
             {
                 WriteIndented = true,
                 PropertyNameCaseInsensitive = true,
-                DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, // Omit null values
                 Converters =
                 {
                     new TransformationEntityJsonConverter(),

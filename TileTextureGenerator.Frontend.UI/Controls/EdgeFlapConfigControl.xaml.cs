@@ -43,6 +43,12 @@ public partial class EdgeFlapConfigViewModel : ObservableObject
     private string _textureFileName = "No texture selected";
 
     [ObservableProperty]
+    private bool _hasTextureImage;
+
+    [ObservableProperty]
+    private ImageSource? _textureImageSource;
+
+    [ObservableProperty]
     private bool _isColorMode;
 
     [ObservableProperty]
@@ -137,6 +143,12 @@ public partial class EdgeFlapConfigViewModel : ObservableObject
 
                 _textureFileName = result.FileName;
                 OnPropertyChanged(nameof(TextureFileName));
+
+                // Set image preview
+                _hasTextureImage = true;
+                _textureImageSource = ImageSource.FromStream(() => new MemoryStream(_config.TextureImage));
+                OnPropertyChanged(nameof(HasTextureImage));
+                OnPropertyChanged(nameof(TextureImageSource));
             }
         }
         catch (Exception ex)
