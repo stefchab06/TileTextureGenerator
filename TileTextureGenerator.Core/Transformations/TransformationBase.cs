@@ -116,11 +116,19 @@ public abstract class TransformationBase
             {
                 try
                 {
-                    // Handle JSON deserialization quirks (JsonElement, etc.)
                     object? value = kvp.Value;
-                    
-                    // Convert if needed
-                    if (value != null && value.GetType() != prop.PropertyType)
+
+                    // Handle JsonElement (result of SerializeProperties for complex objects)
+                    if (value is System.Text.Json.JsonElement jsonElement)
+                    {
+                        // Deserialize JsonElement back to the target type
+                        value = System.Text.Json.JsonSerializer.Deserialize(
+                            jsonElement.GetRawText(),
+                            prop.PropertyType,
+                            Extensions.JsonOptionsExtensions.GetDefaultOptions());
+                    }
+                    // Handle type conversion for simple types
+                    else if (value != null && value.GetType() != prop.PropertyType)
                     {
                         if (prop.PropertyType.IsEnum)
                         {

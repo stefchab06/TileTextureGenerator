@@ -72,6 +72,15 @@ public partial class EdgeFlapConfigViewModel : ObservableObject
         _selectedMode = config.Mode;
         _colorValue = config.Color ?? "#808080";
 
+        // Load texture preview if texture exists
+        if (config.Mode == EdgeFlapMode.Texture && config.TextureImage != null && config.TextureImage.Length > 0)
+        {
+            _hasTextureImage = true;
+            _textureImageSource = ImageSource.FromStream(() => new MemoryStream(config.TextureImage));
+            OnPropertyChanged(nameof(HasTextureImage));
+            OnPropertyChanged(nameof(TextureImageSource));
+        }
+
         OnPropertyChanged(nameof(DirectionLabel));
         OnPropertyChanged(nameof(SelectedMode));
         OnPropertyChanged(nameof(ColorValue));
@@ -96,6 +105,44 @@ public partial class EdgeFlapConfigViewModel : ObservableObject
         if (_config != null)
         {
             _config.Mode = newValue;
+
+            // Clear values that are not applicable to the new mode
+            switch (newValue)
+            {
+                case EdgeFlapMode.None:
+                case EdgeFlapMode.Blank:
+                case EdgeFlapMode.Symmetric:
+                    // These modes don't use color or texture
+                    _config.Color = null;
+                    _config.Texture = null;
+                    _config.TextureImage = null;
+                    _hasTextureImage = false;
+                    _textureImageSource = null;
+                    OnPropertyChanged(nameof(HasTextureImage));
+                    OnPropertyChanged(nameof(TextureImageSource));
+                    break;
+
+                case EdgeFlapMode.Color:
+                    // Color mode doesn't use texture
+                    _config.Texture = null;
+                    _config.TextureImage = null;
+                    _hasTextureImage = false;
+                    _textureImageSource = null;
+                    OnPropertyChanged(nameof(HasTextureImage));
+                    OnPropertyChanged(nameof(TextureImageSource));
+                    // Keep color or set default
+                    if (string.IsNullOrEmpty(_config.Color))
+                    {
+                        _config.Color = _colorValue;
+                    }
+                    break;
+
+                case EdgeFlapMode.Texture:
+                    // Texture mode doesn't use color
+                    _config.Color = null;
+                    // Keep existing texture if any
+                    break;
+            }
         }
 
         UpdateVisibility();

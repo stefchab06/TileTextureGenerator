@@ -25,20 +25,6 @@ public class TransformationEntity
     public Dictionary<string, object> Properties { get; set; } = new();
 
     /// <summary>
-    /// Paths to workspace images (relative to project Workspace/ directory).
-    /// Key = logical name (e.g., "fill_texture"), Value = filename (e.g., "a1b2c3d4.png")
-    /// These are intermediate images used during transformation execution.
-    /// </summary>
-    public Dictionary<string, string> WorkspaceImages { get; set; } = new();
-
-    /// <summary>
-    /// Path to the final output image (relative to project Output/ directory).
-    /// Example: "inclined_north_0_50.png"
-    /// Null if not yet generated.
-    /// </summary>
-    public string? OutputImagePath { get; set; }
-
-    /// <summary>
     /// Display order in the UI and PDF output.
     /// Lower numbers appear first.
     /// </summary>

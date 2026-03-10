@@ -49,9 +49,6 @@
                     <Button Text="Select Image"
                             Command="{Binding SelectTextureCommand}"
                             HorizontalOptions="Start"/>
-                    <Label Text="{Binding TextureFileName}"
-                           VerticalOptions="Center"
-                           TextColor="{StaticResource Gray600}"/>
                     <!-- Image preview -->
                     <Border StrokeThickness="1"
                             Stroke="{StaticResource Gray300}"
