@@ -12,7 +12,6 @@ public partial class TransformationsManagementViewModel : ObservableObject
 {
     private readonly HorizontalTileTextureProjectEntity _project;
     private readonly IProjectPersister _projectPersister;
-    private readonly string _projectFolder;
 
     [ObservableProperty]
     private ObservableCollection<TransformationTypeItem> _availableTypes = new();
@@ -29,11 +28,6 @@ public partial class TransformationsManagementViewModel : ObservableObject
     {
         _project = project;
         _projectPersister = projectPersister;
-
-        // Calculate project folder once
-        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        _projectFolder = Path.Combine(appData, "TileTextureGenerator", _project.Name);
-
         LoadAvailableTypes();
         LoadTransformations();
     }
@@ -85,94 +79,15 @@ public partial class TransformationsManagementViewModel : ObservableObject
     {
         _transformations.Clear();
 
+        // Get project folder path
+        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var projectFolder = Path.Combine(appData, "TileTextureGenerator", _project.Name);
+
         foreach (var transformationEntity in _project.Transformations.OrderBy(t => t.DisplayOrder))
         {
-            var viewModel = new TransformationItemViewModel(transformationEntity, _project, _projectFolder);
+            var viewModel = new TransformationItemViewModel(transformationEntity, _project, projectFolder);
             _transformations.Add(viewModel);
         }
-    }
-
-    [RelayCommand]
-    private async Task EditTransformationAsync(TransformationItemViewModel item)
-    {
-        // Find the corresponding entity
-        var entity = _project.Transformations.FirstOrDefault(t => t.Id == item.Entity.Id);
-        if (entity == null)
-            return;
-
-        // Hydrate the transformation with textures from disk
-        var hydratedTransformation = await HydrateTransformationWithTexturesAsync(entity);
-
-        // Open configuration view based on transformation type
-        if (entity.TransformationType == "FlatHorizontalTransformation")
-        {
-            var configViewModel = new FlatHorizontalTransformationConfigViewModel(
-                _project,
-                _projectPersister,
-                entity,
-                hydratedTransformation); // Pass the hydrated transformation
-            var configView = new TileTextureGenerator.Frontend.UI.Views.FlatHorizontalTransformationConfigView(configViewModel);
-            await Microsoft.Maui.Controls.Application.Current!.MainPage!.Navigation.PushAsync(configView);
-        }
-        else
-        {
-            // TODO: Handle other transformation types
-            await Microsoft.Maui.Controls.Application.Current!.MainPage!.DisplayAlert(
-                "Not Implemented",
-                $"Edit for {entity.TransformationType} not yet implemented",
-                "OK");
-        }
-
-        // Refresh list when returning
-        LoadAvailableTypes();
-        LoadTransformations();
-    }
-
-    private async Task<Core.Transformations.TransformationBase> HydrateTransformationWithTexturesAsync(TransformationEntity entity)
-    {
-        // Create transformation instance and deserialize
-        var transformation = TransformationTypeRegistry.Create(entity.TransformationType);
-        transformation.DeserializeProperties(entity.Properties);
-
-        // Load textures from disk
-        var directions = new[] {
-            Core.Enums.CardinalDirection.North,
-            Core.Enums.CardinalDirection.South,
-            Core.Enums.CardinalDirection.East,
-            Core.Enums.CardinalDirection.West
-        };
-
-        foreach (var direction in directions)
-        {
-            var config = transformation.EdgeFlaps[direction];
-
-            if (config.Mode == Core.Enums.EdgeFlapMode.Texture && !string.IsNullOrEmpty(config.Texture))
-            {
-                try
-                {
-                    var fullPath = Path.Combine(_projectFolder, config.Texture);
-                    System.Diagnostics.Debug.WriteLine($"[Hydrate] Loading {direction}: {fullPath}");
-
-                    if (File.Exists(fullPath))
-                    {
-                        var imageData = await File.ReadAllBytesAsync(fullPath);
-                        config.TextureImage = imageData;
-                        System.Diagnostics.Debug.WriteLine($"[Hydrate] Loaded {direction}: {imageData.Length} bytes");
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[Hydrate] File not found: {fullPath}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[Hydrate] Error loading {direction}: {ex.Message}");
-                }
-            }
-        }
-
-        // Return the hydrated transformation (don't re-serialize - would lose TextureImage!)
-        return transformation;
     }
 
     [RelayCommand]
@@ -230,8 +145,6 @@ public partial class TransformationItemViewModel : ObservableObject
     private readonly TransformationEntity _entity;
     private readonly HorizontalTileTextureProjectEntity _project;
     private readonly string _projectFolder;
-
-    public TransformationEntity Entity => _entity; // Expose for edit command
 
     [ObservableProperty]
     private string _displayName = string.Empty;

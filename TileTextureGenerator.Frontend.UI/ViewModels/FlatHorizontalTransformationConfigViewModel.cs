@@ -21,8 +21,7 @@ public partial class FlatHorizontalTransformationConfigViewModel : ObservableObj
     public FlatHorizontalTransformationConfigViewModel(
         HorizontalTileTextureProjectEntity project,
         IProjectPersister projectPersister,
-        TransformationEntity? existingEntity = null,
-        Core.Transformations.TransformationBase? hydratedTransformation = null)
+        TransformationEntity? existingEntity = null)
     {
         _project = project;
         _projectPersister = projectPersister;
@@ -31,20 +30,10 @@ public partial class FlatHorizontalTransformationConfigViewModel : ObservableObj
 
         if (_isEdit && _existingEntity != null)
         {
-            if (hydratedTransformation != null)
-            {
-                // Use the pre-hydrated transformation (already has TextureImage loaded)
-                Transformation = (FlatHorizontalTransformation)hydratedTransformation;
-                System.Diagnostics.Debug.WriteLine("[ConfigVM] Using hydrated transformation");
-            }
-            else
-            {
-                // Load existing transformation (textures will be missing - only for backward compat)
-                Transformation = (FlatHorizontalTransformation)TransformationTypeRegistry.Create(_existingEntity.TransformationType);
-                Transformation.DeserializeProperties(_existingEntity.Properties);
-                Transformation.Id = _existingEntity.Id;
-                System.Diagnostics.Debug.WriteLine("[ConfigVM] Deserialized from entity.Properties");
-            }
+            // Load existing transformation
+            Transformation = (FlatHorizontalTransformation)TransformationTypeRegistry.Create(_existingEntity.TransformationType);
+            Transformation.DeserializeProperties(_existingEntity.Properties);
+            Transformation.Id = _existingEntity.Id;
         }
         else
         {
@@ -54,24 +43,6 @@ public partial class FlatHorizontalTransformationConfigViewModel : ObservableObj
                 TileShape = _project.TileShape,
                 BaseTexture = _project.SourceImage
             };
-            System.Diagnostics.Debug.WriteLine("[ConfigVM] Created new transformation");
-        }
-
-        // Debug: Check if textures are loaded
-        var directions = new[] {
-            CardinalDirection.North,
-            CardinalDirection.South,
-            CardinalDirection.East,
-            CardinalDirection.West
-        };
-
-        foreach (var direction in directions)
-        {
-            var config = Transformation.EdgeFlaps[direction];
-            if (config.Mode == Core.Enums.EdgeFlapMode.Texture)
-            {
-                System.Diagnostics.Debug.WriteLine($"[ConfigVM] {direction}: Mode=Texture, Texture={config.Texture ?? "null"}, TextureImage={(config.TextureImage?.Length ?? 0)} bytes");
-            }
         }
     }
 
@@ -150,42 +121,29 @@ public partial class FlatHorizontalTransformationConfigViewModel : ObservableObj
     {
         var config = Transformation.EdgeFlaps[direction];
 
-        // Only process if mode is Texture
-        if (config.Mode == Core.Enums.EdgeFlapMode.Texture)
+        if (config.Mode == Core.Enums.EdgeFlapMode.Texture && config.TextureImage != null && config.TextureImage.Length > 0)
         {
-            // If we have new image data in memory, save it
-            if (config.TextureImage != null && config.TextureImage.Length > 0)
+            // Check if we already have a texture path (reuse existing file)
+            string filename;
+            if (!string.IsNullOrEmpty(config.Texture))
             {
-                // Check if we already have a texture path (reuse existing file)
-                string filename;
-                if (!string.IsNullOrEmpty(config.Texture))
-                {
-                    // Extract filename from existing path (e.g., "Workspace\guid.png" -> "guid.png")
-                    filename = Path.GetFileName(config.Texture);
-                }
-                else
-                {
-                    // Generate new GUID filename
-                    filename = $"{Guid.NewGuid()}.png";
-                }
-
-                // Save to Workspace folder
-                var workspaceDir = Path.Combine(projectFolder, "Workspace");
-                Directory.CreateDirectory(workspaceDir);
-                var fullPath = Path.Combine(workspaceDir, filename);
-                await File.WriteAllBytesAsync(fullPath, config.TextureImage);
-
-                // Store relative path in config
-                config.Texture = Path.Combine("Workspace", filename);
+                // Extract filename from existing path (e.g., "Workspace\guid.png" -> "guid.png")
+                filename = Path.GetFileName(config.Texture);
             }
-            // If no image data in memory but we have a path, preserve it (no changes)
-            // config.Texture is already set, nothing to do
-        }
-        else
-        {
-            // If mode is not Texture, clear the texture path and data
-            config.Texture = null;
-            config.TextureImage = null;
+            else
+            {
+                // Generate new GUID filename
+                filename = $"{Guid.NewGuid()}.png";
+            }
+
+            // Save to Workspace folder
+            var workspaceDir = Path.Combine(projectFolder, "Workspace");
+            Directory.CreateDirectory(workspaceDir);
+            var fullPath = Path.Combine(workspaceDir, filename);
+            await File.WriteAllBytesAsync(fullPath, config.TextureImage);
+
+            // Store relative path in config
+            config.Texture = Path.Combine("Workspace", filename);
         }
     }
 
