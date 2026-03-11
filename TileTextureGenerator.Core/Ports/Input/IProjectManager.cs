@@ -21,14 +21,14 @@ public interface IProjectManager
     /// <param name="name">Unique name for the project.</param>
     /// <param name="type">Type identifier registered in TextureProjectRegistry.</param>
     /// <returns>The newly created project entity.</returns>
-    Task<TileTextureProjectBase> CreateProjectAsync(string name, string type);
+    Task<ProjectBase> CreateProjectAsync(string name, string type);
 
     /// <summary>
     /// Selects and loads a project by name.
     /// </summary>
     /// <param name="name">Name of the project to load.</param>
     /// <returns>The loaded project entity.</returns>
-    Task<TileTextureProjectBase> SelectProjectAsync(string name);
+    Task<ProjectBase> SelectProjectAsync(string name);
 
     /// <summary>
     /// Deletes a project by name.

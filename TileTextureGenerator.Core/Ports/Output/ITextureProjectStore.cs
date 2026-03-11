@@ -14,14 +14,14 @@ public interface ITextureProjectStore
     /// Persists a project to storage.
     /// </summary>
     /// <param name="project">The project to save.</param>
-    Task SaveAsync(TileTextureProjectBase project);
+    Task SaveAsync(ProjectBase project);
 
     /// <summary>
     /// Loads a project by name from storage.
     /// </summary>
     /// <param name="projectName">Name of the project to load.</param>
     /// <returns>The loaded project, or null if not found.</returns>
-    Task<TileTextureProjectBase?> LoadAsync(string projectName);
+    Task<ProjectBase?> LoadAsync(string projectName);
 
     /// <summary>
     /// Deletes a project from storage.

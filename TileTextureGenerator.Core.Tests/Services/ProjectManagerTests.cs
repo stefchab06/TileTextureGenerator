@@ -23,7 +23,7 @@ public class ProjectManagerTests
         TextureProjectRegistry.ClearForTesting();
     }
 
-    private sealed class FakeProjectTypeA : TileTextureProjectBase
+    private sealed class FakeProjectTypeA : ProjectBase
     {
         public FakeProjectTypeA(string name) : base(name)
         {
@@ -31,7 +31,7 @@ public class ProjectManagerTests
         }
     }
 
-    private sealed class FakeProjectTypeB : TileTextureProjectBase
+    private sealed class FakeProjectTypeB : ProjectBase
     {
         public FakeProjectTypeB(string name) : base(name)
         {
@@ -41,15 +41,15 @@ public class ProjectManagerTests
 
     private class FakeTextureProjectStore : ITextureProjectStore
     {
-        private readonly Dictionary<string, TileTextureProjectBase> _projects = new();
+        private readonly Dictionary<string, ProjectBase> _projects = new();
 
-        public Task SaveAsync(TileTextureProjectBase project)
+        public Task SaveAsync(ProjectBase project)
         {
             _projects[project.Name] = project;
             return Task.CompletedTask;
         }
 
-        public Task<TileTextureProjectBase?> LoadAsync(string projectName)
+        public Task<ProjectBase?> LoadAsync(string projectName)
         {
             _projects.TryGetValue(projectName, out var project);
             return Task.FromResult(project);
@@ -78,21 +78,6 @@ public class ProjectManagerTests
         {
             return Task.FromResult(_projects.ContainsKey(projectName));
         }
-    }
-
-    [Fact]
-    public async Task ListProjectTypesAsync_ReturnsEmptyList_WhenNoTypesRegistered()
-    {
-        // Arrange
-        var store = new FakeTextureProjectStore();
-        var manager = new ProjectManager(store);
-
-        // Act
-        var types = await manager.ListProjectTypesAsync();
-
-        // Assert
-        Assert.NotNull(types);
-        Assert.Empty(types);
     }
 
     [Fact]

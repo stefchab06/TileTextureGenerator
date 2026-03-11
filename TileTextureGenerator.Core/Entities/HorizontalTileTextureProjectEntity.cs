@@ -7,7 +7,9 @@ namespace TileTextureGenerator.Core.Entities;
 
 public sealed class HorizontalTileTextureProjectEntity : TileTextureProjectBase
 {
-    // Auto-registration: identifier = class name
+    // NOTE: Auto-registration temporarily disabled during refactoring
+    // This class will be replaced by FloorTileProject
+    /*
     static HorizontalTileTextureProjectEntity()
     {
         TextureProjectRegistry.Register(
@@ -15,6 +17,7 @@ public sealed class HorizontalTileTextureProjectEntity : TileTextureProjectBase
             factory: (name) => new HorizontalTileTextureProjectEntity(name)
         );
     }
+    */
 
     /// <summary>
     /// Source image data (PNG format, full resolution)

@@ -10,13 +10,13 @@ namespace TileTextureGenerator.Core.Registries
 {
     public static class TextureProjectRegistry
     {
-        private static readonly Dictionary<string, Func<string, TileTextureProjectBase>> _factories
+        private static readonly Dictionary<string, Func<string, ProjectBase>> _factories
             = new(StringComparer.Ordinal);
 
         /// <summary>
-        /// Reister or replace a factory for a given key. The factory should create an instance of a TileTextureProjectBase subclass.
+        /// Register or replace a factory for a given key. The factory should create an instance of a ProjectBase subclass.
         /// </summary>
-        public static void Register(string key, Func<string, TileTextureProjectBase> factory)
+        public static void Register(string key, Func<string, ProjectBase> factory)
         {
             if (string.IsNullOrWhiteSpace(key))
                 throw new ArgumentException("Key cannot be empty.", nameof(key));
@@ -28,9 +28,9 @@ namespace TileTextureGenerator.Core.Registries
         }
 
         /// <summary>
-        /// create a TileTextureProjectBase instance using the factory associated with the given key. Throws if the key is not found.
+        /// Create a ProjectBase instance using the factory associated with the given key. Throws if the key is not found.
         /// </summary>
-        public static TileTextureProjectBase Create(string key, string name)
+        public static ProjectBase Create(string key, string name)
         {
             if (!_factories.TryGetValue(key, out var factory))
             {
@@ -58,7 +58,7 @@ namespace TileTextureGenerator.Core.Registries
 
         /// <summary>
         /// Force auto registration by triggering the static constructors of all non-abstract classes 
-        /// in the given assembly that derive from TileTextureProjectBase.
+        /// in the given assembly that derive from ProjectBase.
         /// </summary>
         public static void ForceAutoRegistration(Assembly assembly)
         {
@@ -69,7 +69,7 @@ namespace TileTextureGenerator.Core.Registries
                 .GetTypes()
                 .Where(t =>
                     t is { IsAbstract: false, IsClass: true } &&
-                    typeof(TileTextureProjectBase).IsAssignableFrom(t));
+                    typeof(ProjectBase).IsAssignableFrom(t));
 
             foreach (var type in projectTypes)
             {
@@ -78,13 +78,13 @@ namespace TileTextureGenerator.Core.Registries
             }
         }
 
-            /// <summary>
-            /// To be called from another namespace
-            /// </summary>
-            public static void ForceAutoRegistrationFromCore()
-            {
-                ForceAutoRegistration(typeof(TileTextureProjectBase).Assembly);
-            }
+        /// <summary>
+        /// To be called from another namespace
+        /// </summary>
+        public static void ForceAutoRegistrationFromCore()
+        {
+            ForceAutoRegistration(typeof(ProjectBase).Assembly);
+        }
 
             /// <summary>
             /// Clears all registered factories. Internal method for testing purposes only.

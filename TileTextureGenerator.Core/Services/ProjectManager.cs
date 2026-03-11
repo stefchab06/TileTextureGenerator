@@ -28,7 +28,7 @@ public class ProjectManager : IProjectManager
     }
 
     /// <inheritdoc />
-    public async Task<TileTextureProjectBase> CreateProjectAsync(string name, string type)
+    public async Task<ProjectBase> CreateProjectAsync(string name, string type)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(type);
@@ -58,7 +58,7 @@ public class ProjectManager : IProjectManager
     }
 
     /// <inheritdoc />
-    public async Task<TileTextureProjectBase> SelectProjectAsync(string name)
+    public async Task<ProjectBase> SelectProjectAsync(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
 
