@@ -52,9 +52,9 @@ namespace TileTextureGenerator.Core.Registries
         public static bool IsRegistered(string key) => _factories.ContainsKey(key);
 
         /// <summary>
-        /// indicate whether a factory is registered for the given key.
+        /// Returns all registered project type keys.
         /// </summary>
-        public static IReadOnlyList<string> GetRegisteredType() => _factories.Keys.ToList();
+        public static IReadOnlyList<string> GetRegisteredTypes() => _factories.Keys.ToList();
 
         /// <summary>
         /// Force auto registration by triggering the static constructors of all non-abstract classes 
@@ -78,12 +78,21 @@ namespace TileTextureGenerator.Core.Registries
             }
         }
 
-        /// <summary>
-        /// To be called from another namespace
-        /// </summary>
-        public static void ForceAutoRegistrationFromCore()
-        {
-            ForceAutoRegistration(typeof(TileTextureProjectBase).Assembly);
+            /// <summary>
+            /// To be called from another namespace
+            /// </summary>
+            public static void ForceAutoRegistrationFromCore()
+            {
+                ForceAutoRegistration(typeof(TileTextureProjectBase).Assembly);
+            }
+
+            /// <summary>
+            /// Clears all registered factories. Internal method for testing purposes only.
+            /// Accessible from test projects via InternalsVisibleTo.
+            /// </summary>
+            internal static void ClearForTesting()
+            {
+                _factories.Clear();
+            }
         }
-    }
 }

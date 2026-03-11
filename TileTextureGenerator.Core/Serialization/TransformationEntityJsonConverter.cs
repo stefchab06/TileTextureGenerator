@@ -32,11 +32,6 @@ public class TransformationEntityJsonConverter : JsonConverter<TransformationEnt
         };
 
         // Optional properties
-        if (root.TryGetProperty("OutputImagePath", out var outputPath) && outputPath.ValueKind != JsonValueKind.Null)
-        {
-            entity.OutputImagePath = outputPath.GetString();
-        }
-
         if (root.TryGetProperty("LastGeneratedDate", out var genDate) && genDate.ValueKind != JsonValueKind.Null)
         {
             entity.LastGeneratedDate = genDate.GetDateTime();

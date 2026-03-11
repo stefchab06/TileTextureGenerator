@@ -1,19 +1,46 @@
-﻿using TileTextureGenerator.Core.Entities;
+﻿using TileTextureGenerator.Core.DTOs;
+using TileTextureGenerator.Core.Entities;
 
-namespace TileTextureGenerator.Core.Ports.Output
+namespace TileTextureGenerator.Core.Ports.Output;
+
+/// <summary>
+/// Output port for project persistence operations.
+/// Provides simple, technical persistence methods without business logic.
+/// Implemented by persistence adapters (e.g., file system, database).
+/// </summary>
+public interface ITextureProjectStore
 {
-    public interface ITextureProjectStore
-    {
-        Task<TileTextureProjectBase> CreateNewProjectAsync(TileTextureProjectBase project);
-        Task<TileTextureProjectBase> OpenProjectAsync(TileTextureProjectBase project);
-        Task<TileTextureProjectBase> ArchiveProjectAsync(TileTextureProjectBase project);
-        Task<bool> DeleteProjectAsync(string projectName);
-        Task<IReadOnlyList<TileTextureProjectBase>> LoadProjectListAsync();
-        Task<bool> SaveProjectAsync(TileTextureProjectBase project);
+    /// <summary>
+    /// Persists a project to storage.
+    /// </summary>
+    /// <param name="project">The project to save.</param>
+    Task SaveAsync(TileTextureProjectBase project);
 
-        /// <summary>
-        /// Loads lightweight project summaries for list display (no full entity instantiation)
-        /// </summary>
-        Task<IReadOnlyList<TileTextureProjectSummary>> LoadProjectSummariesAsync();
-    }
+    /// <summary>
+    /// Loads a project by name from storage.
+    /// </summary>
+    /// <param name="projectName">Name of the project to load.</param>
+    /// <returns>The loaded project, or null if not found.</returns>
+    Task<TileTextureProjectBase?> LoadAsync(string projectName);
+
+    /// <summary>
+    /// Deletes a project from storage.
+    /// </summary>
+    /// <param name="projectName">Name of the project to delete.</param>
+    Task DeleteAsync(string projectName);
+
+    /// <summary>
+    /// Checks whether a project exists in storage.
+    /// </summary>
+    /// <param name="projectName">Name of the project to check.</param>
+    /// <returns>True if the project exists, false otherwise.</returns>
+    Task<bool> ExistsAsync(string projectName);
+
+    /// <summary>
+    /// Retrieves a list of all projects in storage.
+    /// Returns lightweight DTOs for display purposes.
+    /// </summary>
+    /// <returns>Read-only list of project DTOs.</returns>
+    Task<IReadOnlyList<ProjectDto>> ListProjectsAsync();
 }
+

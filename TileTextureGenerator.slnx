@@ -1,10 +1,4 @@
 <Solution>
-  <Project Path="TileTextureGenerator.Adapters.Persistence/TileTextureGenerator.Adapters.Persistence.csproj" Id="d0851d1a-3db2-47b4-9c7d-48c02faa7997" />
-  <Project Path="TileTextureGenerator.Adapters.UseCases/TileTextureGenerator.Adapters.UseCases.csproj" Id="bd208061-0388-4f45-a674-55176a92a6de" />
-  <Project Path="TileTextureGenerator.Application/TileTextureGenerator.Application.csproj">
-    <Deploy Solution="Debug|*" />
-  </Project>
-  <Project Path="TileTextureGenerator.Core/TileTextureGenerator.Core.csproj" Id="637fe806-d4ea-487d-ae0c-c597e50ac400" />
-  <Project Path="TileTextureGenerator.Frontend.UI/TileTextureGenerator.Frontend.UI.csproj" Id="2219d4e8-c413-43bf-befc-b5b001b54bb4" />
-  <Project Path="TileTextureGenerator.Infrastructure.FileSystem/TileTextureGenerator.Infrastructure.FileSystem.csproj" Id="e6ee7940-0e9a-4826-b527-363407fb3fd5" />
+  <Project Path="TileTextureGenerator.Core\TileTextureGenerator.Core.csproj" />
+  <Project Path="TileTextureGenerator.Core.Tests\TileTextureGenerator.Core.Tests.csproj" />
 </Solution>
