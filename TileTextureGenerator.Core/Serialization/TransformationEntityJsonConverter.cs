@@ -48,13 +48,6 @@ public class TransformationEntityJsonConverter : JsonConverter<TransformationEnt
             entity.Properties = DeserializeProperties(propsElement);
         }
 
-        // Deserialize WorkspaceImages dictionary
-        if (root.TryGetProperty("WorkspaceImages", out var imgElement))
-        {
-            entity.WorkspaceImages = JsonSerializer.Deserialize<Dictionary<string, string>>(
-                imgElement.GetRawText(), options) ?? new Dictionary<string, string>();
-        }
-
         return entity;
     }
 
@@ -72,16 +65,6 @@ public class TransformationEntityJsonConverter : JsonConverter<TransformationEnt
         writer.WriteString("CreatedDate", value.CreatedDate);
         writer.WriteString("ModifiedDate", value.ModifiedDate);
 
-        // Optional OutputImagePath
-        if (value.OutputImagePath != null)
-        {
-            writer.WriteString("OutputImagePath", value.OutputImagePath);
-        }
-        else
-        {
-            writer.WriteNull("OutputImagePath");
-        }
-
         // Optional LastGeneratedDate
         if (value.LastGeneratedDate.HasValue)
         {
@@ -95,10 +78,6 @@ public class TransformationEntityJsonConverter : JsonConverter<TransformationEnt
         // Serialize Properties dictionary
         writer.WritePropertyName("Properties");
         SerializeProperties(writer, value.Properties, options);
-
-        // Serialize WorkspaceImages dictionary
-        writer.WritePropertyName("WorkspaceImages");
-        JsonSerializer.Serialize(writer, value.WorkspaceImages, options);
 
         writer.WriteEndObject();
     }
