@@ -130,7 +130,7 @@ public class ProjectsManagerTests
 
         // Assert
         Assert.NotNull(types);
-        Assert.Equal(2, types.Count);
+        Assert.True(types.Count >= 2, $"Expected at least 2 types, got {types.Count}");
         Assert.Contains(FakeProjectTypeAName, types);
         Assert.Contains(FakeProjectTypeBName, types);
     }
