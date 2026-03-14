@@ -53,6 +53,12 @@ public abstract class ProjectBase : IProjectManager
     public DateTime LastModifiedDate { get; set; } = DateTime.UtcNow;
 
     /// <summary>
+    /// List of transformations configured for this project.
+    /// Each transformation generates one output image.
+    /// </summary>
+    public List<TransformationEntity> Transformations { get; set; } = [];
+
+    /// <summary>
     /// Constructor with dependency injection.
     /// Store is injected by DI container.
     /// </summary>
@@ -108,11 +114,56 @@ public abstract class ProjectBase : IProjectManager
     }
 
     /// <inheritdoc />
-    public abstract Task AddTransformationAsync(TransformationEntity transformation);
+    public virtual async Task AddTransformationAsync(TransformationEntity transformation)
+    {
+        ArgumentNullException.ThrowIfNull(transformation);
+
+        if (Transformations.Any(t => t.Id == transformation.Id))
+            throw new InvalidOperationException($"Transformation with ID '{transformation.Id}' already exists.");
+
+        transformation.DisplayOrder = Transformations.Count;
+        Transformations.Add(transformation);
+        await SaveChangesAsync();
+    }
 
     /// <inheritdoc />
-    public abstract Task RemoveTransformationAsync(Guid transformationId);
+    public virtual async Task RemoveTransformationAsync(Guid transformationId)
+    {
+        var transformation = Transformations.FirstOrDefault(t => t.Id == transformationId);
+        if (transformation == null)
+            throw new InvalidOperationException($"Transformation with ID '{transformationId}' not found.");
+
+        Transformations.Remove(transformation);
+
+        // Reorder remaining transformations
+        for (int i = 0; i < Transformations.Count; i++)
+        {
+            Transformations[i].DisplayOrder = i;
+        }
+
+        await SaveChangesAsync();
+    }
 
     /// <inheritdoc />
-    public abstract Task ReorderTransformationsAsync(IReadOnlyList<Guid> newOrder);
+    public virtual async Task ReorderTransformationsAsync(IReadOnlyList<Guid> newOrder)
+    {
+        ArgumentNullException.ThrowIfNull(newOrder);
+
+        if (newOrder.Count != Transformations.Count)
+            throw new ArgumentException("New order must contain all transformation IDs.", nameof(newOrder));
+
+        var reordered = new List<TransformationEntity>();
+        foreach (var id in newOrder)
+        {
+            var transformation = Transformations.FirstOrDefault(t => t.Id == id);
+            if (transformation == null)
+                throw new ArgumentException($"Transformation with ID '{id}' not found.", nameof(newOrder));
+
+            transformation.DisplayOrder = reordered.Count;
+            reordered.Add(transformation);
+        }
+
+        Transformations = reordered;
+        await SaveChangesAsync();
+    }
 }

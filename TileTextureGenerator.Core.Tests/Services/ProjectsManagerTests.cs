@@ -35,10 +35,6 @@ public class ProjectsManagerTests
         public FakeProjectTypeA(IProjectStore<ProjectBase> store) : base(store)
         {
         }
-
-        public override Task AddTransformationAsync(TransformationEntity transformation) => Task.CompletedTask;
-        public override Task RemoveTransformationAsync(Guid transformationId) => Task.CompletedTask;
-        public override Task ReorderTransformationsAsync(IReadOnlyList<Guid> newOrder) => Task.CompletedTask;
     }
 
     private sealed class FakeProjectTypeB : ProjectBase
@@ -46,10 +42,6 @@ public class ProjectsManagerTests
         public FakeProjectTypeB(IProjectStore<ProjectBase> store) : base(store)
         {
         }
-
-        public override Task AddTransformationAsync(TransformationEntity transformation) => Task.CompletedTask;
-        public override Task RemoveTransformationAsync(Guid transformationId) => Task.CompletedTask;
-        public override Task ReorderTransformationsAsync(IReadOnlyList<Guid> newOrder) => Task.CompletedTask;
     }
 
     private class FakeProjectStore : IProjectStore<ProjectBase>

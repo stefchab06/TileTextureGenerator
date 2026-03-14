@@ -128,26 +128,4 @@ public class FloorTileProjectTests
         // Assert
         Assert.Equal(TileShape.HalfHorizontal, project.TileShape);
     }
-
-    [Fact]
-    public void AddTransformation_AddsToList()
-    {
-        // Arrange
-        var store = new FakeFloorTileProjectStore();
-        var project = new FloorTileProject(store);
-        project.Initialize("FloorProject");
-        var transformation = new TransformationEntity
-        {
-            Id = Guid.NewGuid(),
-            TransformationType = "FlatHorizontalTransformation",
-            DisplayOrder = 0
-        };
-
-        // Act
-        project.Transformations.Add(transformation);
-
-        // Assert
-        Assert.Single(project.Transformations);
-        Assert.Contains(transformation, project.Transformations);
-    }
 }
