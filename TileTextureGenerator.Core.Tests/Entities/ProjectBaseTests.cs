@@ -1,5 +1,6 @@
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Enums;
+using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Services;
 
 namespace TileTextureGenerator.Core.Tests.Entities;
@@ -12,10 +13,30 @@ public class ProjectBaseTests
 {
     private sealed class TestProject : ProjectBase
     {
-        public TestProject(string name) : base(name)
+        public TestProject(IProjectStore<ProjectBase> store) : base(store)
         {
-            Type = nameof(TestProject);
         }
+
+        public override Task AddTransformationAsync(TransformationEntity transformation)
+        {
+            return Task.CompletedTask;
+        }
+
+        public override Task RemoveTransformationAsync(Guid transformationId)
+        {
+            return Task.CompletedTask;
+        }
+
+        public override Task ReorderTransformationsAsync(IReadOnlyList<Guid> newOrder)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    private class FakeProjectStore : IProjectStore<ProjectBase>
+    {
+        public Task SaveAsync(ProjectBase project) => Task.CompletedTask;
+        public Task<ProjectBase?> LoadAsync(string projectName) => Task.FromResult<ProjectBase?>(null);
     }
 
     private class FakeImageProcessingService : IImageProcessingService
@@ -34,8 +55,12 @@ public class ProjectBaseTests
     [Fact]
     public void Constructor_WithValidName_SetsName()
     {
-        // Arrange & Act
-        var project = new TestProject("MyProject");
+        // Arrange
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+
+        // Act
+        project.Initialize("MyProject");
 
         // Assert
         Assert.Equal("MyProject", project.Name);
@@ -45,29 +70,45 @@ public class ProjectBaseTests
     [Fact]
     public void Constructor_WithNullName_ThrowsArgumentNullException()
     {
+        // Arrange
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new TestProject(null!));
+        Assert.Throws<ArgumentNullException>(() => project.Initialize(null!));
     }
 
     [Fact]
     public void Constructor_WithEmptyName_ThrowsArgumentException()
     {
+        // Arrange
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new TestProject(""));
+        Assert.Throws<ArgumentException>(() => project.Initialize(""));
     }
 
     [Fact]
     public void Constructor_WithWhitespaceName_ThrowsArgumentException()
     {
+        // Arrange
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new TestProject("   "));
+        Assert.Throws<ArgumentException>(() => project.Initialize("   "));
     }
 
     [Fact]
     public void Constructor_SetsDefaultStatus()
     {
-        // Arrange & Act
-        var project = new TestProject("TestProject");
+        // Arrange
+        var store = new FakeProjectStore();
+
+        // Act
+        var project = new TestProject(store);
+        project.Initialize("TestProject");
 
         // Assert
         Assert.Equal(ProjectStatus.Unexisting, project.Status);
@@ -77,10 +118,12 @@ public class ProjectBaseTests
     public void Constructor_SetsLastModifiedDateToNow()
     {
         // Arrange
+        var store = new FakeProjectStore();
         var before = DateTime.UtcNow;
 
         // Act
-        var project = new TestProject("TestProject");
+        var project = new TestProject(store);
+        project.Initialize("TestProject");
 
         // Assert
         var after = DateTime.UtcNow;
@@ -91,7 +134,9 @@ public class ProjectBaseTests
     public void Status_CanBeModified()
     {
         // Arrange
-        var project = new TestProject("TestProject");
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+        project.Initialize("TestProject");
 
         // Act
         project.Status = ProjectStatus.Generated;
@@ -104,7 +149,9 @@ public class ProjectBaseTests
     public void SetDisplayImage_WithValidData_SetsDisplayImage()
     {
         // Arrange
-        var project = new TestProject("TestProject");
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+        project.Initialize("TestProject");
         var imageData = new byte[] { 1, 2, 3, 4 };
         var imageProcessor = new FakeImageProcessingService();
 
@@ -120,7 +167,9 @@ public class ProjectBaseTests
     public void SetDisplayImage_WithNullData_ThrowsArgumentException()
     {
         // Arrange
-        var project = new TestProject("TestProject");
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+        project.Initialize("TestProject");
         var imageProcessor = new FakeImageProcessingService();
 
         // Act & Assert
@@ -131,7 +180,9 @@ public class ProjectBaseTests
     public void SetDisplayImage_WithEmptyData_ThrowsArgumentException()
     {
         // Arrange
-        var project = new TestProject("TestProject");
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+        project.Initialize("TestProject");
         var imageProcessor = new FakeImageProcessingService();
 
         // Act & Assert
@@ -142,7 +193,9 @@ public class ProjectBaseTests
     public void SetDisplayImage_WithNullProcessor_ThrowsArgumentNullException()
     {
         // Arrange
-        var project = new TestProject("TestProject");
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+        project.Initialize("TestProject");
         var imageData = new byte[] { 1, 2, 3, 4 };
 
         // Act & Assert

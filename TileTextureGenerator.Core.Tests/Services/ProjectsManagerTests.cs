@@ -9,37 +9,56 @@ using TileTextureGenerator.Core.Services;
 namespace TileTextureGenerator.Core.Tests.Services;
 
 /// <summary>
-/// Unit tests for ProjectManager service.
-/// Tests project lifecycle: list types, create, select, delete, list projects.
+/// Unit tests for ProjectsManager service.
+/// Tests projects collection lifecycle: list types, create, select, delete, list projects.
 /// </summary>
-public class ProjectManagerTests
+public class ProjectsManagerTests
 {
     private const string FakeProjectTypeAName = "FakeProjectTypeA";
     private const string FakeProjectTypeBName = "FakeProjectTypeB";
 
-    public ProjectManagerTests()
+    public ProjectsManagerTests()
     {
         // Clear registry before each test to ensure isolation
         TextureProjectRegistry.ClearForTesting();
+
+        // Setup fake factory that creates projects with fake stores
+        TextureProjectRegistry.SetFactory(type =>
+        {
+            var store = new FakeProjectStore();
+            return (ProjectBase)Activator.CreateInstance(type, store)!;
+        });
     }
 
     private sealed class FakeProjectTypeA : ProjectBase
     {
-        public FakeProjectTypeA(string name) : base(name)
+        public FakeProjectTypeA(IProjectStore<ProjectBase> store) : base(store)
         {
-            Type = FakeProjectTypeAName;
         }
+
+        public override Task AddTransformationAsync(TransformationEntity transformation) => Task.CompletedTask;
+        public override Task RemoveTransformationAsync(Guid transformationId) => Task.CompletedTask;
+        public override Task ReorderTransformationsAsync(IReadOnlyList<Guid> newOrder) => Task.CompletedTask;
     }
 
     private sealed class FakeProjectTypeB : ProjectBase
     {
-        public FakeProjectTypeB(string name) : base(name)
+        public FakeProjectTypeB(IProjectStore<ProjectBase> store) : base(store)
         {
-            Type = FakeProjectTypeBName;
         }
+
+        public override Task AddTransformationAsync(TransformationEntity transformation) => Task.CompletedTask;
+        public override Task RemoveTransformationAsync(Guid transformationId) => Task.CompletedTask;
+        public override Task ReorderTransformationsAsync(IReadOnlyList<Guid> newOrder) => Task.CompletedTask;
     }
 
-    private class FakeTextureProjectStore : ITextureProjectStore
+    private class FakeProjectStore : IProjectStore<ProjectBase>
+    {
+        public Task SaveAsync(ProjectBase project) => Task.CompletedTask;
+        public Task<ProjectBase?> LoadAsync(string projectName) => Task.FromResult<ProjectBase?>(null);
+    }
+
+    private class FakeProjectsStore : IProjectsStore
     {
         private readonly Dictionary<string, ProjectBase> _projects = new();
 
@@ -84,9 +103,9 @@ public class ProjectManagerTests
     public async Task ListProjectTypesAsync_ReturnsOneType_WhenOneTypeRegistered()
     {
         // Arrange
-        TextureProjectRegistry.Register(FakeProjectTypeAName, name => new FakeProjectTypeA(name));
-        var store = new FakeTextureProjectStore();
-        var manager = new ProjectManager(store);
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
 
         // Act
         var types = await manager.ListProjectTypesAsync();
@@ -101,10 +120,10 @@ public class ProjectManagerTests
     public async Task ListProjectTypesAsync_ReturnsTwoTypes_WhenTwoTypesRegistered()
     {
         // Arrange
-        TextureProjectRegistry.Register(FakeProjectTypeAName, name => new FakeProjectTypeA(name));
-        TextureProjectRegistry.Register(FakeProjectTypeBName, name => new FakeProjectTypeB(name));
-        var store = new FakeTextureProjectStore();
-        var manager = new ProjectManager(store);
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        TextureProjectRegistry.RegisterType<FakeProjectTypeB>();
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
 
         // Act
         var types = await manager.ListProjectTypesAsync();
@@ -120,9 +139,9 @@ public class ProjectManagerTests
     public async Task CreateProjectAsync_WithValidTypeAndName_CreatesProject()
     {
         // Arrange
-        TextureProjectRegistry.Register(FakeProjectTypeAName, name => new FakeProjectTypeA(name));
-        var store = new FakeTextureProjectStore();
-        var manager = new ProjectManager(store);
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
         var projectName = "TestProject";
 
         // Act
@@ -139,8 +158,8 @@ public class ProjectManagerTests
     public async Task CreateProjectAsync_WithInvalidType_ThrowsArgumentException()
     {
         // Arrange
-        var store = new FakeTextureProjectStore();
-        var manager = new ProjectManager(store);
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(
@@ -151,9 +170,9 @@ public class ProjectManagerTests
     public async Task CreateProjectAsync_WithExistingName_ThrowsInvalidOperationException()
     {
         // Arrange
-        TextureProjectRegistry.Register(FakeProjectTypeAName, name => new FakeProjectTypeA(name));
-        var store = new FakeTextureProjectStore();
-        var manager = new ProjectManager(store);
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
         var projectName = "DuplicateProject";
 
         await manager.CreateProjectAsync(projectName, FakeProjectTypeAName);
@@ -167,8 +186,8 @@ public class ProjectManagerTests
     public async Task ListProjectsAsync_ReturnsEmptyList_WhenNoProjects()
     {
         // Arrange
-        var store = new FakeTextureProjectStore();
-        var manager = new ProjectManager(store);
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
 
         // Act
         var projects = await manager.ListProjectsAsync();
@@ -182,10 +201,10 @@ public class ProjectManagerTests
     public async Task ListProjectsAsync_ReturnsAllProjects_AfterCreation()
     {
         // Arrange
-        TextureProjectRegistry.Register(FakeProjectTypeAName, name => new FakeProjectTypeA(name));
-        TextureProjectRegistry.Register(FakeProjectTypeBName, name => new FakeProjectTypeB(name));
-        var store = new FakeTextureProjectStore();
-        var manager = new ProjectManager(store);
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        TextureProjectRegistry.RegisterType<FakeProjectTypeB>();
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
 
         await manager.CreateProjectAsync("Project1", FakeProjectTypeAName);
         await manager.CreateProjectAsync("Project2", FakeProjectTypeBName);
@@ -203,9 +222,9 @@ public class ProjectManagerTests
     public async Task SelectProjectAsync_WithExistingProject_ReturnsProject()
     {
         // Arrange
-        TextureProjectRegistry.Register(FakeProjectTypeAName, name => new FakeProjectTypeA(name));
-        var store = new FakeTextureProjectStore();
-        var manager = new ProjectManager(store);
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
         var projectName = "ExistingProject";
 
         await manager.CreateProjectAsync(projectName, FakeProjectTypeAName);
@@ -222,8 +241,8 @@ public class ProjectManagerTests
     public async Task SelectProjectAsync_WithNonExistingProject_ThrowsInvalidOperationException()
     {
         // Arrange
-        var store = new FakeTextureProjectStore();
-        var manager = new ProjectManager(store);
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(
@@ -234,9 +253,9 @@ public class ProjectManagerTests
     public async Task DeleteProjectAsync_RemovesProject()
     {
         // Arrange
-        TextureProjectRegistry.Register(FakeProjectTypeAName, name => new FakeProjectTypeA(name));
-        var store = new FakeTextureProjectStore();
-        var manager = new ProjectManager(store);
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
         var projectName = "ProjectToDelete";
 
         await manager.CreateProjectAsync(projectName, FakeProjectTypeAName);
@@ -253,8 +272,8 @@ public class ProjectManagerTests
     public async Task DeleteProjectAsync_WithNonExistingProject_ThrowsInvalidOperationException()
     {
         // Arrange
-        var store = new FakeTextureProjectStore();
-        var manager = new ProjectManager(store);
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(

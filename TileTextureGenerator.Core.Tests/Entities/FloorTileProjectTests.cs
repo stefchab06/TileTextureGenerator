@@ -1,5 +1,6 @@
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Enums;
+using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Registries;
 
 namespace TileTextureGenerator.Core.Tests.Entities;
@@ -10,12 +11,18 @@ namespace TileTextureGenerator.Core.Tests.Entities;
 /// </summary>
 public class FloorTileProjectTests
 {
+    private class FakeFloorTileProjectStore : IProjectStore<FloorTileProject>
+    {
+        public Task SaveAsync(FloorTileProject project) => Task.CompletedTask;
+        public Task<FloorTileProject?> LoadAsync(string projectName) => Task.FromResult<FloorTileProject?>(null);
+    }
+
     [Fact]
     public void StaticConstructor_RegistersTypeInRegistry()
     {
         // Arrange - Clear first, then manually register (static constructor already ran)
         TextureProjectRegistry.ClearForTesting();
-        TextureProjectRegistry.Register(nameof(FloorTileProject), name => new FloorTileProject(name));
+        TextureProjectRegistry.RegisterType<FloorTileProject>();
 
         // Act
         var isRegistered = TextureProjectRegistry.IsRegistered(nameof(FloorTileProject));
@@ -27,9 +34,14 @@ public class FloorTileProjectTests
     [Fact]
     public void Registry_CanCreateFloorTileProject()
     {
-        // Arrange - Clear first, then manually register
+        // Arrange - Clear first, then setup
         TextureProjectRegistry.ClearForTesting();
-        TextureProjectRegistry.Register(nameof(FloorTileProject), name => new FloorTileProject(name));
+        TextureProjectRegistry.SetFactory(type => 
+        {
+            var store = new FakeFloorTileProjectStore();
+            return (ProjectBase)Activator.CreateInstance(type, store)!;
+        });
+        TextureProjectRegistry.RegisterType<FloorTileProject>();
         var projectName = "RegistryTest";
 
         // Act
@@ -44,8 +56,12 @@ public class FloorTileProjectTests
     [Fact]
     public void Constructor_SetsTypeCorrectly()
     {
-        // Arrange & Act
-        var project = new FloorTileProject("FloorProject");
+        // Arrange
+        var store = new FakeFloorTileProjectStore();
+
+        // Act
+        var project = new FloorTileProject(store);
+        project.Initialize("FloorProject");
 
         // Assert
         Assert.Equal(nameof(FloorTileProject), project.Type);
@@ -54,8 +70,12 @@ public class FloorTileProjectTests
     [Fact]
     public void Constructor_InitializesEmptyTransformationsList()
     {
-        // Arrange & Act
-        var project = new FloorTileProject("FloorProject");
+        // Arrange
+        var store = new FakeFloorTileProjectStore();
+
+        // Act
+        var project = new FloorTileProject(store);
+        project.Initialize("FloorProject");
 
         // Assert
         Assert.NotNull(project.Transformations);
@@ -65,8 +85,12 @@ public class FloorTileProjectTests
     [Fact]
     public void Constructor_SetsDefaultTileShapeToFull()
     {
-        // Arrange & Act
-        var project = new FloorTileProject("FloorProject");
+        // Arrange
+        var store = new FakeFloorTileProjectStore();
+
+        // Act
+        var project = new FloorTileProject(store);
+        project.Initialize("FloorProject");
 
         // Assert
         Assert.Equal(TileShape.Full, project.TileShape);
@@ -76,7 +100,9 @@ public class FloorTileProjectTests
     public void SourceImage_CanBeSet()
     {
         // Arrange
-        var project = new FloorTileProject("FloorProject");
+        var store = new FakeFloorTileProjectStore();
+        var project = new FloorTileProject(store);
+        project.Initialize("FloorProject");
         var imageData = new byte[] { 1, 2, 3, 4, 5 };
 
         // Act
@@ -91,7 +117,9 @@ public class FloorTileProjectTests
     public void TileShape_CanBeModified()
     {
         // Arrange
-        var project = new FloorTileProject("FloorProject");
+        var store = new FakeFloorTileProjectStore();
+        var project = new FloorTileProject(store);
+        project.Initialize("FloorProject");
 
         // Act
         project.TileShape = TileShape.HalfHorizontal;
@@ -104,7 +132,9 @@ public class FloorTileProjectTests
     public void AddTransformation_AddsToList()
     {
         // Arrange
-        var project = new FloorTileProject("FloorProject");
+        var store = new FakeFloorTileProjectStore();
+        var project = new FloorTileProject(store);
+        project.Initialize("FloorProject");
         var transformation = new TransformationEntity
         {
             Id = Guid.NewGuid(),
