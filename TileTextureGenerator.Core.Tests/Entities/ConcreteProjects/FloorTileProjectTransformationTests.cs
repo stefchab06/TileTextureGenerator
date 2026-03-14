@@ -1,8 +1,9 @@
 using TileTextureGenerator.Core.Entities;
+using TileTextureGenerator.Core.Entities.ConcreteProjects;
 using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Ports.Output;
 
-namespace TileTextureGenerator.Core.Tests.Entities;
+namespace TileTextureGenerator.Core.Tests.Entities.ConcreteProjects;
 
 /// <summary>
 /// Unit tests for FloorTileProject transformation management.

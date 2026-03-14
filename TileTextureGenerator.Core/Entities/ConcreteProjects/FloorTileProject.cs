@@ -2,7 +2,7 @@ using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Registries;
 
-namespace TileTextureGenerator.Core.Entities;
+namespace TileTextureGenerator.Core.Entities.ConcreteProjects;
 
 /// <summary>
 /// Concrete project entity for floor tile texture generation.
