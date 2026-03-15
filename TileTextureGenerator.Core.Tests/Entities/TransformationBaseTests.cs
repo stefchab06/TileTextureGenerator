@@ -1,7 +1,7 @@
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Enums;
+using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
-using TileTextureGenerator.Core.Transformations;
 using TransformationBase = TileTextureGenerator.Core.Entities.TransformationBase;
 
 namespace TileTextureGenerator.Core.Tests.Entities;

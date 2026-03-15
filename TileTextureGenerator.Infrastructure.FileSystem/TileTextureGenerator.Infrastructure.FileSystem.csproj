@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TileTextureGenerator.Adapters.Persistence\TileTextureGenerator.Adapters.Persistence.csproj" />
-    <ProjectReference Include="..\TileTextureGenerator.Core\TileTextureGenerator.Core.csproj" />
   </ItemGroup>
 
 </Project>

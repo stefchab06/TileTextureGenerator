@@ -1,4 +1,6 @@
 <Solution>
-  <Project Path="TileTextureGenerator.Core\TileTextureGenerator.Core.csproj" />
+  <Project Path="TileTextureGenerator.Adapters.Persistence/TileTextureGenerator.Adapters.Persistence.csproj" />
   <Project Path="TileTextureGenerator.Core.Tests\TileTextureGenerator.Core.Tests.csproj" />
+  <Project Path="TileTextureGenerator.Core\TileTextureGenerator.Core.csproj" />
+  <Project Path="TileTextureGenerator.Infrastructure.FileSystem/TileTextureGenerator.Infrastructure.FileSystem.csproj" />
 </Solution>

@@ -1,7 +1,6 @@
 using System.Reflection;
-using TileTextureGenerator.Core.Attributes;
+using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Ports.Output;
-using TileTextureGenerator.Core.Transformations;
 
 namespace TileTextureGenerator.Core.Registries;
 
@@ -144,10 +143,10 @@ public static class TransformationTypeRegistry
     /// </summary>
     public static void ForceAutoRegistrationFromCore()
     {
-        var assembly = typeof(TransformationBase).Assembly;
+        var assembly = typeof(Entities.TransformationBase).Assembly;
 
         var transformationTypes = assembly.GetTypes()
-            .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(TransformationBase)));
+            .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(Entities.TransformationBase)));
 
         foreach (var type in transformationTypes)
         {

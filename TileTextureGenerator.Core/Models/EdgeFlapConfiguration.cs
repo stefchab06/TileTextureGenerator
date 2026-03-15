@@ -1,10 +1,11 @@
 using System.Text.Json.Serialization;
 using TileTextureGenerator.Core.Enums;
 
-namespace TileTextureGenerator.Core.Transformations;
+namespace TileTextureGenerator.Core.Models;
 
 /// <summary>
 /// Configuration for a single edge flap (border to be folded).
+/// Value object representing the rendering settings for one edge of a tile.
 /// </summary>
 public class EdgeFlapConfiguration
 {

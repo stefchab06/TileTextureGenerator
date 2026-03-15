@@ -1,9 +1,9 @@
 using SkiaSharp;
 using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Helpers;
+using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Registries;
-using TileTextureGenerator.Core.Transformations;
 
 namespace TileTextureGenerator.Core.Entities.ConcreteTransformations;
 

@@ -1,6 +1,56 @@
 # TODO List - Tile Texture Generator
 
-## High Priority
+## ⚠️ CRITIQUE - Tests flaky (AVANT toute nouvelle feature)
+
+### Problème
+Les tests sont **instables** (flaky) :
+- Parfois 75/75 passent ✅
+- Parfois 74/75 ou 73/75 échouent ❌
+- Comportement aléatoire lié aux registries
+
+### Causes probables
+1. **Registry timing** - Constructeurs statiques dans un ordre indéterminé
+2. **State partagé** - `Clear()` incomplet dans les registries
+3. **Tests parallèles** - xUnit race conditions
+
+### Actions
+- [ ] Diagnostiquer tests qui échouent aléatoirement
+- [ ] Améliorer `TextureProjectRegistry.Clear()` et `TransformationTypeRegistry.Clear()`
+- [ ] Isoler chaque test (setup complet en début)
+- [ ] Considérer `[assembly: CollectionBehavior(DisableTestParallelization = true)]`
+- [ ] Ajouter test : `GetIcon()` retourne non-null pour tous types
+
+---
+
+## 🔥 NEXT SESSION - Persistence Layer (JSON)
+
+### Objectif
+Sérialiser/désérialiser `ProjectBase` et `TransformationBase` sans toucher au Core.
+
+### Défis
+- Polymorphisme (FloorTileProject vs WallTileProject, HorizontalFloor vs VerticalWall)
+- Discriminateur de type dans JSON
+- EdgeFlapConfiguration (4 par transformation)
+
+### Plan
+1. Créer `Adapters.Persistence/`
+2. Custom converters : `ProjectBaseJsonConverter`, `TransformationBaseJsonConverter`
+3. Implémenter `IProjectStore<T>` et `ITransformationStore<T>` avec FileSystem
+4. Tests round-trip (save → load → égalité)
+
+### Structure JSON
+```json
+{
+  "Type": "FloorTileProject",
+  "Name": "MyProject",
+  "SourceImage": "base64...",
+  "Transformations": [{"Id": "guid", "Type": "HorizontalFloorTransformation"}]
+}
+```
+
+---
+
+## High Priority (Core)
 
 ### UI Improvements
 - [ ] **Color Picker visuel** : Ajouter un vrai color picker au lieu d'une Entry hexa
