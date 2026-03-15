@@ -1,4 +1,4 @@
-namespace TileTextureGenerator.Core.Entities;
+namespace TileTextureGenerator.Core.DTOs;
 
 /// <summary>
 /// Data transfer object representing a transformation type available for a project.

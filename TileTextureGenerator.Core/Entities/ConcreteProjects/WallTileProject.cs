@@ -1,3 +1,4 @@
+using TileTextureGenerator.Core.DTOs;
 using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Registries;

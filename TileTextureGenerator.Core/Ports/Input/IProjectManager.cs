@@ -1,3 +1,4 @@
+using TileTextureGenerator.Core.DTOs;
 using TileTextureGenerator.Core.Entities;
 
 namespace TileTextureGenerator.Core.Ports.Input;

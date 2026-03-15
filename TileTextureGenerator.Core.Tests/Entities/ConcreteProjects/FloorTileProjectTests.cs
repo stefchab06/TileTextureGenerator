@@ -1,3 +1,4 @@
+using TileTextureGenerator.Core.DTOs;
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Entities.ConcreteProjects;
 using TileTextureGenerator.Core.Enums;
