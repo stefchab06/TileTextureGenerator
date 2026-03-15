@@ -45,6 +45,12 @@ public abstract class TransformationBase : ITransformationManager
     public abstract byte[]? Icon { get; }
 
     /// <summary>
+    /// Type of paper required for printing this transformation output.
+    /// Default is Standard paper. Override in concrete classes for transformations requiring heavy cardstock.
+    /// </summary>
+    public virtual PaperType RequiredPaperType => PaperType.Standard;
+
+    /// <summary>
     /// Indexer for accessing edge flap configurations by image side.
     /// </summary>
     /// <param name="side">The side of the image (Top, Right, Bottom, Left).</param>

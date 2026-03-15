@@ -169,4 +169,18 @@ public class HorizontalFloorTransformationTests
         Assert.Equal(expectedWidth, bitmap.Width);
         Assert.Equal(expectedHeight, bitmap.Height);
     }
+
+    [Fact]
+    public void RequiredPaperType_ReturnsStandard()
+    {
+        // Arrange
+        var store = new FakeTransformationStore();
+        var transformation = new HorizontalFloorTransformation(store);
+
+        // Act
+        var paperType = transformation.RequiredPaperType;
+
+        // Assert
+        Assert.Equal(PaperType.Standard, paperType);
+    }
 }

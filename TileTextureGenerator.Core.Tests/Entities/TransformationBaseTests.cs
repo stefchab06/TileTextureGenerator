@@ -218,4 +218,18 @@ public class TransformationBaseTests
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => transformation[ImageSide.Top] = null!);
     }
+
+    [Fact]
+    public void RequiredPaperType_DefaultsToStandard()
+    {
+        // Arrange
+        var store = new FakeTransformationStore();
+        var transformation = new TestTransformation(store);
+
+        // Act
+        var paperType = transformation.RequiredPaperType;
+
+        // Assert
+        Assert.Equal(PaperType.Standard, paperType);
+    }
 }

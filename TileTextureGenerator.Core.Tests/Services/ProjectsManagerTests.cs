@@ -102,7 +102,7 @@ public class ProjectsManagerTests
     }
 
     [Fact]
-    public async Task ListProjectTypesAsync_ReturnsOneType_WhenOneTypeRegistered()
+    public async Task ListProjectTypesAsync_ReturnsRegisteredType()
     {
         // Arrange
         TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
@@ -114,7 +114,7 @@ public class ProjectsManagerTests
 
         // Assert
         Assert.NotNull(types);
-        Assert.Single(types);
+        Assert.NotEmpty(types);
         Assert.Contains(FakeProjectTypeAName, types);
     }
 

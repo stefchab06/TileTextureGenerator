@@ -7,6 +7,12 @@ namespace TileTextureGenerator.Core.Ports.Input;
 public interface ITransformationManager
 {
     /// <summary>
+    /// Gets the type of paper required for printing this transformation output.
+    /// Used to group transformations for separate print jobs.
+    /// </summary>
+    Enums.PaperType RequiredPaperType { get; }
+
+    /// <summary>
     /// Saves all changes made to the transformation.
     /// </summary>
     Task SaveChangesAsync();

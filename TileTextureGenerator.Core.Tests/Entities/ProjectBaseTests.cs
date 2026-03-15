@@ -202,11 +202,10 @@ public class ProjectBaseTests
         var store = new FakeProjectStore();
         var project = new TestProject(store);
         project.Initialize("TestProject");
-        var transformation = new TransformationEntity
+        var transformation = new TransformationDTO
         {
             Id = Guid.NewGuid(),
-            TransformationType = "TestTransformation",
-            DisplayOrder = 0
+            Type = "TestTransformation"
         };
 
         // Act
@@ -215,7 +214,6 @@ public class ProjectBaseTests
         // Assert
         Assert.Single(project.Transformations);
         Assert.Contains(transformation, project.Transformations);
-        Assert.Equal(0, transformation.DisplayOrder);
     }
 
     [Fact]
@@ -238,35 +236,13 @@ public class ProjectBaseTests
         var project = new TestProject(store);
         project.Initialize("TestProject");
         var id = Guid.NewGuid();
-        var transformation1 = new TransformationEntity { Id = id, TransformationType = "Type1" };
-        var transformation2 = new TransformationEntity { Id = id, TransformationType = "Type2" };
+        var transformation1 = new TransformationDTO { Id = id, Type = "Type1" };
+        var transformation2 = new TransformationDTO { Id = id, Type = "Type2" };
 
         await project.AddTransformationAsync(transformation1);
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => project.AddTransformationAsync(transformation2));
-    }
-
-    [Fact]
-    public async Task AddTransformationAsync_SetsDisplayOrderCorrectly()
-    {
-        // Arrange
-        var store = new FakeProjectStore();
-        var project = new TestProject(store);
-        project.Initialize("TestProject");
-        var t1 = new TransformationEntity { Id = Guid.NewGuid(), TransformationType = "T1" };
-        var t2 = new TransformationEntity { Id = Guid.NewGuid(), TransformationType = "T2" };
-        var t3 = new TransformationEntity { Id = Guid.NewGuid(), TransformationType = "T3" };
-
-        // Act
-        await project.AddTransformationAsync(t1);
-        await project.AddTransformationAsync(t2);
-        await project.AddTransformationAsync(t3);
-
-        // Assert
-        Assert.Equal(0, t1.DisplayOrder);
-        Assert.Equal(1, t2.DisplayOrder);
-        Assert.Equal(2, t3.DisplayOrder);
     }
 
     [Fact]
@@ -276,7 +252,7 @@ public class ProjectBaseTests
         var store = new FakeProjectStore();
         var project = new TestProject(store);
         project.Initialize("TestProject");
-        var transformation = new TransformationEntity { Id = Guid.NewGuid(), TransformationType = "Test" };
+        var transformation = new TransformationDTO { Id = Guid.NewGuid(), Type = "Test" };
         await project.AddTransformationAsync(transformation);
 
         // Act
@@ -306,9 +282,9 @@ public class ProjectBaseTests
         var store = new FakeProjectStore();
         var project = new TestProject(store);
         project.Initialize("TestProject");
-        var t1 = new TransformationEntity { Id = Guid.NewGuid(), TransformationType = "T1" };
-        var t2 = new TransformationEntity { Id = Guid.NewGuid(), TransformationType = "T2" };
-        var t3 = new TransformationEntity { Id = Guid.NewGuid(), TransformationType = "T3" };
+        var t1 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T1" };
+        var t2 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T2" };
+        var t3 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T3" };
 
         await project.AddTransformationAsync(t1);
         await project.AddTransformationAsync(t2);
@@ -319,8 +295,8 @@ public class ProjectBaseTests
 
         // Assert
         Assert.Equal(2, project.Transformations.Count);
-        Assert.Equal(0, t1.DisplayOrder);
-        Assert.Equal(1, t3.DisplayOrder);
+        Assert.Equal(t1.Id, project.Transformations[0].Id);
+        Assert.Equal(t3.Id, project.Transformations[1].Id);
     }
 
     [Fact]
@@ -330,9 +306,9 @@ public class ProjectBaseTests
         var store = new FakeProjectStore();
         var project = new TestProject(store);
         project.Initialize("TestProject");
-        var t1 = new TransformationEntity { Id = Guid.NewGuid(), TransformationType = "T1" };
-        var t2 = new TransformationEntity { Id = Guid.NewGuid(), TransformationType = "T2" };
-        var t3 = new TransformationEntity { Id = Guid.NewGuid(), TransformationType = "T3" };
+        var t1 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T1" };
+        var t2 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T2" };
+        var t3 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T3" };
 
         await project.AddTransformationAsync(t1);
         await project.AddTransformationAsync(t2);
@@ -344,11 +320,8 @@ public class ProjectBaseTests
         // Assert
         Assert.Equal(3, project.Transformations.Count);
         Assert.Equal(t3.Id, project.Transformations[0].Id);
-        Assert.Equal(0, project.Transformations[0].DisplayOrder);
         Assert.Equal(t2.Id, project.Transformations[1].Id);
-        Assert.Equal(1, project.Transformations[1].DisplayOrder);
         Assert.Equal(t1.Id, project.Transformations[2].Id);
-        Assert.Equal(2, project.Transformations[2].DisplayOrder);
     }
 
     [Fact]
@@ -370,8 +343,8 @@ public class ProjectBaseTests
         var store = new FakeProjectStore();
         var project = new TestProject(store);
         project.Initialize("TestProject");
-        var t1 = new TransformationEntity { Id = Guid.NewGuid(), TransformationType = "T1" };
-        var t2 = new TransformationEntity { Id = Guid.NewGuid(), TransformationType = "T2" };
+        var t1 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T1" };
+        var t2 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T2" };
 
         await project.AddTransformationAsync(t1);
         await project.AddTransformationAsync(t2);
@@ -387,8 +360,8 @@ public class ProjectBaseTests
         var store = new FakeProjectStore();
         var project = new TestProject(store);
         project.Initialize("TestProject");
-        var t1 = new TransformationEntity { Id = Guid.NewGuid(), TransformationType = "T1" };
-        var t2 = new TransformationEntity { Id = Guid.NewGuid(), TransformationType = "T2" };
+        var t1 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T1" };
+        var t2 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T2" };
 
         await project.AddTransformationAsync(t1);
         await project.AddTransformationAsync(t2);

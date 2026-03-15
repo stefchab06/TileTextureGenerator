@@ -90,4 +90,18 @@ public class VerticalWallTransformationTests
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => transformation.ExecuteAsync());
     }
+
+    [Fact]
+    public void RequiredPaperType_ReturnsStandard()
+    {
+        // Arrange
+        var store = new FakeTransformationStore();
+        var transformation = new VerticalWallTransformation(store);
+
+        // Act
+        var paperType = transformation.RequiredPaperType;
+
+        // Assert
+        Assert.Equal(PaperType.Standard, paperType);
+    }
 }

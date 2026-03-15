@@ -56,8 +56,9 @@ public abstract class ProjectBase : IProjectManager
     /// <summary>
     /// List of transformations configured for this project.
     /// Each transformation generates one output image.
+    /// Order is determined by position in the list (index 0 is first, 1 is second, etc.).
     /// </summary>
-    public List<TransformationEntity> Transformations { get; set; } = [];
+    public List<TransformationDTO> Transformations { get; set; } = [];
 
     /// <summary>
     /// Constructor with dependency injection.
@@ -115,14 +116,13 @@ public abstract class ProjectBase : IProjectManager
     }
 
     /// <inheritdoc />
-    public virtual async Task AddTransformationAsync(TransformationEntity transformation)
+    public virtual async Task AddTransformationAsync(TransformationDTO transformation)
     {
         ArgumentNullException.ThrowIfNull(transformation);
 
         if (Transformations.Any(t => t.Id == transformation.Id))
             throw new InvalidOperationException($"Transformation with ID '{transformation.Id}' already exists.");
 
-        transformation.DisplayOrder = Transformations.Count;
         Transformations.Add(transformation);
         await SaveChangesAsync();
     }
@@ -135,13 +135,6 @@ public abstract class ProjectBase : IProjectManager
             throw new InvalidOperationException($"Transformation with ID '{transformationId}' not found.");
 
         Transformations.Remove(transformation);
-
-        // Reorder remaining transformations
-        for (int i = 0; i < Transformations.Count; i++)
-        {
-            Transformations[i].DisplayOrder = i;
-        }
-
         await SaveChangesAsync();
     }
 
@@ -153,14 +146,13 @@ public abstract class ProjectBase : IProjectManager
         if (newOrder.Count != Transformations.Count)
             throw new ArgumentException("New order must contain all transformation IDs.", nameof(newOrder));
 
-        var reordered = new List<TransformationEntity>();
+        var reordered = new List<TransformationDTO>();
         foreach (var id in newOrder)
         {
             var transformation = Transformations.FirstOrDefault(t => t.Id == id);
             if (transformation == null)
                 throw new ArgumentException($"Transformation with ID '{id}' not found.", nameof(newOrder));
 
-            transformation.DisplayOrder = reordered.Count;
             reordered.Add(transformation);
         }
 
