@@ -166,4 +166,7 @@ public abstract class ProjectBase : IProjectManager
         Transformations = reordered;
         await SaveChangesAsync();
     }
+
+    /// <inheritdoc />
+    public abstract Task<IReadOnlyList<TransformationTypeDTO>> GetAvailableTransformationTypesAsync();
 }

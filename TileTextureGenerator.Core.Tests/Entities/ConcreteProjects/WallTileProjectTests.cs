@@ -7,15 +7,15 @@ using TileTextureGenerator.Core.Registries;
 namespace TileTextureGenerator.Core.Tests.Entities.ConcreteProjects;
 
 /// <summary>
-/// Unit tests for FloorTileProject concrete entity.
-/// Tests specific behavior for floor tile texture projects.
+/// Unit tests for WallTileProject concrete entity.
+/// Tests specific behavior for wall tile texture projects.
 /// </summary>
-public class FloorTileProjectTests
+public class WallTileProjectTests
 {
-    private class FakeFloorTileProjectStore : IProjectStore<FloorTileProject>
+    private class FakeWallTileProjectStore : IProjectStore<WallTileProject>
     {
-        public Task SaveAsync(FloorTileProject project) => Task.CompletedTask;
-        public Task<FloorTileProject?> LoadAsync(string projectName) => Task.FromResult<FloorTileProject?>(null);
+        public Task SaveAsync(WallTileProject project) => Task.CompletedTask;
+        public Task<WallTileProject?> LoadAsync(string projectName) => Task.FromResult<WallTileProject?>(null);
     }
 
     [Fact]
@@ -23,34 +23,34 @@ public class FloorTileProjectTests
     {
         // Arrange - Clear first, then manually register (static constructor already ran)
         TextureProjectRegistry.ClearForTesting();
-        TextureProjectRegistry.RegisterType<FloorTileProject>();
+        TextureProjectRegistry.RegisterType<WallTileProject>();
 
         // Act
-        var isRegistered = TextureProjectRegistry.IsRegistered(nameof(FloorTileProject));
+        var isRegistered = TextureProjectRegistry.IsRegistered(nameof(WallTileProject));
 
         // Assert
         Assert.True(isRegistered);
     }
 
     [Fact]
-    public void Registry_CanCreateFloorTileProject()
+    public void Registry_CanCreateWallTileProject()
     {
         // Arrange - Clear first, then setup
         TextureProjectRegistry.ClearForTesting();
         TextureProjectRegistry.SetFactory(type => 
         {
-            var store = new FakeFloorTileProjectStore();
+            var store = new FakeWallTileProjectStore();
             return (ProjectBase)Activator.CreateInstance(type, store)!;
         });
-        TextureProjectRegistry.RegisterType<FloorTileProject>();
+        TextureProjectRegistry.RegisterType<WallTileProject>();
         var projectName = "RegistryTest";
 
         // Act
-        var project = TextureProjectRegistry.Create(nameof(FloorTileProject), projectName);
+        var project = TextureProjectRegistry.Create(nameof(WallTileProject), projectName);
 
         // Assert
         Assert.NotNull(project);
-        Assert.IsType<FloorTileProject>(project);
+        Assert.IsType<WallTileProject>(project);
         Assert.Equal(projectName, project.Name);
     }
 
@@ -58,40 +58,25 @@ public class FloorTileProjectTests
     public void Constructor_SetsTypeCorrectly()
     {
         // Arrange
-        var store = new FakeFloorTileProjectStore();
-
+        var store = new FakeWallTileProjectStore();
+        
         // Act
-        var project = new FloorTileProject(store);
-        project.Initialize("FloorProject");
+        var project = new WallTileProject(store);
+        project.Initialize("WallProject");
 
         // Assert
-        Assert.Equal(nameof(FloorTileProject), project.Type);
-    }
-
-    [Fact]
-    public void Constructor_InitializesEmptyTransformationsList()
-    {
-        // Arrange
-        var store = new FakeFloorTileProjectStore();
-
-        // Act
-        var project = new FloorTileProject(store);
-        project.Initialize("FloorProject");
-
-        // Assert
-        Assert.NotNull(project.Transformations);
-        Assert.Empty(project.Transformations);
+        Assert.Equal(nameof(WallTileProject), project.Type);
     }
 
     [Fact]
     public void Constructor_SetsDefaultTileShapeToFull()
     {
         // Arrange
-        var store = new FakeFloorTileProjectStore();
-
+        var store = new FakeWallTileProjectStore();
+        
         // Act
-        var project = new FloorTileProject(store);
-        project.Initialize("FloorProject");
+        var project = new WallTileProject(store);
+        project.Initialize("WallProject");
 
         // Assert
         Assert.Equal(TileShape.Full, project.TileShape);
@@ -101,9 +86,9 @@ public class FloorTileProjectTests
     public void SourceImage_CanBeSet()
     {
         // Arrange
-        var store = new FakeFloorTileProjectStore();
-        var project = new FloorTileProject(store);
-        project.Initialize("FloorProject");
+        var store = new FakeWallTileProjectStore();
+        var project = new WallTileProject(store);
+        project.Initialize("WallProject");
         var imageData = new byte[] { 1, 2, 3, 4, 5 };
 
         // Act
@@ -118,9 +103,9 @@ public class FloorTileProjectTests
     public void TileShape_CanBeModified()
     {
         // Arrange
-        var store = new FakeFloorTileProjectStore();
-        var project = new FloorTileProject(store);
-        project.Initialize("FloorProject");
+        var store = new FakeWallTileProjectStore();
+        var project = new WallTileProject(store);
+        project.Initialize("WallProject");
 
         // Act
         project.TileShape = TileShape.HalfHorizontal;
@@ -130,12 +115,12 @@ public class FloorTileProjectTests
     }
 
     [Fact]
-    public async Task GetAvailableTransformationTypesAsync_ReturnsHorizontalFloorTransformation()
+    public async Task GetAvailableTransformationTypesAsync_ReturnsVerticalWallTransformation()
     {
         // Arrange
-        var store = new FakeFloorTileProjectStore();
-        var project = new FloorTileProject(store);
-        project.Initialize("FloorProject");
+        var store = new FakeWallTileProjectStore();
+        var project = new WallTileProject(store);
+        project.Initialize("WallProject");
 
         // Force transformation registration for test
         TransformationTypeRegistry.RegisterAll();
@@ -146,7 +131,7 @@ public class FloorTileProjectTests
         // Assert
         Assert.NotNull(availableTypes);
         Assert.Single(availableTypes);
-        Assert.Equal("HorizontalFloorTransformation", availableTypes[0].Name);
+        Assert.Equal("VerticalWallTransformation", availableTypes[0].Name);
         // Icon may be null if generation fails, so we just check the DTO structure
     }
 }

@@ -16,6 +16,11 @@ public class ProjectBaseTests
         public TestProject(IProjectStore<ProjectBase> store) : base(store)
         {
         }
+
+        public override Task<IReadOnlyList<TransformationTypeDTO>> GetAvailableTransformationTypesAsync()
+        {
+            return Task.FromResult<IReadOnlyList<TransformationTypeDTO>>(Array.Empty<TransformationTypeDTO>());
+        }
     }
 
     private class FakeProjectStore : IProjectStore<ProjectBase>

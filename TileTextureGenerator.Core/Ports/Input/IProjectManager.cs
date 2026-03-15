@@ -31,4 +31,11 @@ public interface IProjectManager
     /// </summary>
     /// <param name="newOrder">New order of transformation IDs.</param>
     Task ReorderTransformationsAsync(IReadOnlyList<Guid> newOrder);
+
+    /// <summary>
+    /// Gets the list of transformation types available for this project type.
+    /// Returns metadata (name and icon) for each compatible transformation type.
+    /// </summary>
+    /// <returns>List of available transformation type metadata.</returns>
+    Task<IReadOnlyList<TransformationTypeDTO>> GetAvailableTransformationTypesAsync();
 }

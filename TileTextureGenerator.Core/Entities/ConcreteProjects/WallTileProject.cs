@@ -5,21 +5,21 @@ using TileTextureGenerator.Core.Registries;
 namespace TileTextureGenerator.Core.Entities.ConcreteProjects;
 
 /// <summary>
-/// Concrete project entity for floor tile texture generation.
-/// Handles horizontal tile layouts with configurable shapes and transformations.
+/// Concrete project entity for wall tile texture generation.
+/// Handles vertical tile layouts with configurable shapes and transformations.
 /// </summary>
-public sealed class FloorTileProject : ProjectBase
+public sealed class WallTileProject : ProjectBase
 {
-    private readonly IProjectStore<FloorTileProject> _floorStore;
+    private readonly IProjectStore<WallTileProject> _wallStore;
 
     private static readonly string[] AvailableTransformationTypes = 
     {
-        nameof(ConcreteTransformations.HorizontalFloorTransformation)
+        nameof(ConcreteTransformations.VerticalWallTransformation)
     };
 
-    static FloorTileProject()
+    static WallTileProject()
     {
-        TextureProjectRegistry.RegisterType<FloorTileProject>();
+        TextureProjectRegistry.RegisterType<WallTileProject>();
     }
 
     /// <summary>
@@ -36,18 +36,18 @@ public sealed class FloorTileProject : ProjectBase
     /// Constructor with dependency injection.
     /// Store is injected by DI container.
     /// </summary>
-    /// <param name="store">The FloorTileProject-specific store.</param>
-    public FloorTileProject(IProjectStore<FloorTileProject> store) 
-        : base(new FloorTileProjectStoreAdapter(store))
+    /// <param name="store">The WallTileProject-specific store.</param>
+    public WallTileProject(IProjectStore<WallTileProject> store) 
+        : base(new WallTileProjectStoreAdapter(store))
     {
-        _floorStore = store ?? throw new ArgumentNullException(nameof(store));
+        _wallStore = store ?? throw new ArgumentNullException(nameof(store));
     }
 
     /// <inheritdoc />
     public override async Task SaveChangesAsync()
     {
         LastModifiedDate = DateTime.UtcNow;
-        await _floorStore.SaveAsync(this);
+        await _wallStore.SaveAsync(this);
     }
 
     /// <inheritdoc />
@@ -65,23 +65,23 @@ public sealed class FloorTileProject : ProjectBase
     }
 
     /// <summary>
-    /// Adapter to allow FloorTileProject-specific store to be used as ProjectBase store.
+    /// Adapter to allow WallTileProject-specific store to be used as ProjectBase store.
     /// </summary>
-    private class FloorTileProjectStoreAdapter : IProjectStore<ProjectBase>
+    private class WallTileProjectStoreAdapter : IProjectStore<ProjectBase>
     {
-        private readonly IProjectStore<FloorTileProject> _innerStore;
+        private readonly IProjectStore<WallTileProject> _innerStore;
 
-        public FloorTileProjectStoreAdapter(IProjectStore<FloorTileProject> innerStore)
+        public WallTileProjectStoreAdapter(IProjectStore<WallTileProject> innerStore)
         {
             _innerStore = innerStore;
         }
 
         public async Task SaveAsync(ProjectBase project)
         {
-            if (project is not FloorTileProject floorProject)
-                throw new InvalidOperationException($"Expected FloorTileProject but got {project.GetType().Name}");
+            if (project is not WallTileProject wallProject)
+                throw new InvalidOperationException($"Expected WallTileProject but got {project.GetType().Name}");
 
-            await _innerStore.SaveAsync(floorProject);
+            await _innerStore.SaveAsync(wallProject);
         }
 
         public async Task<ProjectBase?> LoadAsync(string projectName)

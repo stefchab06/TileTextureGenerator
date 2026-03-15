@@ -8,20 +8,20 @@ using TileTextureGenerator.Core.Transformations;
 namespace TileTextureGenerator.Core.Entities.ConcreteTransformations;
 
 /// <summary>
-/// Horizontal floor tile transformation that creates a completely flat tile texture.
+/// Vertical wall tile transformation that creates a completely flat tile texture.
 /// Adds rectangular flaps on all four sides (0.25" height) to be folded.
-/// The visible top surface remains flat without inclination.
+/// The visible surface is oriented for vertical wall mounting.
 /// </summary>
-public sealed class HorizontalFloorTransformation : TransformationBase
+public sealed class VerticalWallTransformation : TransformationBase
 {
     private const double FlapHeightInInches = 0.25;
     private const double MaxTileDimensionInInches = 2.0;
     private const float BlankBorderWidth = 2.0f;
 
-    static HorizontalFloorTransformation()
+    static VerticalWallTransformation()
     {
         // TODO: Create TransformationRegistry similar to ProjectRegistry
-        // TransformationRegistry.RegisterType<HorizontalFloorTransformation>();
+        // TransformationRegistry.RegisterType<VerticalWallTransformation>();
     }
 
     /// <summary>
@@ -37,14 +37,14 @@ public sealed class HorizontalFloorTransformation : TransformationBase
 
     /// <summary>
     /// Icon for this transformation type (PNG, 64x64).
-    /// Generated programmatically showing a horizontal floor tile perspective.
+    /// Generated programmatically showing a vertical wall tile perspective.
     /// </summary>
-    public override byte[]? Icon => TransformationIconGenerator.GenerateHorizontalFloorIcon();
+    public override byte[]? Icon => TransformationIconGenerator.GenerateVerticalWallIcon();
 
     /// <summary>
     /// Constructor with dependency injection.
     /// </summary>
-    public HorizontalFloorTransformation(ITransformationStore<TransformationBase> store) : base(store)
+    public VerticalWallTransformation(ITransformationStore<TransformationBase> store) : base(store)
     {
     }
 
@@ -58,7 +58,7 @@ public sealed class HorizontalFloorTransformation : TransformationBase
         // FULL IMPLEMENTATION with SkiaSharp
         using var baseStream = new MemoryStream(BaseTexture);
         using var baseTexture = SKBitmap.Decode(baseStream);
-
+        
         if (baseTexture == null)
             throw new InvalidOperationException("Failed to decode base texture.");
 
@@ -88,7 +88,7 @@ public sealed class HorizontalFloorTransformation : TransformationBase
         // Encode to PNG
         using var image = SKImage.FromBitmap(canvas);
         using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
-
+        
         await Task.CompletedTask;
         return encoded.ToArray();
     }

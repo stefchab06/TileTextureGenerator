@@ -1,5 +1,6 @@
 using System.Reflection;
 using TileTextureGenerator.Core.Attributes;
+using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Transformations;
 
 namespace TileTextureGenerator.Core.Registries;
@@ -11,7 +12,18 @@ namespace TileTextureGenerator.Core.Registries;
 public static class TransformationTypeRegistry
 {
     private static readonly Dictionary<string, Type> _types = new();
+    private static Func<Type, Entities.TransformationBase>? _factory;
     private static bool _isInitialized = false;
+
+    /// <summary>
+    /// Sets the factory function for creating transformation instances.
+    /// Must be called before creating transformations.
+    /// </summary>
+    /// <param name="factory">Factory function that creates transformation instances from their type.</param>
+    public static void SetFactory(Func<Type, Entities.TransformationBase> factory)
+    {
+        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+    }
 
     /// <summary>
     /// Registers a transformation type.
@@ -20,7 +32,7 @@ public static class TransformationTypeRegistry
     public static void Register<T>() where T : TransformationBase
     {
         var typeName = typeof(T).Name;
-        
+
         if (_types.ContainsKey(typeName))
         {
             throw new InvalidOperationException(
@@ -35,19 +47,21 @@ public static class TransformationTypeRegistry
     /// </summary>
     /// <param name="typeName">The name of the transformation type</param>
     /// <returns>A new instance of the transformation</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the type is not registered</exception>
-    public static TransformationBase Create(string typeName)
+    /// <exception cref="InvalidOperationException">Thrown if the type is not registered or factory not set</exception>
+    public static Entities.TransformationBase Create(string typeName)
     {
         EnsureInitialized();
+
+        if (_factory == null)
+            throw new InvalidOperationException("Factory not set. Call SetFactory before creating transformations.");
 
         if (!_types.TryGetValue(typeName, out var type))
         {
             throw new InvalidOperationException(
-                $"Unknown transformation type: '{typeName}'. Make sure it's registered in RegisterAll().");
+                $"Unknown transformation type: '{typeName}'. Make sure it's registered.");
         }
 
-        var instance = (TransformationBase)Activator.CreateInstance(type)!;
-        return instance;
+        return _factory(type);
     }
 
     /// <summary>
@@ -73,28 +87,6 @@ public static class TransformationTypeRegistry
     }
 
     /// <summary>
-    /// Gets the maximum cardinality for a transformation type.
-    /// </summary>
-    /// <param name="type">The transformation type</param>
-    /// <returns>Maximum number of instances allowed per project</returns>
-    public static int GetMaxCardinality(Type type)
-    {
-        var attr = type.GetCustomAttribute<TransformationCardinalityAttribute>();
-        return attr?.MaxPerProject ?? int.MaxValue;
-    }
-
-    /// <summary>
-    /// Gets the maximum cardinality for a transformation type by name.
-    /// </summary>
-    /// <param name="typeName">The name of the transformation type</param>
-    /// <returns>Maximum number of instances allowed per project</returns>
-    public static int GetMaxCardinality(string typeName)
-    {
-        var type = GetTypeByName(typeName);
-        return type != null ? GetMaxCardinality(type) : int.MaxValue;
-    }
-
-    /// <summary>
     /// Checks if a transformation type is registered.
     /// </summary>
     /// <param name="typeName">The name of the transformation type</param>
@@ -106,31 +98,28 @@ public static class TransformationTypeRegistry
     }
 
     /// <summary>
-    /// Gets the count of instances of a specific type in a project.
+    /// Gets the icon for a transformation type by name.
+    /// Creates a temporary instance to retrieve the icon.
     /// </summary>
-    /// <param name="transformations">List of transformations in the project</param>
-    /// <param name="typeName">The transformation type name to count</param>
-    /// <returns>Number of instances of that type</returns>
-    public static int GetInstanceCount(
-        IEnumerable<Entities.TransformationEntity> transformations,
-        string typeName)
+    /// <param name="typeName">The name of the transformation type</param>
+    /// <returns>The icon as PNG byte array, or null if not found</returns>
+    public static byte[]? GetIcon(string typeName)
     {
-        return transformations.Count(t => t.TransformationType == typeName);
-    }
+        var type = GetTypeByName(typeName);
+        if (type == null || !type.IsSubclassOf(typeof(Entities.TransformationBase)))
+            return null;
 
-    /// <summary>
-    /// Checks if adding another instance of a type would exceed the cardinality limit.
-    /// </summary>
-    /// <param name="transformations">List of transformations in the project</param>
-    /// <param name="typeName">The transformation type name to check</param>
-    /// <returns>True if another instance can be added, false if limit reached</returns>
-    public static bool CanAddInstance(
-        IEnumerable<Entities.TransformationEntity> transformations,
-        string typeName)
-    {
-        var currentCount = GetInstanceCount(transformations, typeName);
-        var maxCardinality = GetMaxCardinality(typeName);
-        return currentCount < maxCardinality;
+        try
+        {
+            // Need to instantiate with a dummy store to get the icon
+            // Icon is typically a static/computed property that doesn't need real store
+            var instance = (Entities.TransformationBase)Activator.CreateInstance(type, new object?[] { null })!;
+            return instance.Icon;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     /// <summary>
@@ -165,63 +154,6 @@ public static class TransformationTypeRegistry
             // Trigger static constructor by accessing a static member
             System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(type.TypeHandle);
         }
-    }
-
-    /// <summary>
-    /// Gets the icon resource path for a transformation type.
-    /// Creates a temporary instance to retrieve the icon path.
-    /// </summary>
-    /// <param name="type">The transformation type</param>
-    /// <returns>The icon resource path</returns>
-    public static string GetIconResourcePath(Type type)
-    {
-        if (!type.IsSubclassOf(typeof(TransformationBase)))
-            return string.Empty;
-
-        try
-        {
-            var instance = (TransformationBase)Activator.CreateInstance(type)!;
-            return instance.GetIconResourcePath();
-        }
-        catch
-        {
-            return string.Empty;
-        }
-    }
-
-    /// <summary>
-    /// Gets the icon resource path for a transformation type by name.
-    /// </summary>
-    /// <param name="typeName">The name of the transformation type</param>
-    /// <returns>The icon resource path</returns>
-    public static string GetIconResourcePath(string typeName)
-    {
-        var type = GetTypeByName(typeName);
-        return type != null ? GetIconResourcePath(type) : string.Empty;
-    }
-
-    /// <summary>
-    /// Gets available transformation types that can still be added to a project.
-    /// Filters out types that have reached their cardinality limit.
-    /// </summary>
-    /// <param name="existingTransformations">Existing transformations in the project</param>
-    /// <returns>List of available transformation types</returns>
-    public static IEnumerable<Type> GetAvailableTypes(
-        IEnumerable<Entities.TransformationEntity> existingTransformations)
-    {
-        EnsureInitialized();
-
-        var result = new List<Type>();
-
-        foreach (var type in _types.Values)
-        {
-            if (CanAddInstance(existingTransformations, type.Name))
-            {
-                result.Add(type);
-            }
-        }
-
-        return result;
     }
 
     /// <summary>

@@ -35,12 +35,22 @@ public class ProjectsManagerTests
         public FakeProjectTypeA(IProjectStore<ProjectBase> store) : base(store)
         {
         }
+
+        public override Task<IReadOnlyList<TransformationTypeDTO>> GetAvailableTransformationTypesAsync()
+        {
+            return Task.FromResult<IReadOnlyList<TransformationTypeDTO>>(Array.Empty<TransformationTypeDTO>());
+        }
     }
 
     private sealed class FakeProjectTypeB : ProjectBase
     {
         public FakeProjectTypeB(IProjectStore<ProjectBase> store) : base(store)
         {
+        }
+
+        public override Task<IReadOnlyList<TransformationTypeDTO>> GetAvailableTransformationTypesAsync()
+        {
+            return Task.FromResult<IReadOnlyList<TransformationTypeDTO>>(Array.Empty<TransformationTypeDTO>());
         }
     }
 
