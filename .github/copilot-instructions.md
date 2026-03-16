@@ -13,6 +13,8 @@ Elle permet de créer des textures personnalisées pour floor tiles et wall tile
 - **Discussion** : Français (langue maternelle de l'équipe)
 - **Code** : 100% Anglais (noms de classes, membres, documentation XML, commentaires)
 - **Raison** : Maintenabilité internationale et conformité aux standards .NET
+- **Visual Studio** : Interface en français - donner les instructions UI en français
+- **Documentation technique** : Inclure les termes français ET anglais pour les menus/options VS
 
 ### État actuel du développement
 1. ✅ **Cœur métier (Core)** : Implémenté (entities, registries, ports)
@@ -197,9 +199,10 @@ TileTextureGenerator.Core.Tests/              # Tests unitaires du Core
 2. **Identifier les couches** (Core, Adapter, Infrastructure)
 3. **Modifier/créer les fichiers** appropriés (Core d'abord)
 4. **Ajouter/modifier les tests** (TDD si pertinent)
-5. **Compiler** (`dotnet build`)
-6. **Exécuter les tests** (`dotnet test`)
+5. **Compiler** (`dotnet build` ou dans VS : **Générer → Générer la solution**)
+6. **Exécuter les tests** (`dotnet test` ou dans VS : **Test → Exécuter tous les tests**)
 7. **Vérifier la couverture** (si tests ajoutés) : `dotnet-coverage collect -f cobertura -o coverage.cobertura.xml dotnet test`
+8. **Commit et push** : Via **Affichage → Modifications Git** dans Visual Studio
 
 ---
 
@@ -250,5 +253,6 @@ TileTextureGenerator.Core.Tests/              # Tests unitaires du Core
 - **Vérifier** que les factories sont bien injectées avant utilisation
 - **Respecter** le pattern Initialize-after-construction
 - **Compiler** après chaque modification pour valider
-- **Langue** : TOUT le code, documentation et commentaires DOIT être en anglais (même si on discute en français)
+- **Langue code** : TOUT le code, documentation et commentaires DOIT être en anglais (même si on discute en français)
+- **Langue instructions** : Donner les instructions Visual Studio en FRANÇAIS (l'IDE est en français)
 - **Priorité actuelle** : Implémenter la persistance (file system), pas l'UI

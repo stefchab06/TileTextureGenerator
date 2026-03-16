@@ -21,6 +21,7 @@ Ces éléments physiques permettent de créer des donjons, terrains et décors p
 - **Code source** : 100% Anglais (noms de classes, méthodes, propriétés, paramètres)
 - **Documentation** : Anglais (XML docs, commentaires inline, README techniques)
 - **Documentation métier** : Français acceptable (ce fichier, specifications fonctionnelles)
+- **Instructions Visual Studio** : En français (l'IDE est configuré en français)
 - **Raison** : Maintenabilité, collaboration internationale, standards de l'industrie
 
 ---
@@ -515,14 +516,15 @@ if (string.IsNullOrWhiteSpace(stringParam))
 
 ## Checklist avant commit
 
-- [ ] Code compile (`dotnet build`)
-- [ ] Tests passent (`dotnet test`)
+- [ ] Code compile (`dotnet build` ou **Générer → Générer la solution** dans VS)
+- [ ] Tests passent (`dotnet test` ou **Test → Exécuter tous les tests** dans VS)
 - [ ] Couverture maintenue ou améliorée (`dotnet-coverage`)
 - [ ] Pas de TODO ou code commenté laissé
 - [ ] Conventions de nommage respectées
 - [ ] Documentation XML pour APIs publiques
 - [ ] Pas de secrets ou chemins hardcodés
 - [ ] Pas de code auto-généré modifié
+- [ ] Commit via **Affichage → Modifications Git** dans Visual Studio
 
 ---
 
