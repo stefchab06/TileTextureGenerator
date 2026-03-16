@@ -210,12 +210,44 @@ var transformation = TransformationTypeRegistry.Create("HorizontalFloorTransform
 - **Responsabilité** : sérialiser/désérialiser ProjectBase et TransformationBase en JSON
 - **Implémente** : `IProjectStore`, `ITransformationStore` (via Infrastructure.FileSystem)
 - **Format** : JSON avec polymorphisme via propriété `Type`
-- **Pas encore implémenté** : en cours de développement (tests en place)
+- **Définit** : `IFileStorage` (son propre port pour I/O fichiers)
+- **État** : `JsonProjectsStore` implémenté avec 23 tests ✅, `JsonTransformationsStore` à venir
+
+#### ⚠️ TODO: Transformations
+
+**État actuel** :
+- ✅ Les transformations sont **sauvegardées** dans le JSON (préservées lors des updates)
+- ❌ Les transformations **ne sont PAS chargées** depuis le JSON (skip intentionnel)
+- 📋 **À faire** : Implémenter `JsonTransformationsStore` pour gérer le chargement complet
+- 📝 **Rappel** : Test skippé `LoadAsync_WithTransformations_LoadsTransformationsFromJson` à réactiver
+
+**Voir** : `JsonProjectsStore.cs` ligne avec `TODO: Load transformations when TransformationsStore is implemented`
+
+#### Convention critique : Chemins dans JSON (PathHelper)
+
+**TOUJOURS utiliser `PathHelper` pour tous les chemins de fichiers stockés en JSON** :
+
+```csharp
+// ✅ Lors de la sérialisation (Entity → JSON)
+dto.SourceImagePath = PathHelper.ToJsonPath(entity.SourceImagePath);
+
+// ✅ Lors de la désérialisation (JSON → Entity)
+entity.SourceImagePath = PathHelper.ToPlatformPath(dto.SourceImagePath);
+```
+
+**Raison** : Les fichiers JSON utilisent **TOUJOURS** des slashes Unix (`/`) pour la portabilité entre Windows, Linux et macOS. 
+Le `PathHelper` (dans `Adapters.Persistence/Utilities/`) convertit automatiquement :
+- `ToJsonPath()` : chemin plateforme → JSON (`\` → `/`)
+- `ToPlatformPath()` : JSON → chemin plateforme (`/` → `\` sur Windows)
+
+**Résultat** : Les fichiers JSON peuvent être transférés entre systèmes sans modification.
 
 ### Infrastructure.FileSystem
 
-- **Responsabilité** : I/O fichiers, accès disque
+- **Responsabilité** : I/O fichiers bas niveau, accès disque
+- **Implémente** : `IFileStorage` (défini dans Adapters.Persistence)
 - Fournit les implémentations concrètes de stores
+- Ne connaît PAS les entités du domaine (ProjectBase, etc.)
 
 ---
 

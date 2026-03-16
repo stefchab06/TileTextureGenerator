@@ -1,0 +1,3 @@
+Nous travaillons sur ce projet depuis un certain temps.
+Tu as écris tous le code, je te donne les instructions au fur et a mesure, et toi tu code.
+Lis les fichiers ARCHITECTURE.md et .github/copilot-instructions.md pour plus de détails.

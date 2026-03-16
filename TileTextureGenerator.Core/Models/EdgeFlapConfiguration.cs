@@ -21,16 +21,7 @@ public class EdgeFlapConfiguration
     public string? Color { get; set; }
 
     /// <summary>
-    /// Relative path to texture image file (e.g., "Workspace\guid.png") when Mode = Texture.
-    /// Null if not applicable. Will be omitted from JSON when null (global setting).
-    /// </summary>
-    public string? Texture { get; set; }
-
-    /// <summary>
     /// Texture image data (in-memory) when Mode = Texture.
-    /// Not serialized in JSON - only the path (Texture property) is persisted.
-    /// Used at runtime to hold the actual image bytes.
     /// </summary>
-    [JsonIgnore]
-    public byte[]? TextureImage { get; set; }
+    public byte[]? Texture { get; set; }
 }

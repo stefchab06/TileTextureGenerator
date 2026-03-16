@@ -127,7 +127,7 @@ public sealed class VerticalWallTransformation : TransformationBase
                 break;
 
             case EdgeFlapMode.Texture:
-                DrawTextureFlap(canvas, flapRect, config.TextureImage);
+                DrawTextureFlap(canvas, flapRect, config.Texture);
                 break;
 
             case EdgeFlapMode.Symmetric:

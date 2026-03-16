@@ -199,13 +199,13 @@ public class TransformationBaseTests
 
         // Act
         transformation[ImageSide.Top] = new EdgeFlapConfiguration { Mode = EdgeFlapMode.Color, Color = "#FF0000" };
-        transformation[ImageSide.Right] = new EdgeFlapConfiguration { Mode = EdgeFlapMode.Texture, Texture = "path/to/texture.png" };
+        transformation[ImageSide.Right] = new EdgeFlapConfiguration { Mode = EdgeFlapMode.Texture, Texture = [0, 1, 2] };
 
         // Assert
         Assert.Equal(EdgeFlapMode.Color, transformation[ImageSide.Top].Mode);
         Assert.Equal("#FF0000", transformation[ImageSide.Top].Color);
         Assert.Equal(EdgeFlapMode.Texture, transformation[ImageSide.Right].Mode);
-        Assert.Equal("path/to/texture.png", transformation[ImageSide.Right].Texture);
+        Assert.Equal([0, 1, 2], transformation[ImageSide.Right].Texture);
     }
 
     [Fact]
