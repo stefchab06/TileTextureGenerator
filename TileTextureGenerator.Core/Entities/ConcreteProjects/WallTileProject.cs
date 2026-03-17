@@ -1,5 +1,6 @@
 using TileTextureGenerator.Core.DTOs;
 using TileTextureGenerator.Core.Enums;
+using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Registries;
 
@@ -24,7 +25,7 @@ public sealed class WallTileProject : ProjectBase
     /// <summary>
     /// Source image data (PNG format, full resolution).
     /// </summary>
-    public byte[]? SourceImage { get; set; }
+    public ImageData? SourceImage { get; set; }
 
     /// <summary>
     /// Shape of the tile (Full, HalfHorizontal, HalfVertical).

@@ -1,9 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using TileTextureGenerator.Adapters.Persistence.Converters;
 using TileTextureGenerator.Adapters.Persistence.Ports;
 using TileTextureGenerator.Adapters.Persistence.Utilities;
 using TileTextureGenerator.Core.DTOs;
 using TileTextureGenerator.Core.Entities;
+using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Registries;
 
@@ -25,7 +27,12 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter() }
+        Converters = 
+        { 
+            new JsonStringEnumConverter(),
+            new ImageDataJsonConverter(),
+            new NullableImageDataJsonConverter()
+        }
     };
 
     /// <summary>
@@ -267,12 +274,12 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
 
     private async Task LoadProjectImagesAsync(ProjectBase project, string projectDir)
     {
-        // Get all public instance properties of type byte[] (nullable or not)
+        // Get all public instance properties of type ImageData (nullable or not)
         var concreteType = project.GetType();
         var imageProperties = concreteType.GetProperties(
             System.Reflection.BindingFlags.Public | 
             System.Reflection.BindingFlags.Instance)
-            .Where(p => p.PropertyType == typeof(byte[]) && p.CanWrite);
+            .Where(p => (p.PropertyType == typeof(ImageData) || p.PropertyType == typeof(ImageData?)) && p.CanWrite);
 
         foreach (var property in imageProperties)
         {
@@ -281,28 +288,29 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
 
             if (imageData != null)
             {
-                property.SetValue(project, imageData);
+                ImageData image = new(imageData);
+                property.SetValue(project, image);
             }
         }
     }
 
     private async Task SaveProjectImagesAsync(ProjectBase project, string projectDir)
     {
-        // Get all public instance properties of type byte[] (nullable or not)
+        // Get all public instance properties of type ImageData (nullable or not)
         var concreteType = project.GetType();
         var imageProperties = concreteType.GetProperties(
             System.Reflection.BindingFlags.Public | 
             System.Reflection.BindingFlags.Instance)
-            .Where(p => p.PropertyType == typeof(byte[]) && p.CanRead);
+            .Where(p => (p.PropertyType == typeof(ImageData) || p.PropertyType == typeof(ImageData?)) && p.CanRead);
 
         foreach (var property in imageProperties)
         {
-            byte[]? imageData = property.GetValue(project) as byte[];
+            object? value = property.GetValue(project);
 
-            if (imageData != null && imageData.Length > 0)
+            if (value is ImageData imageData)
             {
                 await _imageHelper.SavePropertyImageAsync(
-                    imageData,
+                    imageData.Bytes,
                     projectDir,
                     "Sources",
                     property.Name
@@ -315,10 +323,10 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
     {
         var concreteType = project.GetType();
 
-        // Get all byte[] property names to skip (they're loaded separately via LoadProjectImagesAsync)
+        // Get all ImageData property names to skip (they're loaded separately via LoadProjectImagesAsync)
         var imagePropertyNames = concreteType
             .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
-            .Where(p => p.PropertyType == typeof(byte[]))
+            .Where(p => p.PropertyType == typeof(ImageData) || p.PropertyType == typeof(ImageData?))
             .Select(p => p.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 

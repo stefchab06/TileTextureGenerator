@@ -1,5 +1,6 @@
 using TileTextureGenerator.Core.DTOs;
 using TileTextureGenerator.Core.Enums;
+using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Input;
 using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Services;
@@ -46,7 +47,7 @@ public abstract class ProjectBase : IProjectManager
     /// <summary>
     /// Display image for UI (PNG, 256x256). Nullable.
     /// </summary>
-    public byte[]? DisplayImage { get; set; }
+    public ImageData? DisplayImage { get; set; }
 
     /// <summary>
     /// Last modification timestamp (UTC).
@@ -95,12 +96,9 @@ public abstract class ProjectBase : IProjectManager
     /// </summary>
     /// <param name="imageData">Raw image data to process.</param>
     /// <param name="imageProcessor">Service to process the image.</param>
-    public void SetDisplayImage(byte[] imageData, IImageProcessingService imageProcessor)
+    protected void SetDisplayImage(ImageData imageData, IImageProcessingService imageProcessor)
     {
         ArgumentNullException.ThrowIfNull(imageProcessor);
-
-        if (imageData == null || imageData.Length == 0)
-            throw new ArgumentException("Image data cannot be null or empty.", nameof(imageData));
 
         DisplayImage = imageProcessor.ConvertToPng(imageData, 256, 256);
     }

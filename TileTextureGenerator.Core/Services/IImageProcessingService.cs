@@ -1,3 +1,5 @@
+using TileTextureGenerator.Core.Models;
+
 namespace TileTextureGenerator.Core.Services;
 
 /// <summary>
@@ -9,10 +11,10 @@ public interface IImageProcessingService
     /// <summary>
     /// Converts any image format to PNG, preserving original resolution
     /// </summary>
-    byte[] ConvertToPng(byte[] imageData);
-    
+    ImageData ConvertToPng(ImageData imageData);
+
     /// <summary>
     /// Converts and resizes image to PNG at specified dimensions
     /// </summary>
-    byte[] ConvertToPng(byte[] imageData, int width, int height);
+    ImageData ConvertToPng(ImageData imageData, int width, int height);
 }
