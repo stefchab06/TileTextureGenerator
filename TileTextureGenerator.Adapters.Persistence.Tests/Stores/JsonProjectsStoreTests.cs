@@ -1,3 +1,4 @@
+using System.Text.Json;
 using TileTextureGenerator.Adapters.Persistence.Stores;
 using TileTextureGenerator.Adapters.Persistence.Tests.Mocks;
 using TileTextureGenerator.Core.DTOs;
@@ -12,7 +13,10 @@ namespace TileTextureGenerator.Adapters.Persistence.Tests.Stores;
 
 /// <summary>
 /// Tests for JSON-based projects store implementation.
+/// Tests focus on simple DTO-based persistence (CreateProjectAsync).
+/// Complex polymorphic persistence will be handled by IProjectStore.
 /// </summary>
+[Collection("Sequential")]
 public class JsonProjectsStoreTests : IDisposable
 {
     private readonly InMemoryFileStorage _fileStorage;
@@ -24,15 +28,18 @@ public class JsonProjectsStoreTests : IDisposable
         _fileStorage = new InMemoryFileStorage();
         _store = new JsonProjectsStore(_fileStorage);
         _mockProjectStore = new MockProjectStore();
-        
+
         // Setup registry factory for tests
         TextureProjectRegistry.SetFactory(type =>
         {
             if (type == typeof(FloorTileProject))
                 return new FloorTileProject(_mockProjectStore);
-            
+
             throw new InvalidOperationException($"Unsupported type: {type.Name}");
         });
+
+        // Force auto-registration of project types (triggers static constructors)
+        TextureProjectRegistry.ForceAutoRegistration(typeof(FloorTileProject).Assembly);
     }
 
     public void Dispose()
@@ -41,15 +48,18 @@ public class JsonProjectsStoreTests : IDisposable
     }
 
     [Fact]
-    public async Task SaveAsync_WithValidProject_CreatesDirectoryStructure()
+    public async Task CreateProjectAsync_WithValidDto_CreatesDirectoryStructure()
     {
         // Arrange
-        var project = new FloorTileProject(_mockProjectStore);
-        project.Initialize("TestProject");
-        project.Status = ProjectStatus.New;
+        var dto = new ProjectDto(
+            name: "TestProject",
+            type: "FloorTileProject",
+            status: ProjectStatus.New,
+            lastModifiedDate: DateTime.UtcNow
+        );
 
         // Act
-        await _store.SaveAsync(project);
+        await _store.CreateProjectAsync(dto);
 
         // Assert
         string expectedDir = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject");
@@ -60,16 +70,18 @@ public class JsonProjectsStoreTests : IDisposable
     }
 
     [Fact]
-    public async Task SaveAsync_WithValidProject_CreatesJsonFile()
+    public async Task CreateProjectAsync_WithValidDto_CreatesJsonFile()
     {
         // Arrange
-        var project = new FloorTileProject(_mockProjectStore);
-        project.Initialize("TestProject");
-        project.Status = ProjectStatus.New;
-        project.TileShape = TileShape.Full;
+        var dto = new ProjectDto(
+            name: "TestProject",
+            type: "FloorTileProject",
+            status: ProjectStatus.New,
+            lastModifiedDate: DateTime.UtcNow
+        );
 
         // Act
-        await _store.SaveAsync(project);
+        await _store.CreateProjectAsync(dto);
 
         // Assert
         string expectedJsonPath = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject", "TestProject.json");
@@ -79,20 +91,23 @@ public class JsonProjectsStoreTests : IDisposable
         Assert.Contains("\"name\": \"TestProject\"", json, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("\"type\": \"FloorTileProject\"", json, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("\"status\": \"New\"", json, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("\"tileShape\": \"Full\"", json, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public async Task SaveAsync_WithDisplayImage_SavesImageFile()
+    public async Task CreateProjectAsync_WithDisplayImage_SavesImageFile()
     {
         // Arrange
-        var project = new FloorTileProject(_mockProjectStore);
-        project.Initialize("TestProject");
         byte[] imageData = [0x89, 0x50, 0x4E, 0x47]; // PNG header
-        project.DisplayImage = imageData;
+        var dto = new ProjectDto(
+            name: "TestProject",
+            type: "FloorTileProject",
+            status: ProjectStatus.New,
+            lastModifiedDate: DateTime.UtcNow,
+            displayImage: imageData
+        );
 
         // Act
-        await _store.SaveAsync(project);
+        await _store.CreateProjectAsync(dto);
 
         // Assert
         string expectedImagePath = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject", "Sources", "DisplayImage.png");
@@ -103,34 +118,18 @@ public class JsonProjectsStoreTests : IDisposable
     }
 
     [Fact]
-    public async Task SaveAsync_WithSourceImage_SavesImageFile()
+    public async Task CreateProjectAsync_WithInvalidCharactersInName_CleansFileName()
     {
         // Arrange
-        var project = new FloorTileProject(_mockProjectStore);
-        project.Initialize("TestProject");
-        byte[] sourceImageData = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A];
-        project.SourceImage = sourceImageData;
+        var dto = new ProjectDto(
+            name: "Test<Project>:Name*",
+            type: "FloorTileProject",
+            status: ProjectStatus.New,
+            lastModifiedDate: DateTime.UtcNow
+        );
 
         // Act
-        await _store.SaveAsync(project);
-
-        // Assert
-        string expectedImagePath = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject", "Sources", "SourceImage.png");
-        Assert.True(await _fileStorage.FileExistsAsync(expectedImagePath));
-        
-        byte[] savedImage = await _fileStorage.ReadAllBytesAsync(expectedImagePath);
-        Assert.Equal(sourceImageData, savedImage);
-    }
-
-    [Fact]
-    public async Task SaveAsync_WithInvalidCharactersInName_CleansFileName()
-    {
-        // Arrange
-        var project = new FloorTileProject(_mockProjectStore);
-        project.Initialize("Test<Project>:Name*");
-
-        // Act
-        await _store.SaveAsync(project);
+        await _store.CreateProjectAsync(dto);
 
         // Assert
         string expectedDir = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "Test_Project__Name_");
@@ -138,18 +137,16 @@ public class JsonProjectsStoreTests : IDisposable
     }
 
     [Fact]
-    public async Task SaveAsync_WithConflictingCleanedName_ThrowsException()
+    public async Task CreateProjectAsync_WithConflictingCleanedName_ThrowsException()
     {
         // Arrange
-        var project1 = new FloorTileProject(_mockProjectStore);
-        project1.Initialize("Project<1>");
-        await _store.SaveAsync(project1);
+        var dto1 = new ProjectDto("Project<1>", "FloorTileProject", ProjectStatus.New, DateTime.UtcNow);
+        await _store.CreateProjectAsync(dto1);
 
-        var project2 = new FloorTileProject(_mockProjectStore);
-        project2.Initialize("Project:1:");
+        var dto2 = new ProjectDto("Project:1:", "FloorTileProject", ProjectStatus.New, DateTime.UtcNow);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _store.SaveAsync(project2));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _store.CreateProjectAsync(dto2));
         Assert.Contains("similar name already exists", exception.Message);
         Assert.Contains("Project<1>", exception.Message);
     }
@@ -165,14 +162,24 @@ public class JsonProjectsStoreTests : IDisposable
     }
 
     [Fact]
-    public async Task LoadAsync_WithExistingProject_ReturnsProject()
+    public async Task LoadAsync_WithExistingProject_ReturnsBasicProject()
     {
         // Arrange
-        var originalProject = new FloorTileProject(_mockProjectStore);
-        originalProject.Initialize("TestProject");
-        originalProject.Status = ProjectStatus.Pending;
-        originalProject.TileShape = TileShape.HalfHorizontal;
-        await _store.SaveAsync(originalProject);
+        var dto = new ProjectDto(
+            name: "TestProject",
+            type: "FloorTileProject",
+            status: ProjectStatus.Pending,
+            lastModifiedDate: DateTime.UtcNow
+        );
+        await _store.CreateProjectAsync(dto);
+
+        // Manually add a polymorphic property to JSON (simulating IProjectStore behavior)
+        string jsonPath = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject", "TestProject.json");
+        string jsonContent = await _fileStorage.ReadAllTextAsync(jsonPath);
+        var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonContent);
+        jsonDoc!["tileShape"] = "HalfHorizontal"; // FloorTileProject specific property
+        string updatedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true });
+        await _fileStorage.WriteAllTextAsync(jsonPath, updatedJson);
 
         // Act
         var loadedProject = await _store.LoadAsync("TestProject");
@@ -182,20 +189,24 @@ public class JsonProjectsStoreTests : IDisposable
         Assert.Equal("TestProject", loadedProject.Name);
         Assert.Equal("FloorTileProject", loadedProject.Type);
         Assert.Equal(ProjectStatus.Pending, loadedProject.Status);
-        
+
         var floorProject = Assert.IsType<FloorTileProject>(loadedProject);
-        Assert.Equal(TileShape.HalfHorizontal, floorProject.TileShape);
+        Assert.Equal(TileShape.HalfHorizontal, floorProject.TileShape); // Polymorphic property loaded
     }
 
     [Fact]
     public async Task LoadAsync_WithDisplayImage_LoadsImageData()
     {
         // Arrange
-        var originalProject = new FloorTileProject(_mockProjectStore);
-        originalProject.Initialize("TestProject");
         byte[] imageData = [0x89, 0x50, 0x4E, 0x47];
-        originalProject.DisplayImage = imageData;
-        await _store.SaveAsync(originalProject);
+        var dto = new ProjectDto(
+            name: "TestProject",
+            type: "FloorTileProject",
+            status: ProjectStatus.New,
+            lastModifiedDate: DateTime.UtcNow,
+            displayImage: imageData
+        );
+        await _store.CreateProjectAsync(dto);
 
         // Act
         var loadedProject = await _store.LoadAsync("TestProject");
@@ -207,32 +218,11 @@ public class JsonProjectsStoreTests : IDisposable
     }
 
     [Fact]
-    public async Task LoadAsync_WithSourceImage_LoadsImageData()
-    {
-        // Arrange
-        var originalProject = new FloorTileProject(_mockProjectStore);
-        originalProject.Initialize("TestProject");
-        byte[] sourceImageData = [0x89, 0x50, 0x4E, 0x47, 0x0D];
-        originalProject.SourceImage = sourceImageData;
-        await _store.SaveAsync(originalProject);
-
-        // Act
-        var loadedProject = await _store.LoadAsync("TestProject");
-
-        // Assert
-        Assert.NotNull(loadedProject);
-        var floorProject = Assert.IsType<FloorTileProject>(loadedProject);
-        Assert.NotNull(floorProject.SourceImage);
-        Assert.Equal(sourceImageData, floorProject.SourceImage);
-    }
-
-    [Fact]
     public async Task DeleteAsync_WithExistingProject_RemovesDirectoryAndContents()
     {
         // Arrange
-        var project = new FloorTileProject(_mockProjectStore);
-        project.Initialize("TestProject");
-        await _store.SaveAsync(project);
+        var dto = new ProjectDto("TestProject", "FloorTileProject", ProjectStatus.New, DateTime.UtcNow);
+        await _store.CreateProjectAsync(dto);
         
         string projectDir = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject");
         Assert.True(await _fileStorage.DirectoryExistsAsync(projectDir));
@@ -255,9 +245,8 @@ public class JsonProjectsStoreTests : IDisposable
     public async Task ExistsAsync_WithExistingProject_ReturnsTrue()
     {
         // Arrange
-        var project = new FloorTileProject(_mockProjectStore);
-        project.Initialize("TestProject");
-        await _store.SaveAsync(project);
+        var dto = new ProjectDto("TestProject", "FloorTileProject", ProjectStatus.New, DateTime.UtcNow);
+        await _store.CreateProjectAsync(dto);
 
         // Act
         bool exists = await _store.ExistsAsync("TestProject");
@@ -304,15 +293,10 @@ public class JsonProjectsStoreTests : IDisposable
     public async Task ListProjectsAsync_WithMultipleProjects_ReturnsAllValidProjects()
     {
         // Arrange
-        var project1 = new FloorTileProject(_mockProjectStore);
-        project1.Initialize("Project1");
-        project1.Status = ProjectStatus.Generated;
-        await _store.SaveAsync(project1);
-
-        var project2 = new FloorTileProject(_mockProjectStore);
-        project2.Initialize("Project2");
-        project2.Status = ProjectStatus.Pending;
-        await _store.SaveAsync(project2);
+        var dto1 = new ProjectDto("Project1", "FloorTileProject", ProjectStatus.Generated, DateTime.UtcNow);
+        var dto2 = new ProjectDto("Project2", "FloorTileProject", ProjectStatus.Pending, DateTime.UtcNow);
+        await _store.CreateProjectAsync(dto1);
+        await _store.CreateProjectAsync(dto2);
 
         // Act
         var projects = await _store.ListProjectsAsync();
@@ -327,9 +311,8 @@ public class JsonProjectsStoreTests : IDisposable
     public async Task ListProjectsAsync_WithInvalidDirectories_SkipsThem()
     {
         // Arrange
-        var validProject = new FloorTileProject(_mockProjectStore);
-        validProject.Initialize("ValidProject");
-        await _store.SaveAsync(validProject);
+        var validDto = new ProjectDto("ValidProject", "FloorTileProject", ProjectStatus.New, DateTime.UtcNow);
+        await _store.CreateProjectAsync(validDto);
 
         // Create invalid directory (no JSON file)
         string invalidDir = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "InvalidDir");
@@ -344,10 +327,10 @@ public class JsonProjectsStoreTests : IDisposable
     }
 
     [Fact]
-    public async Task SaveAsync_WithNullProject_ThrowsArgumentNullException()
+    public async Task CreateProjectAsync_WithNullDto_ThrowsArgumentNullException()
     {
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(() => _store.SaveAsync(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => _store.CreateProjectAsync(null!));
     }
 
     [Fact]
@@ -365,96 +348,28 @@ public class JsonProjectsStoreTests : IDisposable
     }
 
     [Fact]
-    public async Task SaveAsync_WithTransformations_PreservesThemInJson()
+    public async Task LoadAsync_WithTransformations_LoadsTransformationsList()
     {
         // Arrange
-        var project = new FloorTileProject(_mockProjectStore);
-        project.Initialize("TestProject");
+        var dto = new ProjectDto("TestProject", "FloorTileProject", ProjectStatus.New, DateTime.UtcNow);
+        await _store.CreateProjectAsync(dto);
 
-        // Add transformations to the project
-        var transformation1 = new TransformationDTO 
-        { 
-            Id = Guid.NewGuid(), 
-            Type = "HorizontalFloorTransformation",
-            Icon = [0x01, 0x02]
-        };
-        var transformation2 = new TransformationDTO 
-        { 
-            Id = Guid.NewGuid(), 
-            Type = "VerticalWallTransformation",
-            Icon = [0x03, 0x04]
-        };
-        project.Transformations.Add(transformation1);
-        project.Transformations.Add(transformation2);
-
-        // Act - Save the project
-        await _store.SaveAsync(project);
-
-        // Assert - Transformations must be preserved in the JSON file
+        // Manually add transformations to JSON (simulating what IProjectStore will do)
         string jsonPath = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject", "TestProject.json");
         string jsonContent = await _fileStorage.ReadAllTextAsync(jsonPath);
+        var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonContent);
 
-        // Verify transformations array is in JSON
-        Assert.Contains("\"transformations\"", jsonContent, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains(transformation1.Id.ToString(), jsonContent);
-        Assert.Contains(transformation2.Id.ToString(), jsonContent);
-        Assert.Contains("HorizontalFloorTransformation", jsonContent);
-        Assert.Contains("VerticalWallTransformation", jsonContent);
-    }
+        var transformation1Id = Guid.NewGuid();
+        var transformation2Id = Guid.NewGuid();
 
-    [Fact]
-    public async Task SaveAsync_WithExistingTransformationsInJson_DoesNotDeleteThem()
-    {
-        // Arrange - Create a project with transformations
-        var project = new FloorTileProject(_mockProjectStore);
-        project.Initialize("TestProject");
-        var originalTransformation = new TransformationDTO 
-        { 
-            Id = Guid.NewGuid(), 
-            Type = "HorizontalFloorTransformation",
-            Icon = [0x01, 0x02]
+        jsonDoc!["transformations"] = new[]
+        {
+            new { id = transformation1Id, type = "HorizontalFloorTransformation", icon = (byte[]?)null },
+            new { id = transformation2Id, type = "VerticalWallTransformation", icon = (byte[]?)null }
         };
-        project.Transformations.Add(originalTransformation);
-        await _store.SaveAsync(project);
 
-        // Get the JSON and verify transformation is there
-        string jsonPath = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject", "TestProject.json");
-        string originalJson = await _fileStorage.ReadAllTextAsync(jsonPath);
-        Assert.Contains(originalTransformation.Id.ToString(), originalJson);
-
-        // Act - Save the same project again with updated property (simulating an update)
-        project.Status = ProjectStatus.Generated; // Change something else
-        await _store.SaveAsync(project);
-
-        // Assert - Transformations should STILL be in the JSON (not deleted)
-        string updatedJson = await _fileStorage.ReadAllTextAsync(jsonPath);
-        Assert.Contains("\"transformations\"", updatedJson, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains(originalTransformation.Id.ToString(), updatedJson, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("HorizontalFloorTransformation", updatedJson);
-    }
-
-    // TODO: Reactivate this test when TransformationsStore is implemented
-    [Fact(Skip = "Transformations loading not yet implemented - will be handled by TransformationsStore")]
-    public async Task LoadAsync_WithTransformations_LoadsTransformationsFromJson()
-    {
-        // Arrange
-        var project = new FloorTileProject(_mockProjectStore);
-        project.Initialize("TestProject");
-        var transformation1 = new TransformationDTO 
-        { 
-            Id = Guid.NewGuid(), 
-            Type = "HorizontalFloorTransformation",
-            Icon = [0x01, 0x02]
-        };
-        var transformation2 = new TransformationDTO 
-        { 
-            Id = Guid.NewGuid(), 
-            Type = "VerticalWallTransformation",
-            Icon = [0x03, 0x04]
-        };
-        project.Transformations.Add(transformation1);
-        project.Transformations.Add(transformation2);
-        await _store.SaveAsync(project);
+        string updatedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true });
+        await _fileStorage.WriteAllTextAsync(jsonPath, updatedJson);
 
         // Act
         var loadedProject = await _store.LoadAsync("TestProject");
@@ -462,8 +377,10 @@ public class JsonProjectsStoreTests : IDisposable
         // Assert
         Assert.NotNull(loadedProject);
         Assert.Equal(2, loadedProject.Transformations.Count);
-        Assert.Contains(loadedProject.Transformations, t => t.Id == transformation1.Id);
-        Assert.Contains(loadedProject.Transformations, t => t.Id == transformation2.Id);
+        Assert.Contains(loadedProject.Transformations, t => t.Id == transformation1Id);
+        Assert.Contains(loadedProject.Transformations, t => t.Id == transformation2Id);
+        Assert.Contains(loadedProject.Transformations, t => t.Type == "HorizontalFloorTransformation");
+        Assert.Contains(loadedProject.Transformations, t => t.Type == "VerticalWallTransformation");
     }
 
     // Mock store for testing

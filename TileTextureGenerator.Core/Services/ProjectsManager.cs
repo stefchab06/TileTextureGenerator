@@ -47,12 +47,21 @@ public class ProjectsManager : IProjectsManager
         if (await _projectsStore.ExistsAsync(name))
             throw new InvalidOperationException($"A project with name '{name}' already exists.");
 
-        // Create new project using the registry factory
+        // Create DTO with basic properties
+        var projectDto = new ProjectDto(
+            name: name,
+            type: type,
+            status: ProjectStatus.New,
+            lastModifiedDate: DateTime.UtcNow,
+            displayImage: null
+        );
+
+        // Persist the new project via DTO
+        await _projectsStore.CreateProjectAsync(projectDto);
+
+        // Create and return the entity instance
         var project = TextureProjectRegistry.Create(type, name);
         project.Status = ProjectStatus.New;
-
-        // Persist the new project
-        await _projectsStore.SaveAsync(project);
 
         return project;
     }

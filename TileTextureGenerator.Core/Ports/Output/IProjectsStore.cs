@@ -1,4 +1,4 @@
-﻿using TileTextureGenerator.Core.DTOs;
+using TileTextureGenerator.Core.DTOs;
 using TileTextureGenerator.Core.Entities;
 
 namespace TileTextureGenerator.Core.Ports.Output;
@@ -11,10 +11,12 @@ namespace TileTextureGenerator.Core.Ports.Output;
 public interface IProjectsStore
 {
     /// <summary>
-    /// Persists a project to storage.
+    /// Creates a new project in storage.
+    /// Only persists basic DTO properties (name, type, status, lastModifiedDate).
+    /// Does NOT handle transformations or complex polymorphic properties.
     /// </summary>
-    /// <param name="project">The project to save.</param>
-    Task SaveAsync(ProjectBase project);
+    /// <param name="projectDto">DTO containing basic project information.</param>
+    Task CreateProjectAsync(ProjectDto projectDto);
 
     /// <summary>
     /// Loads a project by name from storage.

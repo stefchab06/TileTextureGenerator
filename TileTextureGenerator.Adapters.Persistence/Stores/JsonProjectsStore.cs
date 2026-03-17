@@ -42,17 +42,17 @@ public sealed class JsonProjectsStore : IProjectsStore
     }
 
     /// <inheritdoc />
-    public async Task SaveAsync(ProjectBase project)
+    public async Task CreateProjectAsync(ProjectDto projectDto)
     {
-        ArgumentNullException.ThrowIfNull(project);
+        ArgumentNullException.ThrowIfNull(projectDto);
 
         // Clean the project name for directory/file naming
-        string cleanedName = FileNameHelper.CleanFileName(project.Name);
+        string cleanedName = FileNameHelper.CleanFileName(projectDto.Name);
         string projectDir = Path.Combine(_projectsBasePath, cleanedName);
         string jsonPath = Path.Combine(projectDir, $"{cleanedName}.json");
 
         // Check for name conflict
-        await CheckForNameConflictAsync(projectDir, jsonPath, project.Name);
+        await CheckForNameConflictAsync(projectDir, jsonPath, projectDto.Name);
 
         // Create directory structure
         await _fileStorage.EnsureDirectoryExistsAsync(projectDir);
@@ -60,11 +60,19 @@ public sealed class JsonProjectsStore : IProjectsStore
         await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Workspace"));
         await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Outputs"));
 
-        // Save images
-        await SaveProjectImagesAsync(project, projectDir);
+        // Save DisplayImage if present
+        if (projectDto.DisplayImage != null && projectDto.DisplayImage.Length > 0)
+        {
+            await _imageHelper.SavePropertyImageAsync(
+                projectDto.DisplayImage,
+                projectDir,
+                "Sources",
+                "DisplayImage"
+            );
+        }
 
-        // Serialize project to JSON (excluding images, using paths)
-        string jsonContent = SerializeProject(project, projectDir);
+        // Serialize DTO to JSON (simple, no polymorphism)
+        string jsonContent = JsonSerializer.Serialize(projectDto, JsonOptions);
         await _fileStorage.WriteAllTextAsync(jsonPath, jsonContent);
     }
 
@@ -72,7 +80,7 @@ public sealed class JsonProjectsStore : IProjectsStore
     public async Task<ProjectBase?> LoadAsync(string projectName)
     {
         ArgumentNullException.ThrowIfNull(projectName);
-        
+
         if (string.IsNullOrWhiteSpace(projectName))
             throw new ArgumentException("Project name cannot be empty or whitespace.", nameof(projectName));
 
@@ -94,7 +102,7 @@ public sealed class JsonProjectsStore : IProjectsStore
         string? typeName = projectData.TryGetValue("type", out var typeElement) 
             ? typeElement.GetString() 
             : null;
-        
+
         string? realName = projectData.TryGetValue("name", out var nameElement) 
             ? nameElement.GetString() 
             : null;
@@ -233,30 +241,6 @@ public sealed class JsonProjectsStore : IProjectsStore
         }
     }
 
-    private async Task SaveProjectImagesAsync(ProjectBase project, string projectDir)
-    {
-        // Get all public instance properties of type byte[] (nullable or not)
-        var concreteType = project.GetType();
-        var imageProperties = concreteType.GetProperties(
-            System.Reflection.BindingFlags.Public | 
-            System.Reflection.BindingFlags.Instance)
-            .Where(p => p.PropertyType == typeof(byte[]) && p.CanRead);
-
-        foreach (var property in imageProperties)
-        {
-            var imageData = property.GetValue(project) as byte[];
-            if (imageData != null && imageData.Length > 0)
-            {
-                await _imageHelper.SavePropertyImageAsync(
-                    imageData,
-                    projectDir,
-                    "Sources",
-                    property.Name
-                );
-            }
-        }
-    }
-
     private async Task LoadProjectImagesAsync(ProjectBase project, string projectDir)
     {
         // Get all public instance properties of type byte[] (nullable or not)
@@ -278,52 +262,6 @@ public sealed class JsonProjectsStore : IProjectsStore
         }
     }
 
-    private string SerializeProject(ProjectBase project, string projectDir)
-    {
-        // Get all byte[] property names for later reference
-        var imagePropertyNames = project.GetType()
-            .GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
-            .Where(p => p.PropertyType == typeof(byte[]))
-            .Select(p => p.Name.ToLowerInvariant())
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        // Serialize the entire concrete object
-        string json = JsonSerializer.Serialize(project, project.GetType(), JsonOptions);
-
-        // Parse to modify image paths
-        var doc = JsonDocument.Parse(json);
-        var root = doc.RootElement;
-
-        using var stream = new MemoryStream();
-        using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
-        {
-            writer.WriteStartObject();
-
-            foreach (var property in root.EnumerateObject())
-            {
-                // Preserve transformations as-is (will be handled by specialized store later)
-                // Do NOT skip them - they must be preserved in the JSON
-
-                // Replace all image byte arrays with paths
-                if (imagePropertyNames.Contains(property.Name))
-                {
-                    // Convert property name to PascalCase for filename
-                    string propertyName = char.ToUpperInvariant(property.Name[0]) + property.Name.Substring(1);
-                    writer.WriteString(property.Name, PathHelper.ToJsonPath($"Sources/{propertyName}.png"));
-                }
-                else
-                {
-                    // Write everything else as-is (including transformations)
-                    property.WriteTo(writer);
-                }
-            }
-
-            writer.WriteEndObject();
-        }
-
-        return System.Text.Encoding.UTF8.GetString(stream.ToArray());
-    }
-
     private void DeserializeProjectProperties(ProjectBase project, Dictionary<string, JsonElement> projectData, string projectDir)
     {
         var concreteType = project.GetType();
@@ -337,15 +275,36 @@ public sealed class JsonProjectsStore : IProjectsStore
 
         foreach (var kvp in projectData)
         {
-            // Skip system properties and transformations (handled separately)
+            // Skip system properties
             if (kvp.Key.Equals("name", StringComparison.OrdinalIgnoreCase) ||
-                kvp.Key.Equals("type", StringComparison.OrdinalIgnoreCase) ||
-                kvp.Key.Equals("transformations", StringComparison.OrdinalIgnoreCase))  // TODO: Load transformations when TransformationsStore is implemented
+                kvp.Key.Equals("type", StringComparison.OrdinalIgnoreCase))
                 continue;
 
             // Skip all image properties (detected generically)
             if (imagePropertyNames.Contains(kvp.Key))
                 continue;
+
+            // Handle transformations list specially (it's a List<TransformationDTO>)
+            if (kvp.Key.Equals("transformations", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    var transformations = JsonSerializer.Deserialize<List<TransformationDTO>>(kvp.Value.GetRawText(), JsonOptions);
+                    if (transformations != null)
+                    {
+                        project.Transformations.Clear();
+                        foreach (var transformation in transformations)
+                        {
+                            project.Transformations.Add(transformation);
+                        }
+                    }
+                }
+                catch
+                {
+                    // Skip if transformations can't be deserialized
+                }
+                continue;
+            }
 
             // Find matching property (case-insensitive for camelCase JSON)
             var prop = concreteType.GetProperty(kvp.Key, 

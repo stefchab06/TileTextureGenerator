@@ -62,31 +62,31 @@ public class ProjectsManagerTests
 
     private class FakeProjectsStore : IProjectsStore
     {
-        private readonly Dictionary<string, ProjectBase> _projects = new();
+        private readonly Dictionary<string, ProjectDto> _projects = new();
 
-        public Task SaveAsync(ProjectBase project)
+        public Task CreateProjectAsync(ProjectDto projectDto)
         {
-            _projects[project.Name] = project;
+            _projects[projectDto.Name] = projectDto;
             return Task.CompletedTask;
         }
 
         public Task<ProjectBase?> LoadAsync(string projectName)
         {
-            _projects.TryGetValue(projectName, out var project);
-            return Task.FromResult(project);
+            if (_projects.TryGetValue(projectName, out var dto))
+            {
+                // Create a basic ProjectBase from DTO for testing
+                var project = TextureProjectRegistry.Create(dto.Type, dto.Name);
+                project.Status = dto.Status;
+                project.LastModifiedDate = dto.LastModifiedDate;
+                project.DisplayImage = dto.DisplayImage;
+                return Task.FromResult<ProjectBase?>(project);
+            }
+            return Task.FromResult<ProjectBase?>(null);
         }
 
         public Task<IReadOnlyList<ProjectDto>> ListProjectsAsync()
         {
-            var summaries = _projects.Values
-                .Select(p => new ProjectDto(
-                    p.Name,
-                    p.Type,
-                    p.Status,
-                    p.LastModifiedDate,
-                    p.DisplayImage))
-                .ToList();
-            return Task.FromResult<IReadOnlyList<ProjectDto>>(summaries);
+            return Task.FromResult<IReadOnlyList<ProjectDto>>(_projects.Values.ToList());
         }
 
         public Task DeleteAsync(string projectName)
