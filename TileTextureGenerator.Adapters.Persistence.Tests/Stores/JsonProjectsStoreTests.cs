@@ -430,6 +430,5 @@ public class JsonProjectsStoreTests : IDisposable
     private class MockProjectStore : IProjectStore
     {
         public Task SaveAsync(ProjectBase entity) => Task.CompletedTask;
-        public Task<ProjectBase?> LoadAsync(string name) => Task.FromResult<ProjectBase?>(null);
     }
 }

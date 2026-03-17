@@ -16,7 +16,6 @@ public class WallTileProjectTests
     private class FakeWallTileProjectStore : IProjectStore
     {
         public Task SaveAsync(ProjectBase project) => Task.CompletedTask;
-        public Task<ProjectBase?> LoadAsync(string projectName) => Task.FromResult<ProjectBase?>(null);
     }
 
     [Fact]

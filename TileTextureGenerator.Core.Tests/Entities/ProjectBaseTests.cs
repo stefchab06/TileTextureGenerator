@@ -27,7 +27,6 @@ public class ProjectBaseTests
     private class FakeProjectStore : IProjectStore
     {
         public Task SaveAsync(ProjectBase project) => Task.CompletedTask;
-        public Task<ProjectBase?> LoadAsync(string projectName) => Task.FromResult<ProjectBase?>(null);
     }
 
     [Fact]
