@@ -67,7 +67,8 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
         await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Workspace"));
         await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Outputs"));
 
-        // Save DisplayImage if present
+        // Save DisplayImage if present and track its path
+        string? displayImagePath = null;
         if (projectDto.DisplayImage != null && projectDto.DisplayImage.Length > 0)
         {
             await _imageHelper.SavePropertyImageAsync(
@@ -76,10 +77,23 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
                 "Sources",
                 "DisplayImage"
             );
+            displayImagePath = "Sources/DisplayImage.png";
         }
 
-        // Serialize DTO to JSON (simple, no polymorphism)
+        // Serialize DTO to JSON
         string jsonContent = JsonSerializer.Serialize(projectDto, JsonOptions);
+
+        // Add image path if present
+        if (displayImagePath != null)
+        {
+            var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonContent, JsonOptions);
+            if (jsonDoc != null)
+            {
+                jsonDoc["displayImagePath"] = JsonSerializer.SerializeToElement(displayImagePath, JsonOptions);
+                jsonContent = JsonSerializer.Serialize(jsonDoc, JsonOptions);
+            }
+        }
+
         await _fileStorage.WriteAllTextAsync(jsonPath, jsonContent);
     }
 
@@ -127,8 +141,8 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
         // Deserialize all properties (polymorphic)
         DeserializeProjectProperties(project, projectData, projectDir);
 
-        // Load images
-        await LoadProjectImagesAsync(project, projectDir);
+        // Load images (using paths from JSON)
+        await LoadProjectImagesAsync(project, projectDir, projectData);
 
         return project;
     }
@@ -232,12 +246,27 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
         await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Workspace"));
         await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Outputs"));
 
-        // Save all image properties (byte[] properties)
-        await SaveProjectImagesAsync(project, projectDir);
+        // Save all image properties and get their paths
+        var imagePaths = await SaveProjectImagesAsync(project, projectDir);
 
         // Serialize the concrete project type polymorphically
         var concreteType = project.GetType();
         string jsonContent = JsonSerializer.Serialize(project, concreteType, JsonOptions);
+
+        // Parse JSON and add image paths
+        var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonContent, JsonOptions);
+        if (jsonDoc != null)
+        {
+            foreach (var kvp in imagePaths)
+            {
+                // Add path property: e.g., "displayImagePath": "Sources/DisplayImage.png"
+                string pathPropertyName = $"{char.ToLowerInvariant(kvp.Key[0])}{kvp.Key.Substring(1)}Path";
+                jsonDoc[pathPropertyName] = JsonSerializer.SerializeToElement(kvp.Value, JsonOptions);
+            }
+
+            jsonContent = JsonSerializer.Serialize(jsonDoc, JsonOptions);
+        }
+
         await _fileStorage.WriteAllTextAsync(jsonPath, jsonContent);
     }
 
@@ -272,7 +301,7 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
         }
     }
 
-    private async Task LoadProjectImagesAsync(ProjectBase project, string projectDir)
+    private async Task LoadProjectImagesAsync(ProjectBase project, string projectDir, Dictionary<string, JsonElement> projectData)
     {
         // Get all public instance properties of type ImageData (nullable or not)
         var concreteType = project.GetType();
@@ -283,8 +312,19 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
 
         foreach (var property in imageProperties)
         {
-            string jsonPath = $"Sources/{property.Name}.png";
-            byte[]? imageData = await _imageHelper.LoadImageAsync(jsonPath, projectDir);
+            // Try to get the path from JSON (e.g., "displayImagePath" for "DisplayImage")
+            string pathPropertyName = $"{char.ToLowerInvariant(property.Name[0])}{property.Name.Substring(1)}Path";
+
+            string? relativePath = null;
+            if (projectData.TryGetValue(pathPropertyName, out var pathElement))
+            {
+                relativePath = pathElement.GetString();
+            }
+
+            if (relativePath == null)
+                continue;
+
+            byte[]? imageData = await _imageHelper.LoadImageAsync(relativePath, projectDir);
 
             if (imageData != null)
             {
@@ -294,8 +334,10 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
         }
     }
 
-    private async Task SaveProjectImagesAsync(ProjectBase project, string projectDir)
+    private async Task<Dictionary<string, string>> SaveProjectImagesAsync(ProjectBase project, string projectDir)
     {
+        var imagePaths = new Dictionary<string, string>();
+
         // Get all public instance properties of type ImageData (nullable or not)
         var concreteType = project.GetType();
         var imageProperties = concreteType.GetProperties(
@@ -309,14 +351,21 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
 
             if (value is ImageData imageData)
             {
+                // Use property name as filename for unique images
+                string relativePath = $"Sources/{property.Name}.png";
+
                 await _imageHelper.SavePropertyImageAsync(
                     imageData.Bytes,
                     projectDir,
                     "Sources",
                     property.Name
                 );
+
+                imagePaths[property.Name] = relativePath;
             }
         }
+
+        return imagePaths;
     }
 
     private void DeserializeProjectProperties(ProjectBase project, Dictionary<string, JsonElement> projectData, string projectDir)
@@ -339,6 +388,10 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
 
             // Skip all image properties (detected generically)
             if (imagePropertyNames.Contains(kvp.Key))
+                continue;
+
+            // Skip image path properties (they're used by LoadProjectImagesAsync)
+            if (kvp.Key.EndsWith("Path", StringComparison.OrdinalIgnoreCase))
                 continue;
 
             // Handle transformations list specially (it's a List<TransformationDTO>)
