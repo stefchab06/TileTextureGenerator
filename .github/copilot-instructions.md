@@ -202,7 +202,27 @@ TileTextureGenerator.Core.Tests/              # Tests unitaires du Core
 5. **Compiler** (`dotnet build` ou dans VS : **Générer → Générer la solution**)
 6. **Exécuter les tests** (`dotnet test` ou dans VS : **Test → Exécuter tous les tests**)
 7. **Vérifier la couverture** (si tests ajoutés) : `dotnet-coverage collect -f cobertura -o coverage.cobertura.xml dotnet test`
-8. **Commit et push** : Via **Affichage → Modifications Git** dans Visual Studio
+8. **Commit et push** : Via **Affichage → Modifications Git** dans Visual Studio ou en ligne de commande
+
+### Commits Git sous PowerShell
+⚠️ **Important** : PowerShell interprète les tirets (`-`) comme des opérateurs dans les messages multi-lignes.
+
+**❌ Ne PAS faire** :
+```powershell
+git commit -m "feat: Title
+- Point 1
+- Point 2"
+```
+
+**✅ À faire** : Utiliser plusieurs flags `-m` (un pour le titre, un pour le corps) :
+```powershell
+git commit -m "feat: Title" -m "Point 1. Point 2. Point 3. All tests passing."
+```
+
+Ou utiliser des points au lieu de tirets dans un seul message :
+```powershell
+git commit -m "feat: Title. Point 1. Point 2. All tests passing."
+```
 
 ---
 
