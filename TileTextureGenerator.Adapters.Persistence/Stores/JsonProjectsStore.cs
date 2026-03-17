@@ -10,11 +10,11 @@ using TileTextureGenerator.Core.Registries;
 namespace TileTextureGenerator.Adapters.Persistence.Stores;
 
 /// <summary>
-/// JSON-based implementation of IProjectsStore.
+/// JSON-based implementation of IProjectsStore and IProjectStore.
 /// Stores projects as JSON files in a directory structure with separate folders for images.
 /// Uses polymorphic serialization to handle concrete project types.
 /// </summary>
-public sealed class JsonProjectsStore : IProjectsStore
+public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
 {
     private readonly IFileStorage _fileStorage;
     private readonly ImagePersistenceHelper _imageHelper;
@@ -210,6 +210,30 @@ public sealed class JsonProjectsStore : IProjectsStore
         return projects;
     }
 
+    /// <inheritdoc />
+    async Task IProjectStore.SaveAsync(ProjectBase project)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+
+        string cleanedName = FileNameHelper.CleanFileName(project.Name);
+        string projectDir = Path.Combine(_projectsBasePath, cleanedName);
+        string jsonPath = Path.Combine(projectDir, $"{cleanedName}.json");
+
+        // Ensure directory structure exists
+        await _fileStorage.EnsureDirectoryExistsAsync(projectDir);
+        await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Sources"));
+        await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Workspace"));
+        await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Outputs"));
+
+        // Save all image properties (byte[] properties)
+        await SaveProjectImagesAsync(project, projectDir);
+
+        // Serialize the concrete project type polymorphically
+        var concreteType = project.GetType();
+        string jsonContent = JsonSerializer.Serialize(project, concreteType, JsonOptions);
+        await _fileStorage.WriteAllTextAsync(jsonPath, jsonContent);
+    }
+
     // Private helper methods
 
     private async Task CheckForNameConflictAsync(string projectDir, string jsonPath, string projectName)
@@ -258,6 +282,31 @@ public sealed class JsonProjectsStore : IProjectsStore
             if (imageData != null)
             {
                 property.SetValue(project, imageData);
+            }
+        }
+    }
+
+    private async Task SaveProjectImagesAsync(ProjectBase project, string projectDir)
+    {
+        // Get all public instance properties of type byte[] (nullable or not)
+        var concreteType = project.GetType();
+        var imageProperties = concreteType.GetProperties(
+            System.Reflection.BindingFlags.Public | 
+            System.Reflection.BindingFlags.Instance)
+            .Where(p => p.PropertyType == typeof(byte[]) && p.CanRead);
+
+        foreach (var property in imageProperties)
+        {
+            byte[]? imageData = property.GetValue(project) as byte[];
+
+            if (imageData != null && imageData.Length > 0)
+            {
+                await _imageHelper.SavePropertyImageAsync(
+                    imageData,
+                    projectDir,
+                    "Sources",
+                    property.Name
+                );
             }
         }
     }

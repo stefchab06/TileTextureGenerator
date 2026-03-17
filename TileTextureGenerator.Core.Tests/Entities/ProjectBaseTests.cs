@@ -14,7 +14,7 @@ public class ProjectBaseTests
 {
     private sealed class TestProject : ProjectBase
     {
-        public TestProject(IProjectStore<ProjectBase> store) : base(store)
+        public TestProject(IProjectStore store) : base(store)
         {
         }
 
@@ -24,23 +24,10 @@ public class ProjectBaseTests
         }
     }
 
-    private class FakeProjectStore : IProjectStore<ProjectBase>
+    private class FakeProjectStore : IProjectStore
     {
         public Task SaveAsync(ProjectBase project) => Task.CompletedTask;
         public Task<ProjectBase?> LoadAsync(string projectName) => Task.FromResult<ProjectBase?>(null);
-    }
-
-    private class FakeImageProcessingService : IImageProcessingService
-    {
-        public byte[] ConvertToPng(byte[] sourceData)
-        {
-            return new byte[] { 0x89, 0x50, 0x4E, 0x47 }; // PNG header mock
-        }
-
-        public byte[] ConvertToPng(byte[] sourceData, int width, int height)
-        {
-            return new byte[] { 0x89, 0x50, 0x4E, 0x47 }; // PNG header mock
-        }
     }
 
     [Fact]
@@ -134,63 +121,6 @@ public class ProjectBaseTests
 
         // Assert
         Assert.Equal(ProjectStatus.Generated, project.Status);
-    }
-
-    [Fact]
-    public void SetDisplayImage_WithValidData_SetsDisplayImage()
-    {
-        // Arrange
-        var store = new FakeProjectStore();
-        var project = new TestProject(store);
-        project.Initialize("TestProject");
-        var imageData = new byte[] { 1, 2, 3, 4 };
-        var imageProcessor = new FakeImageProcessingService();
-
-        // Act
-        project.SetDisplayImage(imageData, imageProcessor);
-
-        // Assert
-        Assert.NotNull(project.DisplayImage);
-        Assert.NotEmpty(project.DisplayImage);
-    }
-
-    [Fact]
-    public void SetDisplayImage_WithNullData_ThrowsArgumentException()
-    {
-        // Arrange
-        var store = new FakeProjectStore();
-        var project = new TestProject(store);
-        project.Initialize("TestProject");
-        var imageProcessor = new FakeImageProcessingService();
-
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => project.SetDisplayImage(null!, imageProcessor));
-    }
-
-    [Fact]
-    public void SetDisplayImage_WithEmptyData_ThrowsArgumentException()
-    {
-        // Arrange
-        var store = new FakeProjectStore();
-        var project = new TestProject(store);
-        project.Initialize("TestProject");
-        var imageProcessor = new FakeImageProcessingService();
-
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => project.SetDisplayImage(Array.Empty<byte>(), imageProcessor));
-    }
-
-    [Fact]
-    public void SetDisplayImage_WithNullProcessor_ThrowsArgumentNullException()
-    {
-        // Arrange
-        var store = new FakeProjectStore();
-        var project = new TestProject(store);
-        project.Initialize("TestProject");
-        var imageData = new byte[] { 1, 2, 3, 4 };
-
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => project.SetDisplayImage(imageData, null!));
     }
 
     #region Transformation Management Tests
@@ -297,80 +227,6 @@ public class ProjectBaseTests
         Assert.Equal(2, project.Transformations.Count);
         Assert.Equal(t1.Id, project.Transformations[0].Id);
         Assert.Equal(t3.Id, project.Transformations[1].Id);
-    }
-
-    [Fact]
-    public async Task ReorderTransformationsAsync_ReordersCorrectlyAndSaves()
-    {
-        // Arrange
-        var store = new FakeProjectStore();
-        var project = new TestProject(store);
-        project.Initialize("TestProject");
-        var t1 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T1" };
-        var t2 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T2" };
-        var t3 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T3" };
-
-        await project.AddTransformationAsync(t1);
-        await project.AddTransformationAsync(t2);
-        await project.AddTransformationAsync(t3);
-
-        // Act - Reverse order
-        await project.ReorderTransformationsAsync(new[] { t3.Id, t2.Id, t1.Id });
-
-        // Assert
-        Assert.Equal(3, project.Transformations.Count);
-        Assert.Equal(t3.Id, project.Transformations[0].Id);
-        Assert.Equal(t2.Id, project.Transformations[1].Id);
-        Assert.Equal(t1.Id, project.Transformations[2].Id);
-    }
-
-    [Fact]
-    public async Task ReorderTransformationsAsync_WithNullOrder_ThrowsArgumentNullException()
-    {
-        // Arrange
-        var store = new FakeProjectStore();
-        var project = new TestProject(store);
-        project.Initialize("TestProject");
-
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(() => project.ReorderTransformationsAsync(null!));
-    }
-
-    [Fact]
-    public async Task ReorderTransformationsAsync_WithWrongCount_ThrowsArgumentException()
-    {
-        // Arrange
-        var store = new FakeProjectStore();
-        var project = new TestProject(store);
-        project.Initialize("TestProject");
-        var t1 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T1" };
-        var t2 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T2" };
-
-        await project.AddTransformationAsync(t1);
-        await project.AddTransformationAsync(t2);
-
-        // Act & Assert - Only one ID in new order
-        await Assert.ThrowsAsync<ArgumentException>(() => project.ReorderTransformationsAsync(new[] { t1.Id }));
-    }
-
-    [Fact]
-    public async Task ReorderTransformationsAsync_WithNonExistentId_ThrowsArgumentException()
-    {
-        // Arrange
-        var store = new FakeProjectStore();
-        var project = new TestProject(store);
-        project.Initialize("TestProject");
-        var t1 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T1" };
-        var t2 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T2" };
-
-        await project.AddTransformationAsync(t1);
-        await project.AddTransformationAsync(t2);
-
-        var nonExistentId = Guid.NewGuid();
-
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() => 
-            project.ReorderTransformationsAsync(new[] { t1.Id, nonExistentId }));
     }
 
     #endregion

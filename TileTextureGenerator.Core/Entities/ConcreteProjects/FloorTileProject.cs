@@ -11,8 +11,6 @@ namespace TileTextureGenerator.Core.Entities.ConcreteProjects;
 /// </summary>
 public sealed class FloorTileProject : ProjectBase
 {
-    private readonly IProjectStore<FloorTileProject> _floorStore;
-
     private static readonly string[] AvailableTransformationTypes = 
     {
         nameof(ConcreteTransformations.HorizontalFloorTransformation)
@@ -37,18 +35,10 @@ public sealed class FloorTileProject : ProjectBase
     /// Constructor with dependency injection.
     /// Store is injected by DI container.
     /// </summary>
-    /// <param name="store">The FloorTileProject-specific store.</param>
-    public FloorTileProject(IProjectStore<FloorTileProject> store) 
-        : base(new FloorTileProjectStoreAdapter(store))
+    /// <param name="store">The project store for persistence operations.</param>
+    public FloorTileProject(IProjectStore store) 
+        : base(store)
     {
-        _floorStore = store ?? throw new ArgumentNullException(nameof(store));
-    }
-
-    /// <inheritdoc />
-    public override async Task SaveChangesAsync()
-    {
-        LastModifiedDate = DateTime.UtcNow;
-        await _floorStore.SaveAsync(this);
     }
 
     /// <inheritdoc />
@@ -63,31 +53,5 @@ public sealed class FloorTileProject : ProjectBase
             .ToList();
 
         return Task.FromResult<IReadOnlyList<TransformationTypeDTO>>(dtos);
-    }
-
-    /// <summary>
-    /// Adapter to allow FloorTileProject-specific store to be used as ProjectBase store.
-    /// </summary>
-    private class FloorTileProjectStoreAdapter : IProjectStore<ProjectBase>
-    {
-        private readonly IProjectStore<FloorTileProject> _innerStore;
-
-        public FloorTileProjectStoreAdapter(IProjectStore<FloorTileProject> innerStore)
-        {
-            _innerStore = innerStore;
-        }
-
-        public async Task SaveAsync(ProjectBase project)
-        {
-            if (project is not FloorTileProject floorProject)
-                throw new InvalidOperationException($"Expected FloorTileProject but got {project.GetType().Name}");
-
-            await _innerStore.SaveAsync(floorProject);
-        }
-
-        public async Task<ProjectBase?> LoadAsync(string projectName)
-        {
-            return await _innerStore.LoadAsync(projectName);
-        }
     }
 }

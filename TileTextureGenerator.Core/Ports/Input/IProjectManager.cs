@@ -28,12 +28,6 @@ public interface IProjectManager
     Task RemoveTransformationAsync(Guid transformationId);
 
     /// <summary>
-    /// Reorders transformations in the project and persists the change.
-    /// </summary>
-    /// <param name="newOrder">New order of transformation IDs.</param>
-    Task ReorderTransformationsAsync(IReadOnlyList<Guid> newOrder);
-
-    /// <summary>
     /// Gets the list of transformation types available for this project type.
     /// Returns metadata (name and icon) for each compatible transformation type.
     /// </summary>

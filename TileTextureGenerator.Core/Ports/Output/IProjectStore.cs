@@ -1,23 +1,26 @@
+using TileTextureGenerator.Core.Entities;
+
 namespace TileTextureGenerator.Core.Ports.Output;
 
 /// <summary>
 /// Output port for individual project persistence operations.
-/// Generic interface allowing type-safe persistence of specific project types.
+/// Non-generic interface for polymorphic project persistence.
 /// Implemented by persistence adapters (e.g., file system, database).
 /// </summary>
-/// <typeparam name="TProject">The specific project type to persist.</typeparam>
-public interface IProjectStore<TProject> where TProject : class
+public interface IProjectStore
 {
     /// <summary>
     /// Persists a project instance to storage.
+    /// The concrete type will be serialized polymorphically.
     /// </summary>
     /// <param name="project">The project to save.</param>
-    Task SaveAsync(TProject project);
+    Task SaveAsync(ProjectBase project);
 
     /// <summary>
     /// Loads a project instance from storage.
+    /// Returns the concrete type based on stored metadata.
     /// </summary>
     /// <param name="projectName">Name of the project to load.</param>
     /// <returns>The loaded project, or null if not found.</returns>
-    Task<TProject?> LoadAsync(string projectName);
+    Task<ProjectBase?> LoadAsync(string projectName);
 }

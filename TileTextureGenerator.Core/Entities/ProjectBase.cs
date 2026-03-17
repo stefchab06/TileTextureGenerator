@@ -14,7 +14,7 @@ namespace TileTextureGenerator.Core.Entities;
 /// </summary>
 public abstract class ProjectBase : IProjectManager
 {
-    private readonly IProjectStore<ProjectBase> _store;
+    private readonly IProjectStore _store;
     private string? _name;
     private bool _initialized;
 
@@ -65,7 +65,7 @@ public abstract class ProjectBase : IProjectManager
     /// Store is injected by DI container.
     /// </summary>
     /// <param name="store">The project store for persistence operations.</param>
-    protected ProjectBase(IProjectStore<ProjectBase> store)
+    protected ProjectBase(IProjectStore store)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
     }
@@ -135,28 +135,6 @@ public abstract class ProjectBase : IProjectManager
             throw new InvalidOperationException($"Transformation with ID '{transformationId}' not found.");
 
         Transformations.Remove(transformation);
-        await SaveChangesAsync();
-    }
-
-    /// <inheritdoc />
-    public virtual async Task ReorderTransformationsAsync(IReadOnlyList<Guid> newOrder)
-    {
-        ArgumentNullException.ThrowIfNull(newOrder);
-
-        if (newOrder.Count != Transformations.Count)
-            throw new ArgumentException("New order must contain all transformation IDs.", nameof(newOrder));
-
-        var reordered = new List<TransformationDTO>();
-        foreach (var id in newOrder)
-        {
-            var transformation = Transformations.FirstOrDefault(t => t.Id == id);
-            if (transformation == null)
-                throw new ArgumentException($"Transformation with ID '{id}' not found.", nameof(newOrder));
-
-            reordered.Add(transformation);
-        }
-
-        Transformations = reordered;
         await SaveChangesAsync();
     }
 

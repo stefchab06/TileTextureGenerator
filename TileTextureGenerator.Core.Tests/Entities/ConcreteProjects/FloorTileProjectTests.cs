@@ -13,10 +13,10 @@ namespace TileTextureGenerator.Core.Tests.Entities.ConcreteProjects;
 /// </summary>
 public class FloorTileProjectTests
 {
-    private class FakeFloorTileProjectStore : IProjectStore<FloorTileProject>
+    private class FakeFloorTileProjectStore : IProjectStore
     {
-        public Task SaveAsync(FloorTileProject project) => Task.CompletedTask;
-        public Task<FloorTileProject?> LoadAsync(string projectName) => Task.FromResult<FloorTileProject?>(null);
+        public Task SaveAsync(ProjectBase project) => Task.CompletedTask;
+        public Task<ProjectBase?> LoadAsync(string projectName) => Task.FromResult<ProjectBase?>(null);
     }
 
     [Fact]

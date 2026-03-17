@@ -11,8 +11,6 @@ namespace TileTextureGenerator.Core.Entities.ConcreteProjects;
 /// </summary>
 public sealed class WallTileProject : ProjectBase
 {
-    private readonly IProjectStore<WallTileProject> _wallStore;
-
     private static readonly string[] AvailableTransformationTypes = 
     {
         nameof(ConcreteTransformations.VerticalWallTransformation)
@@ -37,18 +35,10 @@ public sealed class WallTileProject : ProjectBase
     /// Constructor with dependency injection.
     /// Store is injected by DI container.
     /// </summary>
-    /// <param name="store">The WallTileProject-specific store.</param>
-    public WallTileProject(IProjectStore<WallTileProject> store) 
-        : base(new WallTileProjectStoreAdapter(store))
+    /// <param name="store">The project store for persistence operations.</param>
+    public WallTileProject(IProjectStore store) 
+        : base(store)
     {
-        _wallStore = store ?? throw new ArgumentNullException(nameof(store));
-    }
-
-    /// <inheritdoc />
-    public override async Task SaveChangesAsync()
-    {
-        LastModifiedDate = DateTime.UtcNow;
-        await _wallStore.SaveAsync(this);
     }
 
     /// <inheritdoc />
@@ -63,31 +53,5 @@ public sealed class WallTileProject : ProjectBase
             .ToList();
 
         return Task.FromResult<IReadOnlyList<TransformationTypeDTO>>(dtos);
-    }
-
-    /// <summary>
-    /// Adapter to allow WallTileProject-specific store to be used as ProjectBase store.
-    /// </summary>
-    private class WallTileProjectStoreAdapter : IProjectStore<ProjectBase>
-    {
-        private readonly IProjectStore<WallTileProject> _innerStore;
-
-        public WallTileProjectStoreAdapter(IProjectStore<WallTileProject> innerStore)
-        {
-            _innerStore = innerStore;
-        }
-
-        public async Task SaveAsync(ProjectBase project)
-        {
-            if (project is not WallTileProject wallProject)
-                throw new InvalidOperationException($"Expected WallTileProject but got {project.GetType().Name}");
-
-            await _innerStore.SaveAsync(wallProject);
-        }
-
-        public async Task<ProjectBase?> LoadAsync(string projectName)
-        {
-            return await _innerStore.LoadAsync(projectName);
-        }
     }
 }

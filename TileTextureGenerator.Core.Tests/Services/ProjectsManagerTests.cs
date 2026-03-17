@@ -32,7 +32,7 @@ public class ProjectsManagerTests
 
     private sealed class FakeProjectTypeA : ProjectBase
     {
-        public FakeProjectTypeA(IProjectStore<ProjectBase> store) : base(store)
+        public FakeProjectTypeA(IProjectStore store) : base(store)
         {
         }
 
@@ -44,7 +44,7 @@ public class ProjectsManagerTests
 
     private sealed class FakeProjectTypeB : ProjectBase
     {
-        public FakeProjectTypeB(IProjectStore<ProjectBase> store) : base(store)
+        public FakeProjectTypeB(IProjectStore store) : base(store)
         {
         }
 
@@ -54,7 +54,7 @@ public class ProjectsManagerTests
         }
     }
 
-    private class FakeProjectStore : IProjectStore<ProjectBase>
+    private class FakeProjectStore : IProjectStore
     {
         public Task SaveAsync(ProjectBase project) => Task.CompletedTask;
         public Task<ProjectBase?> LoadAsync(string projectName) => Task.FromResult<ProjectBase?>(null);

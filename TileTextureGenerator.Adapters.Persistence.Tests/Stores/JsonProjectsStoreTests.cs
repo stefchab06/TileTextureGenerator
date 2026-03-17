@@ -218,6 +218,49 @@ public class JsonProjectsStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task SaveAsync_WithProjectBase_SavesPolymorphically()
+    {
+        // Arrange
+        var project = new FloorTileProject(_mockProjectStore);
+        project.Initialize("PolymorphicTest");
+        project.Status = ProjectStatus.Pending;
+        project.TileShape = TileShape.HalfVertical;
+
+        // Act
+        await ((IProjectStore)_store).SaveAsync(project);
+
+        // Assert - Verify JSON contains polymorphic properties
+        string jsonPath = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "PolymorphicTest", "PolymorphicTest.json");
+        Assert.True(await _fileStorage.FileExistsAsync(jsonPath));
+
+        string jsonContent = await _fileStorage.ReadAllTextAsync(jsonPath);
+        Assert.Contains("\"name\": \"PolymorphicTest\"", jsonContent, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("\"type\": \"FloorTileProject\"", jsonContent, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("\"status\": \"Pending\"", jsonContent, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("\"tileShape\": \"HalfVertical\"", jsonContent, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task SaveAsync_WithSourceImage_SavesImageFile()
+    {
+        // Arrange
+        byte[] imageData = [0x89, 0x50, 0x4E, 0x47];
+        var project = new FloorTileProject(_mockProjectStore);
+        project.Initialize("ImageTest");
+        project.SourceImage = imageData;
+
+        // Act
+        await ((IProjectStore)_store).SaveAsync(project);
+
+        // Assert
+        string imagePath = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "ImageTest", "Sources", "SourceImage.png");
+        Assert.True(await _fileStorage.FileExistsAsync(imagePath));
+
+        byte[] savedImage = await _fileStorage.ReadAllBytesAsync(imagePath);
+        Assert.Equal(imageData, savedImage);
+    }
+
+    [Fact]
     public async Task DeleteAsync_WithExistingProject_RemovesDirectoryAndContents()
     {
         // Arrange
@@ -384,11 +427,9 @@ public class JsonProjectsStoreTests : IDisposable
     }
 
     // Mock store for testing
-    private class MockProjectStore : IProjectStore<FloorTileProject>
+    private class MockProjectStore : IProjectStore
     {
-        public Task SaveAsync(FloorTileProject entity) => Task.CompletedTask;
-        public Task<FloorTileProject?> LoadAsync(string name) => Task.FromResult<FloorTileProject?>(null);
-        public Task DeleteAsync(string name) => Task.CompletedTask;
-        public Task<bool> ExistsAsync(string name) => Task.FromResult(false);
+        public Task SaveAsync(ProjectBase entity) => Task.CompletedTask;
+        public Task<ProjectBase?> LoadAsync(string name) => Task.FromResult<ProjectBase?>(null);
     }
 }
