@@ -19,7 +19,11 @@ public sealed class InMemoryFileStorage : IFileStorage
         _directories.Add(_appDataPath);
     }
 
-    public string GetApplicationDataPath() => _appDataPath;
+    public string GetApplicationDataPath() => Path.Combine(_appDataPath, "TileTextureGenerator");
+    public string GetProjectsRootPath() => Path.Combine(GetApplicationDataPath(), "Projects");
+    public string GetProjectPath(string projectName) => Path.Combine(GetProjectsRootPath(), projectName); 
+    public string GetProjectFileName(string projectName) => Path.Combine(GetProjectPath(projectName), $"{projectName}.json");
+
 
     public Task<string> ReadAllTextAsync(string filePath, CancellationToken cancellationToken = default)
     {

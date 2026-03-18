@@ -9,9 +9,31 @@ public interface IFileStorage
     /// <summary>
     /// Gets the base directory path where application data is stored.
     /// Platform-specific: ProgramData (Windows), /usr/share or ~/.local/share (Linux/macOS).
+    //  to implement as Path.Combine(appDataPath, "TileTextureGenerator");
     /// </summary>
     /// <returns>The absolute path to the application data directory.</returns>
     string GetApplicationDataPath();
+
+    /// <summary>
+    /// Gets all projects root path.
+    //  to implement as Path.Combine(GetApplicationDataPath, "Projects");
+    /// </summary>
+    /// <returns>The absolute path to the a project.</returns>
+    string GetProjectsRootPath();
+
+    /// <summary>
+    /// Gets a project path.
+    //  to implement as Path.Combine(GetProjectsRootPath, cleanProjectName);
+    /// </summary>
+    /// <returns>The absolute path to the a project.</returns>
+    string GetProjectPath(string cleanProjectName);
+
+    /// <summary>
+    /// Gets a project json file path.
+    //  to implement as Path.Combine(GetProjectPath(cleanProjectName), $"{cleanedName}.json");
+    /// </summary>
+    /// <returns>The absolute path to the a project.</returns>
+    string GetProjectFileName(string cleanProjectName);
 
     /// <summary>
     /// Reads all text from a file asynchronously.

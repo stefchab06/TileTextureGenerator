@@ -27,6 +27,8 @@ public class ProjectBaseTests
     private class FakeProjectStore : IProjectStore
     {
         public Task SaveAsync(ProjectBase project) => Task.CompletedTask;
+        public Task AddTransformationAsync(ProjectBase project, TransformationDTO transformation) => Task.CompletedTask;
+        public Task RemoveTransformationAsync(ProjectBase project, Guid transformationID) => Task.CompletedTask;
     }
 
     [Fact]
@@ -131,18 +133,13 @@ public class ProjectBaseTests
         var store = new FakeProjectStore();
         var project = new TestProject(store);
         project.Initialize("TestProject");
-        var transformation = new TransformationDTO
-        {
-            Id = Guid.NewGuid(),
-            Type = "TestTransformation"
-        };
+        var transformationType = "TestTransformation";
 
         // Act
-        await project.AddTransformationAsync(transformation);
+        await project.AddTransformationAsync(transformationType);
 
         // Assert
         Assert.Single(project.Transformations);
-        Assert.Contains(transformation, project.Transformations);
     }
 
     [Fact]
@@ -158,31 +155,14 @@ public class ProjectBaseTests
     }
 
     [Fact]
-    public async Task AddTransformationAsync_WithDuplicateId_ThrowsInvalidOperationException()
-    {
-        // Arrange
-        var store = new FakeProjectStore();
-        var project = new TestProject(store);
-        project.Initialize("TestProject");
-        var id = Guid.NewGuid();
-        var transformation1 = new TransformationDTO { Id = id, Type = "Type1" };
-        var transformation2 = new TransformationDTO { Id = id, Type = "Type2" };
-
-        await project.AddTransformationAsync(transformation1);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => project.AddTransformationAsync(transformation2));
-    }
-
-    [Fact]
     public async Task RemoveTransformationAsync_RemovesTransformationAndSaves()
     {
         // Arrange
         var store = new FakeProjectStore();
         var project = new TestProject(store);
         project.Initialize("TestProject");
-        var transformation = new TransformationDTO { Id = Guid.NewGuid(), Type = "Test" };
-        await project.AddTransformationAsync(transformation);
+        await project.AddTransformationAsync("Test");
+        var transformation = project.Transformations.First();
 
         // Act
         await project.RemoveTransformationAsync(transformation.Id);
@@ -202,30 +182,6 @@ public class ProjectBaseTests
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => project.RemoveTransformationAsync(nonExistentId));
-    }
-
-    [Fact]
-    public async Task RemoveTransformationAsync_ReordersRemainingTransformations()
-    {
-        // Arrange
-        var store = new FakeProjectStore();
-        var project = new TestProject(store);
-        project.Initialize("TestProject");
-        var t1 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T1" };
-        var t2 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T2" };
-        var t3 = new TransformationDTO { Id = Guid.NewGuid(), Type = "T3" };
-
-        await project.AddTransformationAsync(t1);
-        await project.AddTransformationAsync(t2);
-        await project.AddTransformationAsync(t3);
-
-        // Act - Remove middle transformation
-        await project.RemoveTransformationAsync(t2.Id);
-
-        // Assert
-        Assert.Equal(2, project.Transformations.Count);
-        Assert.Equal(t1.Id, project.Transformations[0].Id);
-        Assert.Equal(t3.Id, project.Transformations[1].Id);
     }
 
     #endregion

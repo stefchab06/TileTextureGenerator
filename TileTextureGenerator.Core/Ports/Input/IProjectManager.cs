@@ -19,7 +19,7 @@ public interface IProjectManager
     /// Adds a new transformation to the project and persists the change.
     /// </summary>
     /// <param name="transformation">The transformation metadata to add.</param>
-    Task AddTransformationAsync(TransformationDTO transformation);
+    Task AddTransformationAsync(string transformationType);
 
     /// <summary>
     /// Removes a transformation from the project and persists the change.

@@ -16,7 +16,7 @@ namespace TileTextureGenerator.Adapters.Persistence.Stores;
 /// Stores projects as JSON files in a directory structure with separate folders for images.
 /// Uses polymorphic serialization to handle concrete project types.
 /// </summary>
-public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
+public sealed class JsonProjectsStore : IProjectsStore
 {
     private readonly IFileStorage _fileStorage;
     private readonly ImagePersistenceHelper _imageHelper;
@@ -44,8 +44,7 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
         _fileStorage = fileStorage ?? throw new ArgumentNullException(nameof(fileStorage));
         _imageHelper = new ImagePersistenceHelper(fileStorage);
 
-        string appDataPath = _fileStorage.GetApplicationDataPath();
-        _projectsBasePath = Path.Combine(appDataPath, "TileTextureGenerator", "Projects");
+        _projectsBasePath = _fileStorage.GetProjectsRootPath();
     }
 
     /// <inheritdoc />
@@ -106,6 +105,7 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
             throw new ArgumentException("Project name cannot be empty or whitespace.", nameof(projectName));
 
         string cleanedName = FileNameHelper.CleanFileName(projectName);
+
         string projectDir = Path.Combine(_projectsBasePath, cleanedName);
         string jsonPath = Path.Combine(projectDir, $"{cleanedName}.json");
 
@@ -231,45 +231,6 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
         return projects;
     }
 
-    /// <inheritdoc />
-    async Task IProjectStore.SaveAsync(ProjectBase project)
-    {
-        ArgumentNullException.ThrowIfNull(project);
-
-        string cleanedName = FileNameHelper.CleanFileName(project.Name);
-        string projectDir = Path.Combine(_projectsBasePath, cleanedName);
-        string jsonPath = Path.Combine(projectDir, $"{cleanedName}.json");
-
-        // Ensure directory structure exists
-        await _fileStorage.EnsureDirectoryExistsAsync(projectDir);
-        await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Sources"));
-        await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Workspace"));
-        await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Outputs"));
-
-        // Save all image properties and get their paths
-        var imagePaths = await SaveProjectImagesAsync(project, projectDir);
-
-        // Serialize the concrete project type polymorphically
-        var concreteType = project.GetType();
-        string jsonContent = JsonSerializer.Serialize(project, concreteType, JsonOptions);
-
-        // Parse JSON and add image paths
-        var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonContent, JsonOptions);
-        if (jsonDoc != null)
-        {
-            foreach (var kvp in imagePaths)
-            {
-                // Add path property: e.g., "displayImagePath": "Sources/DisplayImage.png"
-                string pathPropertyName = $"{char.ToLowerInvariant(kvp.Key[0])}{kvp.Key.Substring(1)}Path";
-                jsonDoc[pathPropertyName] = JsonSerializer.SerializeToElement(kvp.Value, JsonOptions);
-            }
-
-            jsonContent = JsonSerializer.Serialize(jsonDoc, JsonOptions);
-        }
-
-        await _fileStorage.WriteAllTextAsync(jsonPath, jsonContent);
-    }
-
     // Private helper methods
 
     private async Task CheckForNameConflictAsync(string projectDir, string jsonPath, string projectName)
@@ -332,40 +293,6 @@ public sealed class JsonProjectsStore : IProjectsStore, IProjectStore
                 property.SetValue(project, image);
             }
         }
-    }
-
-    private async Task<Dictionary<string, string>> SaveProjectImagesAsync(ProjectBase project, string projectDir)
-    {
-        var imagePaths = new Dictionary<string, string>();
-
-        // Get all public instance properties of type ImageData (nullable or not)
-        var concreteType = project.GetType();
-        var imageProperties = concreteType.GetProperties(
-            System.Reflection.BindingFlags.Public | 
-            System.Reflection.BindingFlags.Instance)
-            .Where(p => (p.PropertyType == typeof(ImageData) || p.PropertyType == typeof(ImageData?)) && p.CanRead);
-
-        foreach (var property in imageProperties)
-        {
-            object? value = property.GetValue(project);
-
-            if (value is ImageData imageData)
-            {
-                // Use property name as filename for unique images
-                string relativePath = $"Sources/{property.Name}.png";
-
-                await _imageHelper.SavePropertyImageAsync(
-                    imageData.Bytes,
-                    projectDir,
-                    "Sources",
-                    property.Name
-                );
-
-                imagePaths[property.Name] = relativePath;
-            }
-        }
-
-        return imagePaths;
     }
 
     private void DeserializeProjectProperties(ProjectBase project, Dictionary<string, JsonElement> projectData, string projectDir)

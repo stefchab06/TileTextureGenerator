@@ -1,4 +1,5 @@
 using TileTextureGenerator.Core.Entities;
+using TileTextureGenerator.Core.DTOs;
 
 namespace TileTextureGenerator.Core.Ports.Output;
 
@@ -17,4 +18,18 @@ public interface IProjectStore
     /// </summary>
     /// <param name="project">The project to save.</param>
     Task SaveAsync(ProjectBase project);
+    /// <summary>
+    /// Add a new transformation in a project transformation list.
+    /// </summary>
+    /// <param name="project">The project where the transformation is added.</param>
+    /// <param name="project">The project to transformation to add.</param>
+    Task AddTransformationAsync(ProjectBase project, TransformationDTO transformation);
+    /// <summary>
+    /// Remove a transformation in a project transformation list
+    /// </summary>
+    /// <param name="project">The project where the transformation is added.</param>
+    /// <param name="project">The project to transformation to add.</param>
+    Task RemoveTransformationAsync(ProjectBase project, Guid transformationID);
+
+
 }

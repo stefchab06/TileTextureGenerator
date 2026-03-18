@@ -62,7 +62,7 @@ public class JsonProjectsStoreTests : IDisposable
         await _store.CreateProjectAsync(dto);
 
         // Assert
-        string expectedDir = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject");
+        string expectedDir = _fileStorage.GetProjectPath("TestProject");
         Assert.True(await _fileStorage.DirectoryExistsAsync(expectedDir));
         Assert.True(await _fileStorage.DirectoryExistsAsync(Path.Combine(expectedDir, "Sources")));
         Assert.True(await _fileStorage.DirectoryExistsAsync(Path.Combine(expectedDir, "Workspace")));
@@ -84,7 +84,7 @@ public class JsonProjectsStoreTests : IDisposable
         await _store.CreateProjectAsync(dto);
 
         // Assert
-        string expectedJsonPath = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject", "TestProject.json");
+        string expectedJsonPath = _fileStorage.GetProjectFileName("TestProject");
         Assert.True(await _fileStorage.FileExistsAsync(expectedJsonPath));
         
         string json = await _fileStorage.ReadAllTextAsync(expectedJsonPath);
@@ -110,7 +110,7 @@ public class JsonProjectsStoreTests : IDisposable
         await _store.CreateProjectAsync(dto);
 
         // Assert
-        string expectedImagePath = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject", "Sources", "DisplayImage.png");
+        string expectedImagePath = Path.Combine(_fileStorage.GetProjectPath("TestProject"), "Sources", "DisplayImage.png");
         Assert.True(await _fileStorage.FileExistsAsync(expectedImagePath));
         
         byte[] savedImage = await _fileStorage.ReadAllBytesAsync(expectedImagePath);
@@ -132,7 +132,7 @@ public class JsonProjectsStoreTests : IDisposable
         await _store.CreateProjectAsync(dto);
 
         // Assert
-        string expectedDir = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "Test_Project__Name_");
+        string expectedDir = _fileStorage.GetProjectPath("Test_Project__Name_");
         Assert.True(await _fileStorage.DirectoryExistsAsync(expectedDir));
     }
 
@@ -174,7 +174,7 @@ public class JsonProjectsStoreTests : IDisposable
         await _store.CreateProjectAsync(dto);
 
         // Manually add a polymorphic property to JSON (simulating IProjectStore behavior)
-        string jsonPath = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject", "TestProject.json");
+        string jsonPath = _fileStorage.GetProjectFileName("TestProject");
         string jsonContent = await _fileStorage.ReadAllTextAsync(jsonPath);
         var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonContent);
         jsonDoc!["tileShape"] = "HalfHorizontal"; // FloorTileProject specific property
@@ -218,56 +218,13 @@ public class JsonProjectsStoreTests : IDisposable
     }
 
     [Fact]
-    public async Task SaveAsync_WithProjectBase_SavesPolymorphically()
-    {
-        // Arrange
-        var project = new FloorTileProject(_mockProjectStore);
-        project.Initialize("PolymorphicTest");
-        project.Status = ProjectStatus.Pending;
-        project.TileShape = TileShape.HalfVertical;
-
-        // Act
-        await ((IProjectStore)_store).SaveAsync(project);
-
-        // Assert - Verify JSON contains polymorphic properties
-        string jsonPath = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "PolymorphicTest", "PolymorphicTest.json");
-        Assert.True(await _fileStorage.FileExistsAsync(jsonPath));
-
-        string jsonContent = await _fileStorage.ReadAllTextAsync(jsonPath);
-        Assert.Contains("\"name\": \"PolymorphicTest\"", jsonContent, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("\"type\": \"FloorTileProject\"", jsonContent, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("\"status\": \"Pending\"", jsonContent, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("\"tileShape\": \"HalfVertical\"", jsonContent, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task SaveAsync_WithSourceImage_SavesImageFile()
-    {
-        // Arrange
-        byte[] imageData = [0x89, 0x50, 0x4E, 0x47];
-        var project = new FloorTileProject(_mockProjectStore);
-        project.Initialize("ImageTest");
-        project.SourceImage = imageData;
-
-        // Act
-        await ((IProjectStore)_store).SaveAsync(project);
-
-        // Assert
-        string imagePath = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "ImageTest", "Sources", "SourceImage.png");
-        Assert.True(await _fileStorage.FileExistsAsync(imagePath));
-
-        byte[] savedImage = await _fileStorage.ReadAllBytesAsync(imagePath);
-        Assert.Equal(imageData, savedImage);
-    }
-
-    [Fact]
     public async Task DeleteAsync_WithExistingProject_RemovesDirectoryAndContents()
     {
         // Arrange
         var dto = new ProjectDto("TestProject", "FloorTileProject", ProjectStatus.New, DateTime.UtcNow);
         await _store.CreateProjectAsync(dto);
-        
-        string projectDir = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject");
+
+        string projectDir = _fileStorage.GetProjectPath("TestProject");
         Assert.True(await _fileStorage.DirectoryExistsAsync(projectDir));
 
         // Act
@@ -312,7 +269,7 @@ public class JsonProjectsStoreTests : IDisposable
     public async Task ExistsAsync_WithDirectoryButNoJson_ReturnsFalse()
     {
         // Arrange
-        string projectDir = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject");
+        string projectDir = _fileStorage.GetProjectPath("TestProject");
         await _fileStorage.EnsureDirectoryExistsAsync(projectDir);
 
         // Act
@@ -398,7 +355,7 @@ public class JsonProjectsStoreTests : IDisposable
         await _store.CreateProjectAsync(dto);
 
         // Manually add transformations to JSON (simulating what IProjectStore will do)
-        string jsonPath = Path.Combine(_fileStorage.GetApplicationDataPath(), "TileTextureGenerator", "Projects", "TestProject", "TestProject.json");
+        string jsonPath = _fileStorage.GetProjectFileName("TestProject");
         string jsonContent = await _fileStorage.ReadAllTextAsync(jsonPath);
         var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonContent);
 
@@ -426,9 +383,229 @@ public class JsonProjectsStoreTests : IDisposable
         Assert.Contains(loadedProject.Transformations, t => t.Type == "VerticalWallTransformation");
     }
 
+    [Fact]
+    public async Task SaveAndLoad_WithPolymorphicProperties_PersistsFloorTileProjectSpecificData()
+    {
+        // Arrange - Create a FloorTileProject with specific properties
+        var project = new FloorTileProject(_mockProjectStore);
+        project.Initialize("PolymorphicTest");
+        project.TileShape = TileShape.HalfHorizontal;
+        project.Status = ProjectStatus.Pending;
+
+        // Convert to DTO and save
+        var dto = new ProjectDto(
+            name: project.Name,
+            type: project.Type,
+            status: project.Status,
+            lastModifiedDate: DateTime.UtcNow
+        );
+        await _store.CreateProjectAsync(dto);
+
+        // Manually add polymorphic property to JSON (simulating IProjectStore behavior)
+        string jsonPath = _fileStorage.GetProjectFileName("PolymorphicTest");
+        string jsonContent = await _fileStorage.ReadAllTextAsync(jsonPath);
+        var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonContent, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+        // Add FloorTileProject-specific property
+        jsonDoc!["tileShape"] = JsonSerializer.SerializeToElement(TileShape.HalfHorizontal, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+        string updatedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        await _fileStorage.WriteAllTextAsync(jsonPath, updatedJson);
+
+        // Act - Load the project back
+        var loadedProject = await _store.LoadAsync("PolymorphicTest");
+
+        // Assert
+        Assert.NotNull(loadedProject);
+        Assert.IsType<FloorTileProject>(loadedProject);
+
+        var floorProject = (FloorTileProject)loadedProject;
+        Assert.Equal("PolymorphicTest", floorProject.Name);
+        Assert.Equal("FloorTileProject", floorProject.Type);
+        Assert.Equal(ProjectStatus.Pending, floorProject.Status);
+        Assert.Equal(TileShape.HalfHorizontal, floorProject.TileShape);
+    }
+
+    [Fact]
+    public async Task SaveAndLoad_WithMultipleTransformations_PreservesOrderAndAllProperties()
+    {
+        // Arrange - Create project with multiple transformations
+        var transformation1Id = Guid.NewGuid();
+        var transformation2Id = Guid.NewGuid();
+        var transformation3Id = Guid.NewGuid();
+
+        var dto = new ProjectDto("TransformOrderTest", "FloorTileProject", ProjectStatus.Pending, DateTime.UtcNow);
+        await _store.CreateProjectAsync(dto);
+
+        // Add transformations with specific order to JSON
+        string jsonPath = _fileStorage.GetProjectFileName("TransformOrderTest");
+        string jsonContent = await _fileStorage.ReadAllTextAsync(jsonPath);
+        var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonContent);
+
+        // Create transformations array with specific order (order = index in array)
+        jsonDoc!["transformations"] = new[]
+        {
+            new { id = transformation1Id, type = "HorizontalFloorTransformation", icon = (byte[]?)null },
+            new { id = transformation2Id, type = "VerticalWallTransformation", icon = (byte[]?)null },
+            new { id = transformation3Id, type = "HorizontalFloorTransformation", icon = (byte[]?)null }
+        };
+
+        string updatedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true });
+        await _fileStorage.WriteAllTextAsync(jsonPath, updatedJson);
+
+        // Act
+        var loadedProject = await _store.LoadAsync("TransformOrderTest");
+
+        // Assert
+        Assert.NotNull(loadedProject);
+        Assert.Equal(3, loadedProject.Transformations.Count);
+
+        // Verify order is preserved (index 0, 1, 2)
+        Assert.Equal(transformation1Id, loadedProject.Transformations[0].Id);
+        Assert.Equal("HorizontalFloorTransformation", loadedProject.Transformations[0].Type);
+
+        Assert.Equal(transformation2Id, loadedProject.Transformations[1].Id);
+        Assert.Equal("VerticalWallTransformation", loadedProject.Transformations[1].Type);
+
+        Assert.Equal(transformation3Id, loadedProject.Transformations[2].Id);
+        Assert.Equal("HorizontalFloorTransformation", loadedProject.Transformations[2].Type);
+    }
+
+    [Fact]
+    public async Task SaveAndLoad_WithMultipleImages_LoadsAllImageProperties()
+    {
+        // Arrange - Create different image data for DisplayImage and SourceImage
+        byte[] displayImageData = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]; // PNG header + extra
+        byte[] sourceImageData = [0x89, 0x50, 0x4E, 0x47, 0xFF, 0xAA, 0xBB, 0xCC]; // Different PNG data
+
+        var dto = new ProjectDto(
+            name: "MultiImageTest",
+            type: "FloorTileProject",
+            status: ProjectStatus.Pending,
+            lastModifiedDate: DateTime.UtcNow,
+            displayImage: displayImageData
+        );
+
+        await _store.CreateProjectAsync(dto);
+
+        // Manually add SourceImage to file system and JSON path
+        string projectDir = _fileStorage.GetProjectPath("MultiImageTest");
+        string sourceImagePath = Path.Combine(projectDir, "Sources", "SourceImage.png");
+        await _fileStorage.WriteAllBytesAsync(sourceImagePath, sourceImageData);
+
+        // Update JSON to include sourceImagePath
+        string jsonPath = _fileStorage.GetProjectFileName("MultiImageTest");
+        string jsonContent = await _fileStorage.ReadAllTextAsync(jsonPath);
+        var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonContent, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+        jsonDoc!["sourceImagePath"] = JsonSerializer.SerializeToElement("Sources/SourceImage.png", new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+        string updatedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        await _fileStorage.WriteAllTextAsync(jsonPath, updatedJson);
+
+        // Act - Load the project
+        var loadedProject = await _store.LoadAsync("MultiImageTest");
+
+        // Assert
+        Assert.NotNull(loadedProject);
+        Assert.IsType<FloorTileProject>(loadedProject);
+
+        var floorProject = (FloorTileProject)loadedProject;
+
+        // Verify DisplayImage is loaded correctly
+        Assert.NotNull(floorProject.DisplayImage);
+        Assert.Equal(displayImageData, floorProject.DisplayImage.Value.Bytes);
+
+        // Verify SourceImage is loaded correctly
+        Assert.NotNull(floorProject.SourceImage);
+        Assert.Equal(sourceImageData, floorProject.SourceImage.Value.Bytes);
+    }
+
+    [Fact]
+    public async Task SaveAndLoad_CompleteProject_AllPropertiesPreserved()
+    {
+        // Arrange - Create a complete project with all properties set
+        byte[] displayImageData = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+        byte[] sourceImageData = [0x89, 0x50, 0x4E, 0x47, 0xFF, 0xAA, 0xBB, 0xCC];
+
+        var transformation1Id = Guid.NewGuid();
+        var transformation2Id = Guid.NewGuid();
+
+        var originalLastModified = new DateTime(2024, 3, 15, 10, 30, 0, DateTimeKind.Utc);
+
+        // Create DTO with all basic properties
+        var dto = new ProjectDto(
+            name: "CompleteProject",
+            type: "FloorTileProject",
+            status: ProjectStatus.Generated,
+            lastModifiedDate: originalLastModified,
+            displayImage: displayImageData
+        );
+
+        await _store.CreateProjectAsync(dto);
+
+        // Add all polymorphic properties and images to JSON
+        string jsonPath = _fileStorage.GetProjectFileName("CompleteProject");
+        string jsonContent = await _fileStorage.ReadAllTextAsync(jsonPath);
+        var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonContent, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+        // Add FloorTileProject-specific property
+        jsonDoc!["tileShape"] = JsonSerializer.SerializeToElement(TileShape.HalfVertical, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+        // Add transformations
+        jsonDoc["transformations"] = JsonSerializer.SerializeToElement(new[]
+        {
+            new { id = transformation1Id, type = "HorizontalFloorTransformation", icon = (byte[]?)null },
+            new { id = transformation2Id, type = "HorizontalFloorTransformation", icon = (byte[]?)null }
+        }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+        // Add SourceImage path
+        string projectDir = _fileStorage.GetProjectPath("CompleteProject");
+        string sourceImagePath = Path.Combine(projectDir, "Sources", "SourceImage.png");
+        await _fileStorage.WriteAllBytesAsync(sourceImagePath, sourceImageData);
+        jsonDoc["sourceImagePath"] = JsonSerializer.SerializeToElement("Sources/SourceImage.png", new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+        // Save updated JSON
+        string updatedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        await _fileStorage.WriteAllTextAsync(jsonPath, updatedJson);
+
+        // Act - Load the project
+        var loadedProject = await _store.LoadAsync("CompleteProject");
+
+        // Assert - Verify ALL properties are preserved
+        Assert.NotNull(loadedProject);
+        Assert.IsType<FloorTileProject>(loadedProject);
+
+        var floorProject = (FloorTileProject)loadedProject;
+
+        // Basic properties
+        Assert.Equal("CompleteProject", floorProject.Name);
+        Assert.Equal("FloorTileProject", floorProject.Type);
+        Assert.Equal(ProjectStatus.Generated, floorProject.Status);
+        Assert.Equal(originalLastModified, floorProject.LastModifiedDate);
+
+        // Polymorphic property
+        Assert.Equal(TileShape.HalfVertical, floorProject.TileShape);
+
+        // Images
+        Assert.NotNull(floorProject.DisplayImage);
+        Assert.Equal(displayImageData, floorProject.DisplayImage.Value.Bytes);
+        Assert.NotNull(floorProject.SourceImage);
+        Assert.Equal(sourceImageData, floorProject.SourceImage.Value.Bytes);
+
+        // Transformations
+        Assert.Equal(2, floorProject.Transformations.Count);
+        Assert.Equal(transformation1Id, floorProject.Transformations[0].Id);
+        Assert.Equal("HorizontalFloorTransformation", floorProject.Transformations[0].Type);
+        Assert.Equal(transformation2Id, floorProject.Transformations[1].Id);
+        Assert.Equal("HorizontalFloorTransformation", floorProject.Transformations[1].Type);
+    }
+
     // Mock store for testing
     private class MockProjectStore : IProjectStore
     {
         public Task SaveAsync(ProjectBase entity) => Task.CompletedTask;
+        public Task AddTransformationAsync(ProjectBase project, TransformationDTO transformation) => Task.CompletedTask;
+        public Task RemoveTransformationAsync(ProjectBase project, Guid transformationID) => Task.CompletedTask;
     }
 }

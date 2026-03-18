@@ -16,6 +16,8 @@ public class WallTileProjectTests
     private class FakeWallTileProjectStore : IProjectStore
     {
         public Task SaveAsync(ProjectBase project) => Task.CompletedTask;
+        public Task AddTransformationAsync(ProjectBase project, TransformationDTO transformation) => Task.CompletedTask;
+        public Task RemoveTransformationAsync(ProjectBase project, Guid transformationID) => Task.CompletedTask;
     }
 
     [Fact]

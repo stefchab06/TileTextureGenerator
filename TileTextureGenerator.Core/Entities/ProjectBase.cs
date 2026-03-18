@@ -114,15 +114,31 @@ public abstract class ProjectBase : IProjectManager
     }
 
     /// <inheritdoc />
-    public virtual async Task AddTransformationAsync(TransformationDTO transformation)
+    public virtual async Task AddTransformationAsync(string transformationType)
     {
-        ArgumentNullException.ThrowIfNull(transformation);
+        ArgumentNullException.ThrowIfNull(transformationType);
 
-        if (Transformations.Any(t => t.Id == transformation.Id))
-            throw new InvalidOperationException($"Transformation with ID '{transformation.Id}' already exists.");
+        var transformation = new TransformationDTO
+        {
+            Id = Guid.NewGuid(),
+            Type = transformationType,
+            Icon = null 
+        };
+
+        while (Transformations.Any(t => t.Id == transformation.Id))
+        {
+            transformation = new TransformationDTO
+            {
+                Id = Guid.NewGuid(),
+                Type = transformationType,
+                Icon = null
+            };
+        }
 
         Transformations.Add(transformation);
-        await SaveChangesAsync();
+        await _store.AddTransformationAsync(this, transformation);
+        LastModifiedDate = DateTime.UtcNow;
+        await _store.SaveAsync(this);
     }
 
     /// <inheritdoc />
@@ -133,7 +149,9 @@ public abstract class ProjectBase : IProjectManager
             throw new InvalidOperationException($"Transformation with ID '{transformationId}' not found.");
 
         Transformations.Remove(transformation);
-        await SaveChangesAsync();
+        await _store.RemoveTransformationAsync(this, transformationId);
+        LastModifiedDate = DateTime.UtcNow;
+        await _store.SaveAsync(this);
     }
 
     /// <inheritdoc />
