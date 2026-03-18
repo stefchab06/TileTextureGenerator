@@ -68,10 +68,10 @@ public sealed class JsonProjectsStore : IProjectsStore
 
         // Save DisplayImage if present and track its path
         string? displayImagePath = null;
-        if (projectDto.DisplayImage != null && projectDto.DisplayImage.Length > 0)
+        if (projectDto.DisplayImage.HasValue && projectDto.DisplayImage.Value.Bytes.Length > 0)
         {
             await _imageHelper.SavePropertyImageAsync(
-                projectDto.DisplayImage,
+                projectDto.DisplayImage.Value.Bytes,
                 projectDir,
                 "Sources",
                 "DisplayImage"

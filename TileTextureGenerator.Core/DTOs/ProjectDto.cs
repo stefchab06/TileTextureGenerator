@@ -1,4 +1,5 @@
 using TileTextureGenerator.Core.Enums;
+using TileTextureGenerator.Core.Models;
 
 namespace TileTextureGenerator.Core.DTOs;
 
@@ -26,7 +27,7 @@ public sealed class ProjectDto
     /// <summary>
     /// Display image for the project (PNG, 256x256).
     /// </summary>
-    public byte[]? DisplayImage { get; init; }
+    public ImageData? DisplayImage { get; init; }
 
     /// <summary>
     /// Last modification date (UTC).
@@ -38,7 +39,7 @@ public sealed class ProjectDto
         string type,
         ProjectStatus status,
         DateTime lastModifiedDate,
-        byte[]? displayImage = null)
+        ImageData? displayImage = null)
     {
         Name = name;
         Type = type;

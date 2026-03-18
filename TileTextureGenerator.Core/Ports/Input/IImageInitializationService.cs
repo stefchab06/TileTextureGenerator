@@ -1,4 +1,5 @@
 using TileTextureGenerator.Core.Enums;
+using TileTextureGenerator.Core.Models;
 
 namespace TileTextureGenerator.Core.Ports.Input;
 
@@ -7,7 +8,7 @@ namespace TileTextureGenerator.Core.Ports.Input;
 /// </summary>
 public class ImageInitializationResult
 {
-    public byte[]? ImageData { get; set; }
+    public ImageData? ImageData { get; set; }
     public TileShape TileShape { get; set; }
     public bool WasCancelled { get; set; }
 }

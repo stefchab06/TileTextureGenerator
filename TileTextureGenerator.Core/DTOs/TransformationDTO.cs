@@ -1,3 +1,5 @@
+using TileTextureGenerator.Core.Models;
+
 namespace TileTextureGenerator.Core.DTOs;
 
 /// <summary>
@@ -23,5 +25,5 @@ public class TransformationDTO
     /// Icon representing this transformation type (PNG format, typically 64x64).
     /// Retrieved from TransformationTypeRegistry.GetIcon(Type) during loading.
     /// </summary>
-    public byte[]? Icon { get; init; }
+    public ImageData? Icon { get; init; }
 }
