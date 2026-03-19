@@ -2,6 +2,7 @@ using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
+using TileTextureGenerator.Core.DTOs;
 using TransformationBase = TileTextureGenerator.Core.Entities.TransformationBase;
 
 namespace TileTextureGenerator.Core.Tests.Entities;
@@ -44,20 +45,42 @@ public class TransformationBaseTests
             => Task.FromResult<TransformationBase?>(null);
     }
 
+    private sealed class FakeProject : ProjectBase
+    {
+        public FakeProject() : base(new FakeProjectStore())
+        {
+            Initialize("FakeProject");
+        }
+
+        public override Task<IReadOnlyList<TransformationTypeDTO>> GetAvailableTransformationTypesAsync()
+        {
+            return Task.FromResult<IReadOnlyList<TransformationTypeDTO>>(Array.Empty<TransformationTypeDTO>());
+        }
+    }
+
+    private class FakeProjectStore : IProjectStore
+    {
+        public Task SaveAsync(ProjectBase entity) => Task.CompletedTask;
+        public Task AddTransformationAsync(ProjectBase project, TransformationDTO transformation) => Task.CompletedTask;
+        public Task RemoveTransformationAsync(ProjectBase project, Guid transformationID) => Task.CompletedTask;
+    }
+
     [Fact]
     public void Initialize_WithValidId_SetsIdAndType()
     {
         // Arrange
         var store = new FakeTransformationStore();
+        var project = new FakeProject();
         var transformation = new TestTransformation(store);
         var id = Guid.NewGuid();
 
         // Act
-        transformation.Initialize(id);
+        transformation.Initialize(project, id);
 
         // Assert
         Assert.Equal(id, transformation.Id);
         Assert.Equal(nameof(TestTransformation), transformation.Type);
+        Assert.Equal(project, transformation.ParentProject);
     }
 
     [Fact]
@@ -65,10 +88,11 @@ public class TransformationBaseTests
     {
         // Arrange
         var store = new FakeTransformationStore();
+        var project = new FakeProject();
         var transformation = new TestTransformation(store);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => transformation.Initialize(Guid.Empty));
+        Assert.Throws<ArgumentException>(() => transformation.Initialize(project, Guid.Empty));
     }
 
     [Fact]
@@ -76,11 +100,12 @@ public class TransformationBaseTests
     {
         // Arrange
         var store = new FakeTransformationStore();
+        var project = new FakeProject();
         var transformation = new TestTransformation(store);
-        transformation.Initialize(Guid.NewGuid());
+        transformation.Initialize(project, Guid.NewGuid());
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => transformation.Initialize(Guid.NewGuid()));
+        Assert.Throws<InvalidOperationException>(() => transformation.Initialize(project, Guid.NewGuid()));
     }
 
     [Fact]
@@ -125,9 +150,10 @@ public class TransformationBaseTests
     {
         // Arrange
         var store = new FakeTransformationStore();
+        var project = new FakeProject();
         var expectedImage = new byte[] { 1, 2, 3, 4, 5 };
         var transformation = new TestTransformation(store, expectedImage);
-        transformation.Initialize(Guid.NewGuid());
+        transformation.Initialize(project, Guid.NewGuid());
 
         // Act
         var result = await transformation.ExecuteAsync();
@@ -141,8 +167,9 @@ public class TransformationBaseTests
     {
         // Arrange
         var store = new FakeTransformationStore();
+        var project = new FakeProject();
         var transformation = new TestTransformation(store);
-        transformation.Initialize(Guid.NewGuid());
+        transformation.Initialize(project, Guid.NewGuid());
 
         // Act
         await transformation.SaveChangesAsync();

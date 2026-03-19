@@ -14,8 +14,24 @@ namespace TileTextureGenerator.Core.Entities;
 public abstract class TransformationBase : ITransformationManager
 {
     private readonly ITransformationStore<TransformationBase> _store;
+    private ProjectBase? _parentProject;
     private Guid? _id;
     private bool _initialized;
+
+    /// <summary>
+    /// Parent project that owns this transformation.
+    /// Immutable after initialization.
+    /// </summary>
+    public ProjectBase ParentProject
+    {
+        get => _parentProject ?? throw new InvalidOperationException("Transformation not initialized. Call Initialize first.");
+        private set
+        {
+            if (_initialized)
+                throw new InvalidOperationException("Cannot modify parent project after initialization.");
+            _parentProject = value;
+        }
+    }
 
     /// <summary>
     /// Unique identifier of the transformation.
@@ -66,18 +82,22 @@ public abstract class TransformationBase : ITransformationManager
     }
 
     /// <summary>
-    /// Initializes the transformation with its unique identifier.
+    /// Initializes the transformation with its parent project and unique identifier.
     /// Must be called once after construction and before any other operations.
     /// </summary>
+    /// <param name="parentProject">The project that owns this transformation.</param>
     /// <param name="id">Unique identifier for the transformation.</param>
-    public void Initialize(Guid id)
+    public void Initialize(ProjectBase parentProject, Guid id)
     {
+        ArgumentNullException.ThrowIfNull(parentProject);
+
         if (_initialized)
             throw new InvalidOperationException("Transformation already initialized.");
 
         if (id == Guid.Empty)
             throw new ArgumentException("Transformation ID cannot be empty.", nameof(id));
 
+        ParentProject = parentProject;
         Id = id;
         Type = GetType().Name;
         _initialized = true;

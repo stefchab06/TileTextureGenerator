@@ -43,13 +43,16 @@ public static class TransformationTypeRegistry
     }
 
     /// <summary>
-    /// Creates a new instance of a transformation by type name.
+    /// Creates a new instance of a transformation by type name, initialized with parent project.
     /// </summary>
     /// <param name="typeName">The name of the transformation type</param>
-    /// <returns>A new instance of the transformation</returns>
+    /// <param name="parentProject">The project that owns this transformation</param>
+    /// <returns>A new, initialized instance of the transformation</returns>
     /// <exception cref="InvalidOperationException">Thrown if the type is not registered or factory not set</exception>
-    public static Entities.TransformationBase Create(string typeName)
+    public static Entities.TransformationBase Create(string typeName, Entities.ProjectBase parentProject)
     {
+        ArgumentNullException.ThrowIfNull(parentProject);
+
         EnsureInitialized();
 
         if (_factory == null)
@@ -61,7 +64,9 @@ public static class TransformationTypeRegistry
                 $"Unknown transformation type: '{typeName}'. Make sure it's registered.");
         }
 
-        return _factory(type);
+        var transformation = _factory(type);
+        transformation.Initialize(parentProject, Guid.NewGuid());
+        return transformation;
     }
 
     /// <summary>

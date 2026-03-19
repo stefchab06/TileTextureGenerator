@@ -1,4 +1,5 @@
 using SkiaSharp;
+using TileTextureGenerator.Core.DTOs;
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Entities.ConcreteTransformations;
 using TileTextureGenerator.Core.Enums;
@@ -17,6 +18,26 @@ public class VerticalWallTransformationTests
     {
         public Task SaveAsync(TransformationBase transformation) => Task.CompletedTask;
         public Task<TransformationBase?> LoadAsync(Guid transformationId) => Task.FromResult<TransformationBase?>(null);
+    }
+
+    private sealed class FakeProject : ProjectBase
+    {
+        public FakeProject() : base(new FakeProjectStore())
+        {
+            Initialize("FakeProject");
+        }
+
+        public override Task<IReadOnlyList<TransformationTypeDTO>> GetAvailableTransformationTypesAsync()
+        {
+            return Task.FromResult<IReadOnlyList<TransformationTypeDTO>>(Array.Empty<TransformationTypeDTO>());
+        }
+    }
+
+    private class FakeProjectStore : IProjectStore
+    {
+        public Task SaveAsync(ProjectBase entity) => Task.CompletedTask;
+        public Task AddTransformationAsync(ProjectBase project, TransformationDTO transformation) => Task.CompletedTask;
+        public Task RemoveTransformationAsync(ProjectBase project, Guid transformationID) => Task.CompletedTask;
     }
 
     private byte[] CreateTestImage(int width, int height)
@@ -39,12 +60,13 @@ public class VerticalWallTransformationTests
     {
         // Arrange
         var store = new FakeTransformationStore();
+        var project = new FakeProject();
         var transformation = new VerticalWallTransformation(store)
         {
             BaseTexture = CreateTestImage(400, 400), // 2" x 2" at 200 DPI
             TileShape = TileShape.Full
         };
-        transformation.Initialize(Guid.NewGuid());
+        transformation.Initialize(project, Guid.NewGuid());
 
         // Act
         var result = await transformation.ExecuteAsync();
@@ -68,8 +90,9 @@ public class VerticalWallTransformationTests
     {
         // Arrange
         var store = new FakeTransformationStore();
+        var project = new FakeProject();
         var transformation = new VerticalWallTransformation(store);
-        transformation.Initialize(Guid.NewGuid());
+        transformation.Initialize(project, Guid.NewGuid());
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => transformation.ExecuteAsync());
@@ -80,11 +103,12 @@ public class VerticalWallTransformationTests
     {
         // Arrange
         var store = new FakeTransformationStore();
+        var project = new FakeProject();
         var transformation = new VerticalWallTransformation(store)
         {
             BaseTexture = new byte[] { 1, 2, 3, 4 } // Invalid PNG data
         };
-        transformation.Initialize(Guid.NewGuid());
+        transformation.Initialize(project, Guid.NewGuid());
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => transformation.ExecuteAsync());
