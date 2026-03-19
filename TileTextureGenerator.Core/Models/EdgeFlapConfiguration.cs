@@ -23,5 +23,5 @@ public class EdgeFlapConfiguration
     /// <summary>
     /// Texture image data (in-memory) when Mode = Texture.
     /// </summary>
-    public byte[]? Texture { get; set; }
+    public ImageData? Texture { get; set; }
 }

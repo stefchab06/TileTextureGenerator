@@ -1,3 +1,5 @@
+using TileTextureGenerator.Core.Models;
+
 namespace TileTextureGenerator.Core.Ports.Input;
 
 /// <summary>
@@ -20,6 +22,6 @@ public interface ITransformationManager
     /// <summary>
     /// Executes the transformation and generates the output image.
     /// </summary>
-    /// <returns>The generated image as PNG byte array.</returns>
-    Task<byte[]> ExecuteAsync();
+    /// <returns>The generated image as PNG.</returns>
+    Task<ImageData> ExecuteAsync();
 }

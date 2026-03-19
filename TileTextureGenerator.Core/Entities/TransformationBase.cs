@@ -42,7 +42,7 @@ public abstract class TransformationBase : ITransformationManager
     /// Icon representing this transformation type in the UI (PNG format, typically 32x32 or 64x64).
     /// Must be overridden in concrete classes.
     /// </summary>
-    public abstract byte[]? Icon { get; }
+    public abstract ImageData? Icon { get; }
 
     /// <summary>
     /// Type of paper required for printing this transformation output.
@@ -106,5 +106,5 @@ public abstract class TransformationBase : ITransformationManager
     }
 
     /// <inheritdoc />
-    public abstract Task<byte[]> ExecuteAsync();
+    public abstract Task<ImageData> ExecuteAsync();
 }

@@ -1,5 +1,6 @@
 using System.Reflection;
 using TileTextureGenerator.Core.Entities;
+using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
 
 namespace TileTextureGenerator.Core.Registries;
@@ -101,8 +102,8 @@ public static class TransformationTypeRegistry
     /// Creates a temporary instance to retrieve the icon.
     /// </summary>
     /// <param name="typeName">The name of the transformation type</param>
-    /// <returns>The icon as PNG byte array, or null if not found</returns>
-    public static byte[]? GetIcon(string typeName)
+    /// <returns>The icon as PNG, or null if not found</returns>
+    public static ImageData? GetIcon(string typeName)
     {
         var type = GetTypeByName(typeName);
         if (type == null || !type.IsSubclassOf(typeof(Entities.TransformationBase)))

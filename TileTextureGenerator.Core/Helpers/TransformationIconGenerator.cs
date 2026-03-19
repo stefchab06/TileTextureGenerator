@@ -1,4 +1,5 @@
 using SkiaSharp;
+using TileTextureGenerator.Core.Models;
 
 namespace TileTextureGenerator.Core.Helpers;
 
@@ -12,7 +13,7 @@ internal static class TransformationIconGenerator
     /// Generates icon for horizontal floor tile transformation.
     /// Shows a flat tile viewed from above (blue top surface, yellow side).
     /// </summary>
-    public static byte[] GenerateHorizontalFloorIcon()
+    public static ImageData GenerateHorizontalFloorIcon()
     {
         const int size = 64;
         using var bitmap = new SKBitmap(size, size);
@@ -69,14 +70,14 @@ internal static class TransformationIconGenerator
 
         using var image = SKImage.FromBitmap(bitmap);
         using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
-        return encoded.ToArray();
+        return new ImageData(encoded.ToArray());
     }
 
     /// <summary>
     /// Generates icon for vertical wall tile transformation.
     /// Shows a tile viewed from the side for vertical wall mounting.
     /// </summary>
-    public static byte[] GenerateVerticalWallIcon()
+    public static ImageData GenerateVerticalWallIcon()
     {
         const int size = 64;
         using var bitmap = new SKBitmap(size, size);
@@ -133,6 +134,6 @@ internal static class TransformationIconGenerator
 
         using var image = SKImage.FromBitmap(bitmap);
         using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
-        return encoded.ToArray();
+        return new ImageData(encoded.ToArray());
     }
 }

@@ -14,17 +14,17 @@ public class TransformationBaseTests
 {
     private sealed class TestTransformation : TransformationBase
     {
-        private readonly byte[] _resultImage;
+        private readonly ImageData _resultImage;
 
         public TestTransformation(ITransformationStore<TransformationBase> store, byte[]? resultImage = null) 
             : base(store)
         {
-            _resultImage = resultImage ?? new byte[] { 0x89, 0x50, 0x4E, 0x47 }; // PNG header
+            _resultImage = new ImageData(resultImage ?? new byte[] { 0x89, 0x50, 0x4E, 0x47 }); // PNG header
         }
 
-        public override byte[]? Icon => new byte[] { 0x49, 0x43, 0x4F, 0x4E }; // "ICON" mock
+        public override ImageData? Icon => new ImageData(new byte[] { 0x49, 0x43, 0x4F, 0x4E }); // "ICON" mock
 
-        public override Task<byte[]> ExecuteAsync()
+        public override Task<ImageData> ExecuteAsync()
         {
             return Task.FromResult(_resultImage);
         }
@@ -199,13 +199,13 @@ public class TransformationBaseTests
 
         // Act
         transformation[ImageSide.Top] = new EdgeFlapConfiguration { Mode = EdgeFlapMode.Color, Color = "#FF0000" };
-        transformation[ImageSide.Right] = new EdgeFlapConfiguration { Mode = EdgeFlapMode.Texture, Texture = [0, 1, 2] };
+        transformation[ImageSide.Right] = new EdgeFlapConfiguration { Mode = EdgeFlapMode.Texture, Texture = new ImageData(new byte[] { 0, 1, 2 }) };
 
         // Assert
         Assert.Equal(EdgeFlapMode.Color, transformation[ImageSide.Top].Mode);
         Assert.Equal("#FF0000", transformation[ImageSide.Top].Color);
         Assert.Equal(EdgeFlapMode.Texture, transformation[ImageSide.Right].Mode);
-        Assert.Equal([0, 1, 2], transformation[ImageSide.Right].Texture);
+        Assert.Equal(new byte[] { 0, 1, 2 }, transformation[ImageSide.Right].Texture!.Value.Bytes);
     }
 
     [Fact]

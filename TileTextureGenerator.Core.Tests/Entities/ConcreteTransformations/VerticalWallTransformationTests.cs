@@ -50,13 +50,12 @@ public class VerticalWallTransformationTests
         var result = await transformation.ExecuteAsync();
 
         // Assert
-        Assert.NotNull(result);
-        Assert.NotEmpty(result);
+        Assert.NotEmpty(result.Bytes);
 
         // Verify dimensions: original + 2 * flap on each side
         // Flap = 0.25" * 200 DPI = 50 pixels
         // Expected: 400 + 2*50 = 500x500
-        using var stream = new MemoryStream(result);
+        using var stream = new MemoryStream(result.Bytes);
         using var bitmap = SKBitmap.Decode(stream);
         
         Assert.NotNull(bitmap);

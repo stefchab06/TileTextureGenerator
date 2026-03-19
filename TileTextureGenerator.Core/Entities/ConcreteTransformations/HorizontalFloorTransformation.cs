@@ -28,7 +28,7 @@ public sealed class HorizontalFloorTransformation : TransformationBase
     /// Base texture image for the tile surface.
     /// Copied from project's SourceImage when transformation is added.
     /// </summary>
-    public byte[]? BaseTexture { get; set; }
+    public ImageData? BaseTexture { get; set; }
 
     /// <summary>
     /// Shape of the tile defining its dimensions.
@@ -39,7 +39,7 @@ public sealed class HorizontalFloorTransformation : TransformationBase
     /// Icon for this transformation type (PNG, 64x64).
     /// Generated programmatically showing a horizontal floor tile perspective.
     /// </summary>
-    public override byte[]? Icon => TransformationIconGenerator.GenerateHorizontalFloorIcon();
+    public override ImageData? Icon => TransformationIconGenerator.GenerateHorizontalFloorIcon();
 
     /// <summary>
     /// Constructor with dependency injection.
@@ -49,14 +49,14 @@ public sealed class HorizontalFloorTransformation : TransformationBase
     }
 
     /// <inheritdoc />
-    public override async Task<byte[]> ExecuteAsync()
+    public override async Task<ImageData> ExecuteAsync()
     {
         // Validate BaseTexture
-        if (BaseTexture == null || BaseTexture.Length == 0)
+        if (!BaseTexture.HasValue || BaseTexture.Value.Bytes.Length == 0)
             throw new InvalidOperationException("BaseTexture is required for transformation execution.");
 
         // FULL IMPLEMENTATION with SkiaSharp
-        using var baseStream = new MemoryStream(BaseTexture);
+        using var baseStream = new MemoryStream(BaseTexture.Value.Bytes);
         using var baseTexture = SKBitmap.Decode(baseStream);
 
         if (baseTexture == null)
@@ -90,7 +90,7 @@ public sealed class HorizontalFloorTransformation : TransformationBase
         using var encoded = image.Encode(SKEncodedImageFormat.Png, 100);
 
         await Task.CompletedTask;
-        return encoded.ToArray();
+        return new ImageData(encoded.ToArray());
     }
 
     private void DrawFlap(
@@ -163,15 +163,15 @@ public sealed class HorizontalFloorTransformation : TransformationBase
         canvas.DrawRect(rect, paint);
     }
 
-    private void DrawTextureFlap(SKCanvas canvas, SKRect rect, byte[]? textureImage)
+    private void DrawTextureFlap(SKCanvas canvas, SKRect rect, ImageData? textureImage)
     {
-        if (textureImage == null || textureImage.Length == 0)
+        if (!textureImage.HasValue || textureImage.Value.Bytes.Length == 0)
         {
             DrawBlankFlap(canvas, rect);
             return;
         }
 
-        using var stream = new MemoryStream(textureImage);
+        using var stream = new MemoryStream(textureImage.Value.Bytes);
         using var bitmap = SKBitmap.Decode(stream);
 
         if (bitmap == null)
