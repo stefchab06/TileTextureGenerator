@@ -101,7 +101,7 @@ public sealed class VerticalWallTransformation : TransformationBase
         int canvasWidth,
         int canvasHeight)
     {
-        var config = this[side];
+        var config = EdgeFlap[side];
 
         if (config.Mode == EdgeFlapMode.None)
             return;

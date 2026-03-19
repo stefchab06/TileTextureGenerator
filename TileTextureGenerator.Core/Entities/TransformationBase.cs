@@ -14,7 +14,6 @@ namespace TileTextureGenerator.Core.Entities;
 public abstract class TransformationBase : ITransformationManager
 {
     private readonly ITransformationStore<TransformationBase> _store;
-    private readonly EdgeFlapConfiguration[] _edgeFlaps;
     private Guid? _id;
     private bool _initialized;
 
@@ -51,15 +50,10 @@ public abstract class TransformationBase : ITransformationManager
     public virtual PaperType RequiredPaperType => PaperType.Standard;
 
     /// <summary>
-    /// Indexer for accessing edge flap configurations by image side.
+    /// Collection of edge flap configurations for all four sides.
+    /// Access configurations using EdgeFlap[ImageSide.Top], EdgeFlap[ImageSide.Right], etc.
     /// </summary>
-    /// <param name="side">The side of the image (Top, Right, Bottom, Left).</param>
-    /// <returns>The edge flap configuration for the specified side.</returns>
-    public EdgeFlapConfiguration this[ImageSide side]
-    {
-        get => _edgeFlaps[(int)side];
-        set => _edgeFlaps[(int)side] = value ?? throw new ArgumentNullException(nameof(value));
-    }
+    public EdgeFlapCollection EdgeFlap { get; } = new EdgeFlapCollection();
 
     /// <summary>
     /// Constructor with dependency injection.
@@ -69,13 +63,6 @@ public abstract class TransformationBase : ITransformationManager
     protected TransformationBase(ITransformationStore<TransformationBase> store)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
-        _edgeFlaps = new EdgeFlapConfiguration[4];
-
-        // Initialize all edge flaps with defaults
-        for (int i = 0; i < 4; i++)
-        {
-            _edgeFlaps[i] = new EdgeFlapConfiguration();
-        }
     }
 
     /// <summary>

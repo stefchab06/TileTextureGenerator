@@ -180,14 +180,14 @@ public class TransformationBaseTests
         var transformation = new TestTransformation(store);
 
         // Assert
-        Assert.NotNull(transformation[ImageSide.Top]);
-        Assert.NotNull(transformation[ImageSide.Right]);
-        Assert.NotNull(transformation[ImageSide.Bottom]);
-        Assert.NotNull(transformation[ImageSide.Left]);
-        Assert.Equal(EdgeFlapMode.Blank, transformation[ImageSide.Top].Mode);
-        Assert.Equal(EdgeFlapMode.Blank, transformation[ImageSide.Right].Mode);
-        Assert.Equal(EdgeFlapMode.Blank, transformation[ImageSide.Bottom].Mode);
-        Assert.Equal(EdgeFlapMode.Blank, transformation[ImageSide.Left].Mode);
+        Assert.NotNull(transformation.EdgeFlap[ImageSide.Top]);
+        Assert.NotNull(transformation.EdgeFlap[ImageSide.Right]);
+        Assert.NotNull(transformation.EdgeFlap[ImageSide.Bottom]);
+        Assert.NotNull(transformation.EdgeFlap[ImageSide.Left]);
+        Assert.Equal(EdgeFlapMode.Blank, transformation.EdgeFlap[ImageSide.Top].Mode);
+        Assert.Equal(EdgeFlapMode.Blank, transformation.EdgeFlap[ImageSide.Right].Mode);
+        Assert.Equal(EdgeFlapMode.Blank, transformation.EdgeFlap[ImageSide.Bottom].Mode);
+        Assert.Equal(EdgeFlapMode.Blank, transformation.EdgeFlap[ImageSide.Left].Mode);
     }
 
     [Fact]
@@ -198,14 +198,14 @@ public class TransformationBaseTests
         var transformation = new TestTransformation(store);
 
         // Act
-        transformation[ImageSide.Top] = new EdgeFlapConfiguration { Mode = EdgeFlapMode.Color, Color = "#FF0000" };
-        transformation[ImageSide.Right] = new EdgeFlapConfiguration { Mode = EdgeFlapMode.Texture, Texture = new ImageData(new byte[] { 0, 1, 2 }) };
+        transformation.EdgeFlap[ImageSide.Top] = new EdgeFlapConfiguration { Mode = EdgeFlapMode.Color, Color = "#FF0000" };
+        transformation.EdgeFlap[ImageSide.Right] = new EdgeFlapConfiguration { Mode = EdgeFlapMode.Texture, Texture = new ImageData(new byte[] { 0, 1, 2 }) };
 
         // Assert
-        Assert.Equal(EdgeFlapMode.Color, transformation[ImageSide.Top].Mode);
-        Assert.Equal("#FF0000", transformation[ImageSide.Top].Color);
-        Assert.Equal(EdgeFlapMode.Texture, transformation[ImageSide.Right].Mode);
-        Assert.Equal(new byte[] { 0, 1, 2 }, transformation[ImageSide.Right].Texture!.Value.Bytes);
+        Assert.Equal(EdgeFlapMode.Color, transformation.EdgeFlap[ImageSide.Top].Mode);
+        Assert.Equal("#FF0000", transformation.EdgeFlap[ImageSide.Top].Color);
+        Assert.Equal(EdgeFlapMode.Texture, transformation.EdgeFlap[ImageSide.Right].Mode);
+        Assert.Equal(new byte[] { 0, 1, 2 }, transformation.EdgeFlap[ImageSide.Right].Texture!.Value.Bytes);
     }
 
     [Fact]
@@ -216,7 +216,7 @@ public class TransformationBaseTests
         var transformation = new TestTransformation(store);
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => transformation[ImageSide.Top] = null!);
+        Assert.Throws<ArgumentNullException>(() => transformation.EdgeFlap[ImageSide.Top] = null!);
     }
 
     [Fact]
