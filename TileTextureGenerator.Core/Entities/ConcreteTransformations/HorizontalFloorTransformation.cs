@@ -44,7 +44,7 @@ public sealed class HorizontalFloorTransformation : TransformationBase
     /// <summary>
     /// Constructor with dependency injection.
     /// </summary>
-    public HorizontalFloorTransformation(ITransformationStore<TransformationBase> store) : base(store)
+    public HorizontalFloorTransformation(ITransformationStore store) : base(store)
     {
     }
 

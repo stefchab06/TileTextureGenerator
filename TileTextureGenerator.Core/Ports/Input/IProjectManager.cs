@@ -28,6 +28,12 @@ public interface IProjectManager
     Task RemoveTransformationAsync(Guid transformationId);
 
     /// <summary>
+    /// Get a tranformation concrete instance.
+    /// </summary>
+    /// <param name="transformationId">ID of the transformation to get.</param>
+    Task<TransformationBase> GetTransformationAsync(Guid transformationId);
+
+    /// <summary>
     /// Gets the list of transformation types available for this project type.
     /// Returns metadata (name and icon) for each compatible transformation type.
     /// </summary>

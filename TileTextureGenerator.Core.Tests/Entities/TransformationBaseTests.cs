@@ -17,7 +17,7 @@ public class TransformationBaseTests
     {
         private readonly ImageData _resultImage;
 
-        public TestTransformation(ITransformationStore<TransformationBase> store, byte[]? resultImage = null) 
+        public TestTransformation(ITransformationStore store, byte[]? resultImage = null) 
             : base(store)
         {
             _resultImage = new ImageData(resultImage ?? new byte[] { 0x89, 0x50, 0x4E, 0x47 }); // PNG header
@@ -31,7 +31,7 @@ public class TransformationBaseTests
         }
     }
 
-    private class FakeTransformationStore : ITransformationStore<TransformationBase>
+    private class FakeTransformationStore : ITransformationStore
     {
         public List<TransformationBase> SavedTransformations { get; } = [];
 
@@ -40,9 +40,6 @@ public class TransformationBaseTests
             SavedTransformations.Add(transformation);
             return Task.CompletedTask;
         }
-
-        public Task<TransformationBase?> LoadAsync(Guid transformationId) 
-            => Task.FromResult<TransformationBase?>(null);
     }
 
     private sealed class FakeProject : ProjectBase
@@ -63,6 +60,7 @@ public class TransformationBaseTests
         public Task SaveAsync(ProjectBase entity) => Task.CompletedTask;
         public Task AddTransformationAsync(ProjectBase project, TransformationDTO transformation) => Task.CompletedTask;
         public Task RemoveTransformationAsync(ProjectBase project, Guid transformationID) => Task.CompletedTask;
+        public Task<TransformationBase> LoadTransformationAsync(ProjectBase project, Guid transformationId) => Task.FromResult<TransformationBase>(null!);
     }
 
     [Fact]

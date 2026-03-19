@@ -13,7 +13,7 @@ namespace TileTextureGenerator.Core.Entities;
 /// </summary>
 public abstract class TransformationBase : ITransformationManager
 {
-    private readonly ITransformationStore<TransformationBase> _store;
+    private readonly ITransformationStore _store;
     private ProjectBase? _parentProject;
     private Guid? _id;
     private bool _initialized;
@@ -76,7 +76,7 @@ public abstract class TransformationBase : ITransformationManager
     /// Store is injected by DI container.
     /// </summary>
     /// <param name="store">The transformation store for persistence operations.</param>
-    protected TransformationBase(ITransformationStore<TransformationBase> store)
+    protected TransformationBase(ITransformationStore store)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
     }
@@ -104,7 +104,7 @@ public abstract class TransformationBase : ITransformationManager
     }
 
     /// <inheritdoc />
-    public virtual async Task SaveChangesAsync()
+    public async Task SaveChangesAsync()
     {
         if (!_initialized)
             throw new InvalidOperationException("Transformation not initialized. Call Initialize first.");

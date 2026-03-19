@@ -362,10 +362,11 @@ public class JsonProjectsStoreTests : IDisposable
         var transformation1Id = Guid.NewGuid();
         var transformation2Id = Guid.NewGuid();
 
-        jsonDoc!["transformations"] = new[]
+        // Use Option A structure (object with GUID keys, no icon)
+        jsonDoc!["transformations"] = new Dictionary<string, object>
         {
-            new { id = transformation1Id, type = "HorizontalFloorTransformation", icon = (byte[]?)null },
-            new { id = transformation2Id, type = "VerticalWallTransformation", icon = (byte[]?)null }
+            [transformation1Id.ToString()] = new { type = "HorizontalFloorTransformation" },
+            [transformation2Id.ToString()] = new { type = "VerticalWallTransformation" }
         };
 
         string updatedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true });
@@ -442,12 +443,13 @@ public class JsonProjectsStoreTests : IDisposable
         string jsonContent = await _fileStorage.ReadAllTextAsync(jsonPath);
         var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonContent);
 
-        // Create transformations array with specific order (order = index in array)
-        jsonDoc!["transformations"] = new[]
+        // Create transformations using Option A structure (object with GUID keys, no icon)
+        // Note: Order is not guaranteed with object keys, but that matches real-world usage
+        jsonDoc!["transformations"] = new Dictionary<string, object>
         {
-            new { id = transformation1Id, type = "HorizontalFloorTransformation", icon = (byte[]?)null },
-            new { id = transformation2Id, type = "VerticalWallTransformation", icon = (byte[]?)null },
-            new { id = transformation3Id, type = "HorizontalFloorTransformation", icon = (byte[]?)null }
+            [transformation1Id.ToString()] = new { type = "HorizontalFloorTransformation" },
+            [transformation2Id.ToString()] = new { type = "VerticalWallTransformation" },
+            [transformation3Id.ToString()] = new { type = "HorizontalFloorTransformation" }
         };
 
         string updatedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true });
@@ -552,12 +554,13 @@ public class JsonProjectsStoreTests : IDisposable
         // Add FloorTileProject-specific property
         jsonDoc!["tileShape"] = JsonSerializer.SerializeToElement(TileShape.HalfVertical, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
-        // Add transformations
-        jsonDoc["transformations"] = JsonSerializer.SerializeToElement(new[]
+        // Add transformations using Option A structure (object with GUID keys, no icon)
+        var transformationsDict = new Dictionary<string, object>
         {
-            new { id = transformation1Id, type = "HorizontalFloorTransformation", icon = (byte[]?)null },
-            new { id = transformation2Id, type = "HorizontalFloorTransformation", icon = (byte[]?)null }
-        }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+            [transformation1Id.ToString()] = new { type = "HorizontalFloorTransformation" },
+            [transformation2Id.ToString()] = new { type = "HorizontalFloorTransformation" }
+        };
+        jsonDoc["transformations"] = JsonSerializer.SerializeToElement(transformationsDict, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
         // Add SourceImage path
         string projectDir = _fileStorage.GetProjectPath("CompleteProject");
@@ -607,5 +610,6 @@ public class JsonProjectsStoreTests : IDisposable
         public Task SaveAsync(ProjectBase entity) => Task.CompletedTask;
         public Task AddTransformationAsync(ProjectBase project, TransformationDTO transformation) => Task.CompletedTask;
         public Task RemoveTransformationAsync(ProjectBase project, Guid transformationID) => Task.CompletedTask;
+        public Task<TransformationBase> LoadTransformationAsync(ProjectBase project, Guid transformationId) => Task.FromResult<TransformationBase>(null!);
     }
 }

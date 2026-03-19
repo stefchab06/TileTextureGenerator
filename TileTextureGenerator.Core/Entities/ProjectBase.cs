@@ -155,5 +155,13 @@ public abstract class ProjectBase : IProjectManager
     }
 
     /// <inheritdoc />
+    public virtual async Task<TransformationBase> GetTransformationAsync(Guid transformationId)
+    {
+        return await _store.LoadTransformationAsync(this, transformationId) 
+            ?? throw new InvalidOperationException($"Transformation with ID '{transformationId}' not found.");
+    }
+
+
+    /// <inheritdoc />
     public abstract Task<IReadOnlyList<TransformationTypeDTO>> GetAvailableTransformationTypesAsync();
 }

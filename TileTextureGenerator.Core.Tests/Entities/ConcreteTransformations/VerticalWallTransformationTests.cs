@@ -14,10 +14,9 @@ namespace TileTextureGenerator.Core.Tests.Entities.ConcreteTransformations;
 /// </summary>
 public class VerticalWallTransformationTests
 {
-    private class FakeTransformationStore : ITransformationStore<TransformationBase>
+    private class FakeTransformationStore : ITransformationStore
     {
         public Task SaveAsync(TransformationBase transformation) => Task.CompletedTask;
-        public Task<TransformationBase?> LoadAsync(Guid transformationId) => Task.FromResult<TransformationBase?>(null);
     }
 
     private sealed class FakeProject : ProjectBase
@@ -38,6 +37,7 @@ public class VerticalWallTransformationTests
         public Task SaveAsync(ProjectBase entity) => Task.CompletedTask;
         public Task AddTransformationAsync(ProjectBase project, TransformationDTO transformation) => Task.CompletedTask;
         public Task RemoveTransformationAsync(ProjectBase project, Guid transformationID) => Task.CompletedTask;
+        public Task<TransformationBase> LoadTransformationAsync(ProjectBase project, Guid transformationId) => Task.FromResult<TransformationBase>(null!);
     }
 
     private byte[] CreateTestImage(int width, int height)

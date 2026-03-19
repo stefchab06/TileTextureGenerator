@@ -44,7 +44,7 @@ public sealed class VerticalWallTransformation : TransformationBase
     /// <summary>
     /// Constructor with dependency injection.
     /// </summary>
-    public VerticalWallTransformation(ITransformationStore<TransformationBase> store) : base(store)
+    public VerticalWallTransformation(ITransformationStore store) : base(store)
     {
     }
 

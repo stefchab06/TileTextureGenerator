@@ -321,20 +321,12 @@ public sealed class JsonProjectsStore : IProjectsStore
             if (kvp.Key.EndsWith("Path", StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            // Handle transformations list specially (it's a List<TransformationDTO>)
+            // Handle transformations specially (Option A: object with GUID keys)
             if (kvp.Key.Equals("transformations", StringComparison.OrdinalIgnoreCase))
             {
                 try
                 {
-                    var transformations = JsonSerializer.Deserialize<List<TransformationDTO>>(kvp.Value.GetRawText(), JsonOptions);
-                    if (transformations != null)
-                    {
-                        project.Transformations.Clear();
-                        foreach (var transformation in transformations)
-                        {
-                            project.Transformations.Add(transformation);
-                        }
-                    }
+                    DeserializeTransformationsFromOptionA(project, kvp.Value);
                 }
                 catch
                 {
@@ -360,6 +352,66 @@ public sealed class JsonProjectsStore : IProjectsStore
                 {
                     // Skip properties that can't be deserialized
                 }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Deserializes transformations from Option A structure (object with GUID keys).
+    /// Icon is derived from Type via TransformationTypeRegistry, not stored in JSON.
+    /// </summary>
+    private void DeserializeTransformationsFromOptionA(ProjectBase project, JsonElement transformationsElement)
+    {
+        project.Transformations.Clear();
+
+        if (transformationsElement.ValueKind != JsonValueKind.Object)
+            return;
+
+        foreach (var kvp in transformationsElement.EnumerateObject())
+        {
+            try
+            {
+                // Key is the GUID, Value is the transformation object
+                if (!Guid.TryParse(kvp.Name, out var transformationId))
+                    continue;
+
+                var transformationObj = kvp.Value;
+                if (transformationObj.ValueKind != JsonValueKind.Object)
+                    continue;
+
+                // Extract type
+                if (!transformationObj.TryGetProperty("type", out var typeElement))
+                    continue;
+
+                string? typeName = typeElement.GetString();
+                if (string.IsNullOrEmpty(typeName))
+                    continue;
+
+                // Get icon from registry (not stored in JSON) - can be null if registry not ready
+                ImageData? icon = null;
+                try
+                {
+                    icon = TransformationTypeRegistry.GetIcon(typeName);
+                }
+                catch
+                {
+                    // Registry might not be initialized yet, continue without icon
+                }
+
+                // Create TransformationDTO
+                var transformationDto = new TransformationDTO
+                {
+                    Id = transformationId,
+                    Type = typeName,
+                    Icon = icon
+                };
+
+                project.Transformations.Add(transformationDto);
+            }
+            catch
+            {
+                // Skip this transformation if any error occurs
+                continue;
             }
         }
     }

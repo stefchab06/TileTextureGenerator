@@ -31,5 +31,12 @@ public interface IProjectStore
     /// <param name="project">The project to transformation to add.</param>
     Task RemoveTransformationAsync(ProjectBase project, Guid transformationID);
 
+    /// <summary>
+    /// Loads a transformation instance from storage by its ID.
+    /// </summary>
+    /// <param name="transformationId">ID of the transformation to load.</param>
+    /// <returns>The loaded transformation, or null if not found.</returns>
+    Task<TransformationBase> LoadTransformationAsync(ProjectBase project, Guid transformationId);
+
 
 }
