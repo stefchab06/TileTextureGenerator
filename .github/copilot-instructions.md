@@ -2,12 +2,10 @@
 
 ## Vue d'ensemble du projet
 
-**TileTextureGenerator** est une application de génération de textures pour tuiles de jeu de plateau (floor/wall tiles).
-Le projet suit une **architecture hexagonale (Ports & Adapters)** avec DDD et .NET 10 / C# 14.
+**TileTextureGenerator** est une application de génération de textures pour tuiles de jeu de plateau (floor/wall tiles). Le projet suit une **architecture hexagonale (Ports & Adapters)** avec DDD et .NET 10 / C# 14.
 
 ### Objectif métier
-L'application génère des images imprimables destinées à être utilisées avec les éléments vendus sur **https://www.tales-on-tiles.com/**.
-Elle permet de créer des textures personnalisées pour floor tiles et wall tiles compatibles avec ce système.
+L'application génère des images imprimables destinées à être utilisées avec les éléments vendus sur **https://www.tales-on-tiles.com/**. Elle permet de créer des textures personnalisées pour floor tiles et wall tiles compatibles avec ce système.
 
 ### Langue et conventions
 - **Discussion** : Français (langue maternelle de l'équipe)
@@ -27,8 +25,6 @@ Elle permet de créer des textures personnalisées pour floor tiles et wall tile
 ## Architecture et Organisation
 
 ### Structure des projets
-
-```
 TileTextureGenerator.Core/                    # Cœur métier (Domain + Application)
 ├── Entities/                                 # Entités du domaine
 │   ├── ProjectBase.cs                        # Base abstraite pour tous les projets
@@ -52,8 +48,6 @@ TileTextureGenerator.Adapters.Persistence.Tests/
 TileTextureGenerator.Infrastructure.FileSystem/  # Infrastructure fichiers
 
 TileTextureGenerator.Core.Tests/              # Tests unitaires du Core
-```
-
 ---
 
 ## Concepts métier clés
@@ -137,7 +131,7 @@ TileTextureGenerator.Core.Tests/              # Tests unitaires du Core
 - `HalfVertical` : 2"x1" rectangle vertical
 
 ### ProjectStatus
-- `Unexisting`, `Empty`, `Ready`, `Generating`, `Generated`, `Error`
+- `Unexisting`, `New`, `Pending`, `Generated`, `Archived` (ne pas utiliser `Ready`, `Empty` ou d'autres noms standards)
 
 ### ImageSide
 - `Top` (0), `Right` (1), `Bottom` (2), `Left` (3)
@@ -201,29 +195,17 @@ TileTextureGenerator.Core.Tests/              # Tests unitaires du Core
 4. **Ajouter/modifier les tests** (TDD si pertinent)
 5. **Compiler** (`dotnet build` ou dans VS : **Générer → Générer la solution**)
 6. **Exécuter les tests** (`dotnet test` ou dans VS : **Test → Exécuter tous les tests**)
-7. **Vérifier la couverture** (si tests ajoutés) : `dotnet-coverage collect -f cobertura -o coverage.cobertura.xml dotnet test`
+7. **Vérifier la couverture** (si tests ajoutés) : `dotcover collect -f cobertura -o coverage.cobertura.xml dotnet test`
 8. **Commit et push** : Via **Affichage → Modifications Git** dans Visual Studio ou en ligne de commande
 
 ### Commits Git sous PowerShell
 ⚠️ **Important** : PowerShell interprète les tirets (`-`) comme des opérateurs dans les messages multi-lignes.
 
-**❌ Ne PAS faire** :
-```powershell
-git commit -m "feat: Title
+**❌ Ne PAS faire** :git commit -m "feat: Title
 - Point 1
 - Point 2"
-```
-
-**✅ À faire** : Utiliser plusieurs flags `-m` (un pour le titre, un pour le corps) :
-```powershell
-git commit -m "feat: Title" -m "Point 1. Point 2. Point 3. All tests passing."
-```
-
-Ou utiliser des points au lieu de tirets dans un seul message :
-```powershell
-git commit -m "feat: Title. Point 1. Point 2. All tests passing."
-```
-
+**✅ À faire** : Utiliser plusieurs flags `-m` (un pour le titre, un pour le corps) :git commit -m "feat: Title" -m "Point 1. Point 2. Point 3. All tests passing."
+Ou utiliser des points au lieu de tirets dans un seul message :git commit -m "feat: Title. Point 1. Point 2. All tests passing."
 ---
 
 ## Points d'attention spécifiques au projet

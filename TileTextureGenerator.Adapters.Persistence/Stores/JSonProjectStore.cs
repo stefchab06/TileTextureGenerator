@@ -61,10 +61,19 @@ internal class JSonProjectStore: IProjectStore
 
         // Serialize the concrete project type polymorphically
         JsonObject jsonDoc;
-        string json = await _fileStorage.ReadAllTextAsync(jsonPath);
-        jsonDoc = string.IsNullOrWhiteSpace(json)
-            ? new JsonObject()
-            : JsonNode.Parse(json)?.AsObject() ?? new JsonObject();
+
+        // Check if file exists before reading
+        if (await _fileStorage.FileExistsAsync(jsonPath))
+        {
+            string json = await _fileStorage.ReadAllTextAsync(jsonPath);
+            jsonDoc = string.IsNullOrWhiteSpace(json)
+                ? new JsonObject()
+                : JsonNode.Parse(json)?.AsObject() ?? new JsonObject();
+        }
+        else
+        {
+            jsonDoc = new JsonObject();
+        }
 
         var properties = project.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
@@ -81,13 +90,16 @@ internal class JSonProjectStore: IProjectStore
 
             object? value = prop.GetValue(project);
 
+            // Convert property name to camelCase for JSON key
+            string jsonKey = char.ToLowerInvariant(prop.Name[0]) + prop.Name.Substring(1);
+
             if (value == null)
             {
-                jsonDoc.Remove(prop.Name);
+                jsonDoc.Remove(jsonKey);
                 continue;
             }
 
-            jsonDoc[prop.Name] = JsonSerializer.SerializeToNode(value);
+            jsonDoc[jsonKey] = JsonSerializer.SerializeToNode(value, JsonOptions);
         }
 
         // add image path properties
@@ -219,10 +231,35 @@ internal class JSonProjectStore: IProjectStore
             throw new InvalidOperationException($"Transformation '{transformationID}' has invalid 'type' value.");
         }
 
-        // Create transformation instance using registry and initialize it
-        TransformationBase transformation = TransformationTypeRegistry.Create(typeName, project);
+        // Get the type from registry
+        Type? transformationType = TransformationTypeRegistry.GetTypeByName(typeName);
+        if (transformationType == null)
+        {
+            throw new InvalidOperationException($"Unknown transformation type: '{typeName}'. Make sure it's registered.");
+        }
 
-        // Deserialize all properties from JSON (similar logic to JsonProjectsStore.DeserializeProjectProperties)
+        // Create instance using factory (without calling Initialize yet)
+        TransformationBase transformation;
+        try
+        {
+            // Access internal factory through reflection to avoid double initialization
+            var factoryField = typeof(TransformationTypeRegistry).GetField("_factory", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+            if (factoryField?.GetValue(null) is not Func<Type, TransformationBase> factory)
+            {
+                throw new InvalidOperationException("Factory not set. Call SetFactory before loading transformations.");
+            }
+
+            transformation = factory(transformationType);
+            transformation.Initialize(project, transformationID); // Use the ID from JSON
+        }
+        catch (Exception ex) when (ex is not InvalidOperationException)
+        {
+            throw new InvalidOperationException($"Failed to create transformation of type '{typeName}'.", ex);
+        }
+
+        // Deserialize all properties from JSON
         await DeserializeTransformationPropertiesAsync(transformation, transformationObj, project);
 
         return transformation;

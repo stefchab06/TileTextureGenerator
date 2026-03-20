@@ -1,6 +1,7 @@
 using TileTextureGenerator.Core.DTOs;
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Enums;
+using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Services;
 
@@ -26,10 +27,18 @@ public class ProjectBaseTests
 
     private class FakeProjectStore : IProjectStore
     {
+        public List<Guid> LoadedTransformationIds { get; } = [];
+        public TransformationBase? TransformationToReturn { get; set; }
+
         public Task SaveAsync(ProjectBase project) => Task.CompletedTask;
         public Task AddTransformationAsync(ProjectBase project, TransformationDTO transformation) => Task.CompletedTask;
         public Task RemoveTransformationAsync(ProjectBase project, Guid transformationID) => Task.CompletedTask;
-        public Task<TransformationBase> LoadTransformationAsync(ProjectBase project, Guid transformationId) => Task.FromResult<TransformationBase>(null!);
+
+        public Task<TransformationBase> LoadTransformationAsync(ProjectBase project, Guid transformationId)
+        {
+            LoadedTransformationIds.Add(transformationId);
+            return Task.FromResult(TransformationToReturn)!;
+        }
     }
 
     [Fact]
@@ -185,5 +194,72 @@ public class ProjectBaseTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => project.RemoveTransformationAsync(nonExistentId));
     }
 
+    [Fact]
+    public async Task GetTransformationAsync_WithExistingId_ReturnsTransformation()
+    {
+        // Arrange
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+        project.Initialize("TestProject");
+
+        var transformationId = Guid.NewGuid();
+        var expectedTransformation = new TestTransformation(new FakeTransformationStore());
+        expectedTransformation.Initialize(project, transformationId);
+
+        store.TransformationToReturn = expectedTransformation;
+
+        // Act
+        var result = await project.GetTransformationAsync(transformationId);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(expectedTransformation, result);
+        Assert.Single(store.LoadedTransformationIds);
+        Assert.Equal(transformationId, store.LoadedTransformationIds[0]);
+    }
+
+    [Fact]
+    public async Task GetTransformationAsync_WhenStoreReturnsNull_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+        project.Initialize("TestProject");
+
+        var transformationId = Guid.NewGuid();
+        store.TransformationToReturn = null;
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => project.GetTransformationAsync(transformationId));
+        Assert.Contains(transformationId.ToString(), exception.Message);
+    }
+
+    [Fact]
+    public async Task GetTransformationAsync_WithNonExistentId_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+        project.Initialize("TestProject");
+
+        var nonExistentId = Guid.NewGuid();
+        store.TransformationToReturn = null;
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => project.GetTransformationAsync(nonExistentId));
+    }
+
     #endregion
+
+    private sealed class TestTransformation : TransformationBase
+    {
+        public TestTransformation(ITransformationStore store) : base(store) { }
+        public override ImageData? Icon => null;
+        public override Task<ImageData> ExecuteAsync() => Task.FromResult(new ImageData(Array.Empty<byte>()));
+    }
+
+    private class FakeTransformationStore : ITransformationStore
+    {
+        public Task SaveAsync(TransformationBase transformation) => Task.CompletedTask;
+    }
 }
