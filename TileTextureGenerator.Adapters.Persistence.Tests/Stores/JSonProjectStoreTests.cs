@@ -572,13 +572,19 @@ public class JSonProjectStoreTests
     }
 
     [Fact]
-    public async Task LoadTransformationAsync_WithImageData_LoadsBasicPropertiesCorrectly()
+    public async Task LoadTransformationAsync_WithImageData_LoadsImageFromPath()
     {
-        // Arrange - Test sans image pour simplifier
+        // Arrange
         var project = new FloorTileProject(_store);
         project.Initialize("TestProject");
 
         var transformationId = Guid.NewGuid();
+        var projectDir = _fileStorage.GetProjectPath("TestProject");
+
+        // Create mock image file
+        var imageData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 1, 2, 3 }; // PNG header + data
+        var imagePath = Path.Combine(projectDir, "Sources", "BaseTexture.png");
+        await _fileStorage.WriteAllBytesAsync(imagePath, imageData);
 
         var jsonPath = _fileStorage.GetProjectFileName("TestProject");
         var existingJson = $$"""
@@ -589,7 +595,7 @@ public class JSonProjectStoreTests
           "transformations": {
             "{{transformationId}}": { 
               "type": "HorizontalFloorTransformation",
-              "tileShape": "HalfHorizontal"
+              "basetexturePath": "Sources/BaseTexture.png"
             }
           }
         }
@@ -601,12 +607,11 @@ public class JSonProjectStoreTests
 
         // Assert
         Assert.NotNull(transformation);
-        Assert.Equal(transformationId, transformation.Id);
-        Assert.Equal("HorizontalFloorTransformation", transformation.Type);
 
-        // Vérifier que c'est le bon type concret
+        // Verify image was loaded (cast to concrete type to access BaseTexture)
         var concreteTransformation = Assert.IsType<HorizontalFloorTransformation>(transformation);
-        Assert.Equal(TileShape.HalfHorizontal, concreteTransformation.TileShape);
+        Assert.NotNull(concreteTransformation.BaseTexture);
+        Assert.Equal(imageData, concreteTransformation.BaseTexture.Value.Bytes);
     }
 
     [Fact]
