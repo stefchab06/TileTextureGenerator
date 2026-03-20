@@ -326,26 +326,8 @@ internal class JSonProjectStore: IProjectStore
             filteredJson[kvp.Key] = kvp.Value?.DeepClone();
         }
 
-        // Deserialize filtered JSON to transformation properties
-        string filteredJsonString = filteredJson.ToJsonString();
-        if (!string.IsNullOrEmpty(filteredJsonString))
-        {
-            try
-            {
-                JsonSerializer.Deserialize(filteredJsonString, concreteType, JsonOptions);
-                // Apply deserialized values to transformation
-                var tempTransformation = JsonSerializer.Deserialize(filteredJsonString, concreteType, JsonOptions);
-                if (tempTransformation != null)
-                {
-                    CopyDeserializedProperties(tempTransformation, transformation);
-                }
-            }
-            catch
-            {
-                // If full deserialization fails, fall back to property-by-property
-                await DeserializePropertiesIndividually(transformation, jsonObj);
-            }
-        }
+        // Skip JsonSerializer.Deserialize due to constructor issues, use property-by-property directly
+        await DeserializePropertiesIndividually(transformation, jsonObj);
 
         // Step 2: Recursive ImageData loading from xxxPath properties
         await LoadImageDataRecursivelyAsync(transformation, jsonObj, projectDir);
@@ -368,7 +350,9 @@ internal class JSonProjectStore: IProjectStore
                 prop.Name == nameof(target.ParentProject) || 
                 prop.Name == nameof(target.Type) ||
                 !prop.CanWrite)
+            {
                 continue;
+            }
 
             try
             {
@@ -392,6 +376,7 @@ internal class JSonProjectStore: IProjectStore
     private async Task DeserializePropertiesIndividually(TransformationBase transformation, JsonObject jsonObj)
     {
         var concreteType = transformation.GetType();
+        Console.WriteLine($"[DEBUG] DeserializePropertiesIndividually: Type={concreteType.Name}");
 
         foreach (var kvp in jsonObj)
         {
@@ -400,9 +385,9 @@ internal class JSonProjectStore: IProjectStore
                 kvp.Key.EndsWith("Path", StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            // Find matching property
+            // Find matching property (case-insensitive, include inherited properties)
             var prop = concreteType.GetProperty(kvp.Key, 
-                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase | BindingFlags.FlattenHierarchy);
 
             if (prop != null && prop.CanWrite)
             {
