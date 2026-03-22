@@ -105,8 +105,8 @@ internal class JSonProjectStore: IProjectStore
         // add image path properties
         foreach (var kvp in imagePaths)
         {
-            // Add path property: e.g., "displayImagePath": "Sources/DisplayImage.png"
-            string pathPropertyName = $"{char.ToLowerInvariant(kvp.Key[0])}{kvp.Key.Substring(1)}Path";
+            // Add path property: e.g., "displayimagePath": "Sources/DisplayImage.png" (fully lowercase + Path)
+            string pathPropertyName = $"{kvp.Key.ToLowerInvariant()}Path";
             jsonDoc[pathPropertyName] = JsonSerializer.SerializeToNode(kvp.Value, JsonOptions);
         }
 
@@ -376,7 +376,6 @@ internal class JSonProjectStore: IProjectStore
     private async Task DeserializePropertiesIndividually(TransformationBase transformation, JsonObject jsonObj)
     {
         var concreteType = transformation.GetType();
-        Console.WriteLine($"[DEBUG] DeserializePropertiesIndividually: Type={concreteType.Name}");
 
         foreach (var kvp in jsonObj)
         {
@@ -464,8 +463,8 @@ internal class JSonProjectStore: IProjectStore
     {
         if (!imageProperty.CanWrite) return;
 
-        // Generate path property name: "BaseTexture" -> "basetexturePath"
-        string pathPropertyName = $"{char.ToLowerInvariant(imageProperty.Name[0])}{imageProperty.Name.Substring(1)}Path";
+        // Generate path property name: "BaseTexture" -> "basetexturePath" (fully lowercase + Path)
+        string pathPropertyName = $"{imageProperty.Name.ToLowerInvariant()}Path";
 
         if (jsonObj.TryGetPropertyValue(pathPropertyName, out var pathNode))
         {

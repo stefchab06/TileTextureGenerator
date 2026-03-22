@@ -74,8 +74,8 @@ public class JSonProjectStoreTests
         Assert.True(root.TryGetProperty("tileShape", out var tileShapeElement));
         Assert.Equal("HalfHorizontal", tileShapeElement.GetString());
 
-        // Verify SourceImage is saved as path
-        Assert.True(root.TryGetProperty("sourceImagePath", out var sourceImagePathElement));
+        // Verify SourceImage is saved as path (fully lowercase + Path)
+        Assert.True(root.TryGetProperty("sourceimagePath", out var sourceImagePathElement));
         Assert.NotNull(sourceImagePathElement.GetString());
     }
 
@@ -110,7 +110,7 @@ public class JSonProjectStoreTests
         Assert.True(root.TryGetProperty("tileShape", out var tileShapeElement));
         Assert.Equal("HalfVertical", tileShapeElement.GetString());
 
-        Assert.True(root.TryGetProperty("sourceImagePath", out var sourceImagePathElement));
+        Assert.True(root.TryGetProperty("sourceimagePath", out var sourceImagePathElement));
         Assert.NotNull(sourceImagePathElement.GetString());
     }
 

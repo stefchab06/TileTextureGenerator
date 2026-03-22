@@ -88,7 +88,7 @@ public sealed class JsonProjectsStore : IProjectsStore
             var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonContent, JsonOptions);
             if (jsonDoc != null)
             {
-                jsonDoc["displayImagePath"] = JsonSerializer.SerializeToElement(displayImagePath, JsonOptions);
+                jsonDoc["displayimagePath"] = JsonSerializer.SerializeToElement(displayImagePath, JsonOptions);
                 jsonContent = JsonSerializer.Serialize(jsonDoc, JsonOptions);
             }
         }
@@ -273,8 +273,8 @@ public sealed class JsonProjectsStore : IProjectsStore
 
         foreach (var property in imageProperties)
         {
-            // Try to get the path from JSON (e.g., "displayImagePath" for "DisplayImage")
-            string pathPropertyName = $"{char.ToLowerInvariant(property.Name[0])}{property.Name.Substring(1)}Path";
+            // Try to get the path from JSON (e.g., "displayimagePath" for "DisplayImage" - fully lowercase + Path)
+            string pathPropertyName = $"{property.Name.ToLowerInvariant()}Path";
 
             string? relativePath = null;
             if (projectData.TryGetValue(pathPropertyName, out var pathElement))
