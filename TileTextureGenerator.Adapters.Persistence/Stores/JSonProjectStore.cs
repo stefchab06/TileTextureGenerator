@@ -19,7 +19,7 @@ using TileTextureGenerator.Core.Registries;
 
 namespace TileTextureGenerator.Adapters.Persistence.Stores;
 
-internal class JSonProjectStore: IProjectStore
+internal class JSonProjectStore: IProjectStore, ITransformationStore
 {
     private readonly IFileStorage _fileStorage;
     private readonly ImagePersistenceHelper _imageHelper;
@@ -512,5 +512,223 @@ internal class JSonProjectStore: IProjectStore
                type == typeof(decimal) ||
                (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) && 
                 IsSimpleType(Nullable.GetUnderlyingType(type)!));
+    }
+
+    /// <inheritdoc />
+    async Task ITransformationStore.SaveAsync(TransformationBase transformation)
+    {
+        ArgumentNullException.ThrowIfNull(transformation);
+
+        // Get project JSON file path via ParentProject
+        string cleanedName = FileNameHelper.CleanFileName(transformation.ParentProject.Name);
+        string projectDir = _fileStorage.GetProjectPath(cleanedName);
+        string jsonPath = _fileStorage.GetProjectFileName(cleanedName);
+
+        // Ensure Workspace directory exists
+        await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Workspace"));
+
+        // Load existing JSON
+        string json = await _fileStorage.ReadAllTextAsync(jsonPath);
+        JsonObject jsonDoc = string.IsNullOrWhiteSpace(json)
+            ? new JsonObject()
+            : JsonNode.Parse(json)?.AsObject() ?? new JsonObject();
+
+        // Get or create "transformations" node
+        JsonObject transformationsNode;
+        if (jsonDoc.TryGetPropertyValue("transformations", out var existingNode) && 
+            existingNode is JsonObject existingObj)
+        {
+            transformationsNode = existingObj;
+        }
+        else
+        {
+            transformationsNode = new JsonObject();
+            jsonDoc["transformations"] = transformationsNode;
+        }
+
+        // Get or create transformation-specific node
+        string transformationKey = transformation.Id.ToString();
+        JsonObject transformationNode;
+        if (transformationsNode.TryGetPropertyValue(transformationKey, out var existingTransformationNode) && 
+            existingTransformationNode is JsonObject existingTransformationObj)
+        {
+            transformationNode = existingTransformationObj;
+        }
+        else
+        {
+            transformationNode = new JsonObject();
+            transformationsNode[transformationKey] = transformationNode;
+        }
+
+        // Save Type (always)
+        transformationNode["type"] = transformation.Type;
+
+        // Serialize all transformation properties recursively (handling ImageData at all levels)
+        await SerializeTransformationPropertiesAsync(transformation, transformationNode, transformationNode, projectDir);
+
+        // Save updated JSON
+        string updatedJson = jsonDoc.ToJsonString(JsonOptions);
+        await _fileStorage.WriteAllTextAsync(jsonPath, updatedJson);
+    }
+
+    /// <summary>
+    /// Serializes all properties of a transformation, handling ImageData specially at all nesting levels.
+    /// </summary>
+    private async Task SerializeTransformationPropertiesAsync(TransformationBase transformation, JsonObject transformationNode, JsonObject existingNode, string projectDir)
+    {
+        var properties = transformation.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+        foreach (var prop in properties)
+        {
+            if (!prop.CanRead) continue;
+
+            // Skip at root level: Icon, ParentProject, Id, Type (Type already handled separately)
+            if (prop.Name == nameof(transformation.Icon) || 
+                prop.Name == nameof(transformation.ParentProject) || 
+                prop.Name == nameof(transformation.Id) || 
+                prop.Name == nameof(transformation.Type))
+                continue;
+
+            var value = prop.GetValue(transformation);
+            if (value == null) continue; // Don't save null values
+
+            // Special handling for ImageData at root level
+            if (prop.PropertyType == typeof(ImageData) || prop.PropertyType == typeof(ImageData?))
+            {
+                var imageData = (ImageData)value;
+
+                // 1. Generate path property name (fully lowercase + Path)
+                string pathPropertyName = $"{prop.Name.ToLowerInvariant()}Path";
+
+                // 2. Get existing image file name or generate new GUID
+                string imageFileName;
+                if (existingNode.TryGetPropertyValue(pathPropertyName, out var existingPathNode) && 
+                    existingPathNode is JsonValue jsonValue)
+                {
+                    try
+                    {
+                        imageFileName = jsonValue.GetValue<string>(); // Reuse existing GUID
+                    }
+                    catch
+                    {
+                        imageFileName = $"Workspace/{Guid.NewGuid()}.png"; // Generate new if parse fails
+                    }
+                }
+                else
+                {
+                    imageFileName = $"Workspace/{Guid.NewGuid()}.png"; // Generate new GUID
+                }
+
+                // 3. Save the image
+                string fullImagePath = Path.Combine(projectDir, imageFileName);
+                await _fileStorage.WriteAllBytesAsync(fullImagePath, imageData.Bytes);
+
+                // 4. Add path property directly to transformation node
+                transformationNode[pathPropertyName] = imageFileName;
+            }
+            else
+            {
+                string jsonKey = char.ToLowerInvariant(prop.Name[0]) + prop.Name.Substring(1);
+
+                // Recursively serialize the value
+                var serialized = await SerializeValueRecursivelyAsync(value, prop.Name, existingNode, projectDir);
+
+                if (serialized != null)
+                    transformationNode[jsonKey] = serialized;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Recursively serializes a value, handling ImageData, collections, complex objects, and simple types.
+    /// </summary>
+    private async Task<JsonNode?> SerializeValueRecursivelyAsync(object? value, string propertyName, JsonObject existingNode, string projectDir)
+    {
+        if (value == null) return null;
+
+        var valueType = value.GetType();
+
+        // Handle collections (arrays, lists, etc.)
+        if (value is System.Collections.IEnumerable enumerable && !(value is string))
+        {
+            var jsonArray = new JsonArray();
+            int index = 0;
+            foreach (var item in enumerable)
+            {
+                if (item == null) continue;
+
+                var serializedItem = await SerializeValueRecursivelyAsync(item, $"{propertyName}[{index}]", existingNode, projectDir);
+                if (serializedItem != null)
+                    jsonArray.Add(serializedItem);
+
+                index++;
+            }
+            return jsonArray;
+        }
+        // Handle complex objects
+        else if (!IsSimpleType(valueType))
+        {
+            var jsonObject = new JsonObject();
+            var objectProperties = valueType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (var prop in objectProperties)
+            {
+                if (!prop.CanRead) continue;
+
+                var propValue = prop.GetValue(value);
+                if (propValue == null) continue;
+
+                // Special handling for ImageData properties in nested objects
+                if (prop.PropertyType == typeof(ImageData) || prop.PropertyType == typeof(ImageData?))
+                {
+                    var imageData = (ImageData)propValue;
+
+                    // 1. Generate path property name (fully lowercase + Path)
+                    string pathPropertyName = $"{prop.Name.ToLowerInvariant()}Path";
+
+                    // 2. Get existing image file name or generate new GUID
+                    string imageFileName;
+                    if (existingNode.TryGetPropertyValue(pathPropertyName, out var existingPathNode) && 
+                        existingPathNode is JsonValue jsonValue)
+                    {
+                        try
+                        {
+                            imageFileName = jsonValue.GetValue<string>(); // Reuse existing GUID
+                        }
+                        catch
+                        {
+                            imageFileName = $"Workspace/{Guid.NewGuid()}.png"; // Generate new if parse fails
+                        }
+                    }
+                    else
+                    {
+                        imageFileName = $"Workspace/{Guid.NewGuid()}.png"; // Generate new GUID
+                    }
+
+                    // 3. Save the image
+                    string fullImagePath = Path.Combine(projectDir, imageFileName);
+                    await _fileStorage.WriteAllBytesAsync(fullImagePath, imageData.Bytes);
+
+                    // 4. Add path property to the nested object
+                    jsonObject[pathPropertyName] = imageFileName;
+                }
+                else
+                {
+                    var serialized = await SerializeValueRecursivelyAsync(propValue, prop.Name, existingNode, projectDir);
+
+                    if (serialized != null)
+                    {
+                        string key = char.ToLowerInvariant(prop.Name[0]) + prop.Name.Substring(1);
+                        jsonObject[key] = serialized;
+                    }
+                }
+            }
+            return jsonObject;
+        }
+        // Handle simple types (primitives, strings, enums, etc.)
+        else
+        {
+            return JsonSerializer.SerializeToNode(value, JsonOptions);
+        }
     }
 }
