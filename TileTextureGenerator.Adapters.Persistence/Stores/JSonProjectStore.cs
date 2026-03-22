@@ -582,6 +582,9 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
         {
             if (!prop.CanRead) continue;
 
+            // Skip indexed properties (like this[ImageSide])
+            if (prop.GetIndexParameters().Length > 0) continue;
+
             // Skip at root level: Icon, ParentProject, Id, Type (Type already handled separately)
             if (prop.Name == nameof(transformation.Icon) || 
                 prop.Name == nameof(transformation.ParentProject) || 
@@ -674,6 +677,9 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
             foreach (var prop in objectProperties)
             {
                 if (!prop.CanRead) continue;
+
+                // Skip indexed properties (like EdgeFlap[ImageSide.Top])
+                if (prop.GetIndexParameters().Length > 0) continue;
 
                 var propValue = prop.GetValue(value);
                 if (propValue == null) continue;
