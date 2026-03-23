@@ -1,4 +1,6 @@
+using System.Text.Json.Nodes;
 using TileTextureGenerator.Adapters.Persistence.Ports;
+using TileTextureGenerator.Core.Models;
 
 namespace TileTextureGenerator.Adapters.Persistence.Utilities;
 
@@ -81,7 +83,7 @@ public sealed class ImagePersistenceHelper
     /// <param name="baseDirectory">Base directory for the project.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The image bytes, or null if the file doesn't exist.</returns>
-    public async Task<byte[]?> LoadImageAsync(
+    private async Task<byte[]?> LoadImageAsync(
         string? jsonPath,
         string baseDirectory,
         CancellationToken cancellationToken = default)
@@ -112,7 +114,7 @@ public sealed class ImagePersistenceHelper
     /// <param name="propertyName">Property name to use as filename (without extension).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The JSON-compatible relative path.</returns>
-    public async Task<string> SavePropertyImageAsync(
+    private async Task<string> SavePropertyImageAsync(
         byte[] imageData,
         string baseDirectory,
         string subdirectory,
@@ -171,5 +173,120 @@ public sealed class ImagePersistenceHelper
         string fullPath = Path.Combine(baseDirectory, platformPath);
 
         return await _fileStorage.FileExistsAsync(fullPath, cancellationToken);
+    }
+
+    /// <summary>
+    /// Serializes an ImageData property for a project to JSON format.
+    /// Uses the property name as the filename (e.g., "DisplayImage.png").
+    /// </summary>
+    /// <param name="propertyName">Name of the property containing the ImageData.</param>
+    /// <param name="imageData">The ImageData to serialize.</param>
+    /// <param name="projectDir">Base directory of the project.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Tuple containing the JSON property name (lowercase + "Path") and the relative path value.</returns>
+    public async Task<(string jsonPropertyName, string jsonPathValue)> SerializeProjectImageDataAsync(
+        string propertyName,
+        ImageData imageData,
+        string projectDir,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(propertyName);
+        ArgumentNullException.ThrowIfNull(projectDir);
+
+        if (string.IsNullOrWhiteSpace(propertyName))
+            throw new ArgumentException("Property name cannot be empty or whitespace.", nameof(propertyName));
+
+        // Save image with property name as filename in Sources directory
+        string relativePath = await SavePropertyImageAsync(
+            imageData.Bytes,
+            projectDir,
+            "Sources",
+            propertyName,
+            cancellationToken);
+
+        // Generate JSON property name (fully lowercase + "Path")
+        string jsonPropertyName = $"{propertyName.ToLowerInvariant()}Path";
+
+        return (jsonPropertyName, relativePath);
+    }
+
+    /// <summary>
+    /// Serializes an ImageData property for a transformation to JSON format.
+    /// Uses a GUID-based filename with reuse logic (e.g., "Workspace/{guid}.png").
+    /// </summary>
+    /// <param name="propertyName">Name of the property containing the ImageData.</param>
+    /// <param name="imageData">The ImageData to serialize.</param>
+    /// <param name="projectDir">Base directory of the project.</param>
+    /// <param name="existingNode">Existing JSON node to check for GUID reuse.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Tuple containing the JSON property name (lowercase + "Path") and the relative path value.</returns>
+    public async Task<(string jsonPropertyName, string jsonPathValue)> SerializeTransformationImageDataAsync(
+        string propertyName,
+        ImageData imageData,
+        string projectDir,
+        JsonObject existingNode,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(propertyName);
+        ArgumentNullException.ThrowIfNull(projectDir);
+        ArgumentNullException.ThrowIfNull(existingNode);
+
+        if (string.IsNullOrWhiteSpace(propertyName))
+            throw new ArgumentException("Property name cannot be empty or whitespace.", nameof(propertyName));
+
+        // Generate JSON property name (fully lowercase + "Path")
+        string jsonPropertyName = $"{propertyName.ToLowerInvariant()}Path";
+
+        // Check if path already exists in JSON to reuse GUID
+        string? existingPath = null;
+        if (existingNode.TryGetPropertyValue(jsonPropertyName, out var pathNode) && 
+            pathNode is JsonValue jsonValue)
+        {
+            try
+            {
+                existingPath = jsonValue.GetValue<string>();
+            }
+            catch
+            {
+                // Parse failed, will generate new GUID
+            }
+        }
+
+        // Save image in Workspace directory with GUID-based filename
+        string relativePath = await SaveImageAsync(
+            imageData.Bytes,
+            projectDir,
+            "Workspace",
+            fileName: null,  // Let SaveImageAsync generate or reuse GUID
+            existingPath: existingPath,
+            cancellationToken);
+
+        return (jsonPropertyName, relativePath);
+    }
+
+    /// <summary>
+    /// Deserializes an ImageData from a JSON path property value.
+    /// </summary>
+    /// <param name="jsonPathValue">The path value from JSON (e.g., "Sources/DisplayImage.png" or "Workspace/{guid}.png").</param>
+    /// <param name="projectDir">Base directory of the project.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The deserialized ImageData, or null if the path is invalid or file doesn't exist.</returns>
+    public async Task<ImageData?> DeserializeImageDataAsync(
+        string? jsonPathValue,
+        string projectDir,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(jsonPathValue))
+            return null;
+
+        ArgumentNullException.ThrowIfNull(projectDir);
+
+        // Load image bytes
+        byte[]? imageBytes = await LoadImageAsync(jsonPathValue, projectDir, cancellationToken);
+
+        if (imageBytes == null || imageBytes.Length == 0)
+            return null;
+
+        return new ImageData(imageBytes);
     }
 }

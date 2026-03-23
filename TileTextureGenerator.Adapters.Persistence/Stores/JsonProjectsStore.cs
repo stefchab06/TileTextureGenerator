@@ -70,13 +70,12 @@ public sealed class JsonProjectsStore : IProjectsStore
         string? displayImagePath = null;
         if (projectDto.DisplayImage.HasValue && projectDto.DisplayImage.Value.Bytes.Length > 0)
         {
-            await _imageHelper.SavePropertyImageAsync(
-                projectDto.DisplayImage.Value.Bytes,
-                projectDir,
-                "Sources",
-                "DisplayImage"
+            var (jsonPropertyName, jsonPathValue) = await _imageHelper.SerializeProjectImageDataAsync(
+                "DisplayImage",
+                projectDto.DisplayImage.Value,
+                projectDir
             );
-            displayImagePath = "Sources/DisplayImage.png";
+            displayImagePath = jsonPathValue;
         }
 
         // Serialize DTO to JSON
@@ -285,11 +284,11 @@ public sealed class JsonProjectsStore : IProjectsStore
             if (relativePath == null)
                 continue;
 
-            byte[]? imageData = await _imageHelper.LoadImageAsync(relativePath, projectDir);
+            // Use helper to deserialize ImageData
+            ImageData? image = await _imageHelper.DeserializeImageDataAsync(relativePath, projectDir);
 
-            if (imageData != null)
+            if (image != null)
             {
-                ImageData image = new(imageData);
                 property.SetValue(project, image);
             }
         }

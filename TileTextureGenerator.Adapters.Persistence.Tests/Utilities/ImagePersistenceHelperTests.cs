@@ -118,79 +118,14 @@ public class ImagePersistenceHelperTests
     }
 
     [Fact]
-    public async Task LoadImageAsync_WithExistingImage_ReturnsImageData()
+    public async Task SerializeProjectImageDataAsync_WithEmptyPropertyName_ThrowsArgumentException()
     {
         // Arrange
-        byte[] imageData = [0x89, 0x50, 0x4E, 0x47, 0x01, 0x02];
-        string jsonPath = await _helper.SaveImageAsync(imageData, _baseDirectory, "Sources", "test.png");
+        var imageData = new Core.Models.ImageData([0x89, 0x50]);
 
-        // Act
-        byte[]? loaded = await _helper.LoadImageAsync(jsonPath, _baseDirectory);
-
-        // Assert
-        Assert.NotNull(loaded);
-        Assert.Equal(imageData, loaded);
-    }
-
-    [Fact]
-    public async Task LoadImageAsync_WithNonExistentImage_ReturnsNull()
-    {
-        // Act
-        byte[]? loaded = await _helper.LoadImageAsync("Sources/nonexistent.png", _baseDirectory);
-
-        // Assert
-        Assert.Null(loaded);
-    }
-
-    [Fact]
-    public async Task LoadImageAsync_WithNullPath_ReturnsNull()
-    {
-        // Act
-        byte[]? loaded = await _helper.LoadImageAsync(null, _baseDirectory);
-
-        // Assert
-        Assert.Null(loaded);
-    }
-
-    [Fact]
-    public async Task LoadImageAsync_WithEmptyPath_ReturnsNull()
-    {
-        // Act
-        byte[]? loaded = await _helper.LoadImageAsync(string.Empty, _baseDirectory);
-
-        // Assert
-        Assert.Null(loaded);
-    }
-
-    [Fact]
-    public async Task SavePropertyImageAsync_UsesPropertyNameAsFileName()
-    {
-        // Arrange
-        byte[] imageData = [0x89, 0x50, 0x4E, 0x47];
-
-        // Act
-        string jsonPath = await _helper.SavePropertyImageAsync(imageData, _baseDirectory, "Sources", "DisplayImage");
-
-        // Assert
-        Assert.Equal("Sources/DisplayImage.png", jsonPath);
-        string fullPath = Path.Combine(_baseDirectory, "Sources", "DisplayImage.png");
-        Assert.True(await _fileStorage.FileExistsAsync(fullPath));
-    }
-
-    [Fact]
-    public async Task SavePropertyImageAsync_WithNullPropertyName_ThrowsArgumentNullException()
-    {
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(() => 
-            _helper.SavePropertyImageAsync([0x89], _baseDirectory, "Sources", null!));
-    }
-
-    [Fact]
-    public async Task SavePropertyImageAsync_WithEmptyPropertyName_ThrowsArgumentException()
-    {
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() => 
-            _helper.SavePropertyImageAsync([0x89], _baseDirectory, "Sources", "   "));
+            _helper.SerializeProjectImageDataAsync("   ", imageData, _baseDirectory));
     }
 
     [Fact]
@@ -271,18 +206,212 @@ public class ImagePersistenceHelperTests
         Assert.NotEqual(path1, path2);
     }
 
+
+    #region SerializeProjectImageDataAsync Tests
+
     [Fact]
-    public async Task SaveLoadRoundTrip_PreservesImageData()
+    public async Task SerializeProjectImageDataAsync_ValidImageData_ReturnsCorrectJsonProperty()
     {
         // Arrange
-        byte[] originalData = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+        byte[] imageBytes = [0x89, 0x50, 0x4E, 0x47, 1, 2, 3];
+        var imageData = new Core.Models.ImageData(imageBytes);
+        string propertyName = "DisplayImage";
 
         // Act
-        string jsonPath = await _helper.SaveImageAsync(originalData, _baseDirectory, "Sources", "test.png");
-        byte[]? loadedData = await _helper.LoadImageAsync(jsonPath, _baseDirectory);
+        var (jsonPropertyName, jsonPathValue) = await _helper.SerializeProjectImageDataAsync(
+            propertyName, imageData, _baseDirectory);
 
         // Assert
-        Assert.NotNull(loadedData);
-        Assert.Equal(originalData, loadedData);
+        Assert.Equal("displayimagePath", jsonPropertyName); // Fully lowercase + Path
+        Assert.Equal("Sources/DisplayImage.png", jsonPathValue);
+
+        // Verify file was created
+        string fullPath = Path.Combine(_baseDirectory, "Sources", "DisplayImage.png");
+        Assert.True(await _fileStorage.FileExistsAsync(fullPath));
+        byte[] savedBytes = await _fileStorage.ReadAllBytesAsync(fullPath);
+        Assert.Equal(imageBytes, savedBytes);
     }
+
+    [Fact]
+    public async Task SerializeProjectImageDataAsync_MixedCasePropertyName_FullyLowercase()
+    {
+        // Arrange
+        byte[] imageBytes = [0x89, 0x50, 0x4E, 0x47];
+        var imageData = new Core.Models.ImageData(imageBytes);
+        string propertyName = "SourceImageData";
+
+        // Act
+        var (jsonPropertyName, _) = await _helper.SerializeProjectImageDataAsync(
+            propertyName, imageData, _baseDirectory);
+
+        // Assert
+        Assert.Equal("sourceimagedataPath", jsonPropertyName); // ALL lowercase + Path
+    }
+
+    [Fact]
+    public async Task SerializeProjectImageDataAsync_NullPropertyName_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var imageData = new Core.Models.ImageData([0x89, 0x50]);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
+            _helper.SerializeProjectImageDataAsync(null!, imageData, _baseDirectory));
+    }
+
+    #endregion
+
+    #region SerializeTransformationImageDataAsync Tests
+
+    [Fact]
+    public async Task SerializeTransformationImageDataAsync_NewImage_GeneratesGuidFilename()
+    {
+        // Arrange
+        byte[] imageBytes = [0x89, 0x50, 0x4E, 0x47, 1, 2, 3];
+        var imageData = new Core.Models.ImageData(imageBytes);
+        string propertyName = "BaseTexture";
+        var emptyNode = new System.Text.Json.Nodes.JsonObject();
+
+        // Act
+        var (jsonPropertyName, jsonPathValue) = await _helper.SerializeTransformationImageDataAsync(
+            propertyName, imageData, _baseDirectory, emptyNode);
+
+        // Assert
+        Assert.Equal("basetexturePath", jsonPropertyName); // Fully lowercase + Path
+        Assert.StartsWith("Workspace/", jsonPathValue);
+        Assert.EndsWith(".png", jsonPathValue);
+
+        // Verify it's a GUID-based filename
+        string fileName = Path.GetFileNameWithoutExtension(jsonPathValue.Replace("Workspace/", ""));
+        Assert.True(Guid.TryParse(fileName, out _), "Filename should be a valid GUID");
+
+        // Verify file was created
+        string platformPath = PathHelper.ToPlatformPath(jsonPathValue);
+        string fullPath = Path.Combine(_baseDirectory, platformPath);
+        Assert.True(await _fileStorage.FileExistsAsync(fullPath));
+    }
+
+    [Fact]
+    public async Task SerializeTransformationImageDataAsync_ExistingPath_ReusesGuid()
+    {
+        // Arrange
+        byte[] oldImageBytes = [0x89, 0x50, 0x4E, 0x47, 9, 9, 9];
+        byte[] newImageBytes = [0x89, 0x50, 0x4E, 0x47, 1, 2, 3];
+        var newImageData = new Core.Models.ImageData(newImageBytes);
+        string propertyName = "BaseTexture";
+
+        // Create existing image with specific GUID
+        var existingGuid = Guid.NewGuid();
+        string existingPath = $"Workspace/{existingGuid}.png";
+        string fullPath = Path.Combine(_baseDirectory, "Workspace", $"{existingGuid}.png");
+        await _fileStorage.WriteAllBytesAsync(fullPath, oldImageBytes);
+
+        // Create node with existing path
+        var existingNode = new System.Text.Json.Nodes.JsonObject
+        {
+            ["basetexturePath"] = existingPath
+        };
+
+        // Act
+        var (jsonPropertyName, jsonPathValue) = await _helper.SerializeTransformationImageDataAsync(
+            propertyName, newImageData, _baseDirectory, existingNode);
+
+        // Assert
+        Assert.Equal("basetexturePath", jsonPropertyName);
+        Assert.Equal(existingPath, jsonPathValue); // Same path = GUID reused
+
+        // Verify image was updated with new data
+        byte[] savedBytes = await _fileStorage.ReadAllBytesAsync(fullPath);
+        Assert.Equal(newImageBytes, savedBytes);
+    }
+
+    [Fact]
+    public async Task SerializeTransformationImageDataAsync_MultipleProperties_DifferentGuids()
+    {
+        // Arrange
+        var imageData1 = new Core.Models.ImageData([0x89, 0x50, 0x4E, 0x47, 1]);
+        var imageData2 = new Core.Models.ImageData([0x89, 0x50, 0x4E, 0x47, 2]);
+        var emptyNode = new System.Text.Json.Nodes.JsonObject();
+
+        // Act
+        var (_, path1) = await _helper.SerializeTransformationImageDataAsync(
+            "BaseTexture", imageData1, _baseDirectory, emptyNode);
+        var (_, path2) = await _helper.SerializeTransformationImageDataAsync(
+            "OverlayTexture", imageData2, _baseDirectory, emptyNode);
+
+        // Assert - Different GUIDs
+        Assert.NotEqual(path1, path2);
+
+        string guid1 = Path.GetFileNameWithoutExtension(path1.Replace("Workspace/", ""));
+        string guid2 = Path.GetFileNameWithoutExtension(path2.Replace("Workspace/", ""));
+        Assert.NotEqual(guid1, guid2);
+    }
+
+    #endregion
+
+    #region DeserializeImageDataAsync Tests
+
+    [Fact]
+    public async Task DeserializeImageDataAsync_ValidPath_ReturnsImageData()
+    {
+        // Arrange
+        byte[] imageBytes = [0x89, 0x50, 0x4E, 0x47, 1, 2, 3];
+        string relativePath = "Sources/TestImage.png";
+        string fullPath = Path.Combine(_baseDirectory, "Sources", "TestImage.png");
+        await _fileStorage.WriteAllBytesAsync(fullPath, imageBytes);
+
+        // Act
+        var imageData = await _helper.DeserializeImageDataAsync(relativePath, _baseDirectory);
+
+        // Assert
+        Assert.NotNull(imageData);
+        Assert.Equal(imageBytes, imageData.Value.Bytes);
+    }
+
+    [Fact]
+    public async Task DeserializeImageDataAsync_NullPath_ReturnsNull()
+    {
+        // Act
+        var imageData = await _helper.DeserializeImageDataAsync(null, _baseDirectory);
+
+        // Assert
+        Assert.Null(imageData);
+    }
+
+    [Fact]
+    public async Task DeserializeImageDataAsync_EmptyPath_ReturnsNull()
+    {
+        // Act
+        var imageData = await _helper.DeserializeImageDataAsync("", _baseDirectory);
+
+        // Assert
+        Assert.Null(imageData);
+    }
+
+    [Fact]
+    public async Task DeserializeImageDataAsync_FileDoesNotExist_ReturnsNull()
+    {
+        // Act
+        var imageData = await _helper.DeserializeImageDataAsync("NonExistent/Image.png", _baseDirectory);
+
+        // Assert
+        Assert.Null(imageData);
+    }
+
+    [Fact]
+    public async Task DeserializeImageDataAsync_EmptyFile_ReturnsNull()
+    {
+        // Arrange
+        string relativePath = "Sources/EmptyImage.png";
+        string fullPath = Path.Combine(_baseDirectory, "Sources", "EmptyImage.png");
+        await _fileStorage.WriteAllBytesAsync(fullPath, Array.Empty<byte>());
+
+        // Act
+        var imageData = await _helper.DeserializeImageDataAsync(relativePath, _baseDirectory);
+
+        // Assert
+        Assert.Null(imageData); // Empty bytes = null ImageData
+    }
+
+    #endregion
 }

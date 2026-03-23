@@ -253,17 +253,14 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
 
             if (value is ImageData imageData)
             {
-                // Use property name as filename for unique images
-                string relativePath = $"Sources/{property.Name}.png";
-
-                await _imageHelper.SavePropertyImageAsync(
-                    imageData.Bytes,
-                    projectDir,
-                    "Sources",
-                    property.Name
+                // Use helper to serialize project ImageData
+                var (jsonPropertyName, jsonPathValue) = await _imageHelper.SerializeProjectImageDataAsync(
+                    property.Name,
+                    imageData,
+                    projectDir
                 );
 
-                imagePaths[property.Name] = relativePath;
+                imagePaths[property.Name] = jsonPathValue;
             }
         }
 
@@ -441,11 +438,11 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
             {
                 try
                 {
-                    byte[]? imageBytes = await _imageHelper.LoadImageAsync(imagePath, projectDir);
-                    if (imageBytes != null)
-                    {
-                        ImageData imageData = new ImageData(imageBytes);
+                    // Use helper to deserialize ImageData
+                    ImageData? imageData = await _imageHelper.DeserializeImageDataAsync(imagePath, projectDir);
 
+                    if (imageData != null)
+                    {
                         // Set the ImageData property
                         if (imageProperty.PropertyType == typeof(ImageData?))
                         {
@@ -563,34 +560,16 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
             {
                 var imageData = (ImageData)value;
 
-                // 1. Generate path property name (fully lowercase + Path)
-                string pathPropertyName = $"{prop.Name.ToLowerInvariant()}Path";
+                // Use helper to serialize transformation ImageData (with GUID reuse)
+                var (jsonPropertyName, jsonPathValue) = await _imageHelper.SerializeTransformationImageDataAsync(
+                    prop.Name,
+                    imageData,
+                    projectDir,
+                    existingNode
+                );
 
-                // 2. Get existing image file name or generate new GUID
-                string imageFileName;
-                if (existingNode.TryGetPropertyValue(pathPropertyName, out var existingPathNode) && 
-                    existingPathNode is JsonValue jsonValue)
-                {
-                    try
-                    {
-                        imageFileName = jsonValue.GetValue<string>(); // Reuse existing GUID
-                    }
-                    catch
-                    {
-                        imageFileName = $"Workspace/{Guid.NewGuid()}.png"; // Generate new if parse fails
-                    }
-                }
-                else
-                {
-                    imageFileName = $"Workspace/{Guid.NewGuid()}.png"; // Generate new GUID
-                }
-
-                // 3. Save the image
-                string fullImagePath = Path.Combine(projectDir, imageFileName);
-                await _fileStorage.WriteAllBytesAsync(fullImagePath, imageData.Bytes);
-
-                // 4. Add path property directly to transformation node
-                transformationNode[pathPropertyName] = imageFileName;
+                // Add path property directly to transformation node
+                transformationNode[jsonPropertyName] = jsonPathValue;
             }
             else
             {
@@ -652,34 +631,16 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
                 {
                     var imageData = (ImageData)propValue;
 
-                    // 1. Generate path property name (fully lowercase + Path)
-                    string pathPropertyName = $"{prop.Name.ToLowerInvariant()}Path";
+                    // Use helper to serialize transformation ImageData (with GUID reuse)
+                    var (jsonPropertyName, jsonPathValue) = await _imageHelper.SerializeTransformationImageDataAsync(
+                        prop.Name,
+                        imageData,
+                        projectDir,
+                        existingNode
+                    );
 
-                    // 2. Get existing image file name or generate new GUID
-                    string imageFileName;
-                    if (existingNode.TryGetPropertyValue(pathPropertyName, out var existingPathNode) && 
-                        existingPathNode is JsonValue jsonValue)
-                    {
-                        try
-                        {
-                            imageFileName = jsonValue.GetValue<string>(); // Reuse existing GUID
-                        }
-                        catch
-                        {
-                            imageFileName = $"Workspace/{Guid.NewGuid()}.png"; // Generate new if parse fails
-                        }
-                    }
-                    else
-                    {
-                        imageFileName = $"Workspace/{Guid.NewGuid()}.png"; // Generate new GUID
-                    }
-
-                    // 3. Save the image
-                    string fullImagePath = Path.Combine(projectDir, imageFileName);
-                    await _fileStorage.WriteAllBytesAsync(fullImagePath, imageData.Bytes);
-
-                    // 4. Add path property to the nested object
-                    jsonObject[pathPropertyName] = imageFileName;
+                    // Add path property to the nested object
+                    jsonObject[jsonPropertyName] = jsonPathValue;
                 }
                 else
                 {

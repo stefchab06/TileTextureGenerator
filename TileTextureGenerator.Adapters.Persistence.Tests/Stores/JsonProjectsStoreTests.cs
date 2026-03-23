@@ -495,12 +495,12 @@ public class JsonProjectsStoreTests : IDisposable
         string sourceImagePath = Path.Combine(projectDir, "Sources", "SourceImage.png");
         await _fileStorage.WriteAllBytesAsync(sourceImagePath, sourceImageData);
 
-        // Update JSON to include sourceImagePath
+        // Update JSON to include sourceimagePath (fully lowercase + Path)
         string jsonPath = _fileStorage.GetProjectFileName("MultiImageTest");
         string jsonContent = await _fileStorage.ReadAllTextAsync(jsonPath);
         var jsonDoc = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonContent, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
-        jsonDoc!["sourceImagePath"] = JsonSerializer.SerializeToElement("Sources/SourceImage.png", new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        jsonDoc!["sourceimagePath"] = JsonSerializer.SerializeToElement("Sources/SourceImage.png", new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
         string updatedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
         await _fileStorage.WriteAllTextAsync(jsonPath, updatedJson);
@@ -562,11 +562,11 @@ public class JsonProjectsStoreTests : IDisposable
         };
         jsonDoc["transformations"] = JsonSerializer.SerializeToElement(transformationsDict, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
-        // Add SourceImage path
+        // Add SourceImage path (fully lowercase + Path)
         string projectDir = _fileStorage.GetProjectPath("CompleteProject");
         string sourceImagePath = Path.Combine(projectDir, "Sources", "SourceImage.png");
         await _fileStorage.WriteAllBytesAsync(sourceImagePath, sourceImageData);
-        jsonDoc["sourceImagePath"] = JsonSerializer.SerializeToElement("Sources/SourceImage.png", new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        jsonDoc["sourceimagePath"] = JsonSerializer.SerializeToElement("Sources/SourceImage.png", new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
         // Save updated JSON
         string updatedJson = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
