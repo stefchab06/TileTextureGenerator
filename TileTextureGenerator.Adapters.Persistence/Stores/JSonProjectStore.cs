@@ -299,43 +299,6 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
     }
 
     /// <summary>
-    /// Copies properties from deserialized temp object to actual transformation (excluding immutable properties).
-    /// </summary>
-    private void CopyDeserializedProperties(object source, TransformationBase target)
-    {
-        var sourceType = source.GetType();
-        var targetType = target.GetType();
-
-        var properties = sourceType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-        foreach (var prop in properties)
-        {
-            // Skip immutable properties (Id, ParentProject, etc.)
-            if (prop.Name == nameof(target.Id) || 
-                prop.Name == nameof(target.ParentProject) || 
-                prop.Name == nameof(target.Type) ||
-                !prop.CanWrite)
-            {
-                continue;
-            }
-
-            try
-            {
-                var value = prop.GetValue(source);
-                var targetProp = targetType.GetProperty(prop.Name);
-                if (targetProp != null && targetProp.CanWrite)
-                {
-                    targetProp.SetValue(target, value);
-                }
-            }
-            catch
-            {
-                // Skip properties that can't be copied
-            }
-        }
-    }
-
-    /// <summary>
     /// Fallback: deserialize properties individually if bulk deserialization fails.
     /// </summary>
     private async Task DeserializePropertiesIndividually(TransformationBase transformation, JsonObject jsonObj)
