@@ -23,6 +23,7 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
 {
     private readonly IFileStorage _fileStorage;
     private readonly ImagePersistenceHelper _imageHelper;
+    private readonly ProjectJsonHelper _jsonHelper;
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,
@@ -40,6 +41,7 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
     {
         _fileStorage = fileStorage;
         _imageHelper = new ImagePersistenceHelper(fileStorage);
+        _jsonHelper = new ProjectJsonHelper(fileStorage);
     }
 
     async Task IProjectStore.SaveAsync(ProjectBase project)
@@ -48,7 +50,6 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
 
         string cleanedName = FileNameHelper.CleanFileName(project.Name);
         string projectDir = _fileStorage.GetProjectPath(cleanedName);
-        string jsonPath = _fileStorage.GetProjectFileName(cleanedName);
 
         // Ensure directory structure exists
         await _fileStorage.EnsureDirectoryExistsAsync(projectDir);
@@ -59,21 +60,8 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
         // Save all image properties and get their paths
         var imagePaths = await SaveProjectImagesAsync(project, projectDir);
 
-        // Serialize the concrete project type polymorphically
-        JsonObject jsonDoc;
-
-        // Check if file exists before reading
-        if (await _fileStorage.FileExistsAsync(jsonPath))
-        {
-            string json = await _fileStorage.ReadAllTextAsync(jsonPath);
-            jsonDoc = string.IsNullOrWhiteSpace(json)
-                ? new JsonObject()
-                : JsonNode.Parse(json)?.AsObject() ?? new JsonObject();
-        }
-        else
-        {
-            jsonDoc = new JsonObject();
-        }
+        // Load existing JSON using helper
+        JsonObject jsonDoc = await _jsonHelper.LoadProjectJsonAsync(project.Name);
 
         var properties = project.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
@@ -110,8 +98,8 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
             jsonDoc[pathPropertyName] = JsonSerializer.SerializeToNode(kvp.Value, JsonOptions);
         }
 
-        string updatedJson = jsonDoc.ToJsonString(JsonOptions);
-        await _fileStorage.WriteAllTextAsync(jsonPath, updatedJson);
+        // Save JSON using helper
+        await _jsonHelper.SaveProjectJsonAsync(project.Name, jsonDoc, JsonOptions);
     }
 
     /// <inheritdoc />
@@ -120,14 +108,8 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(transformation);
 
-        string cleanedName = FileNameHelper.CleanFileName(project.Name);
-        string jsonPath = _fileStorage.GetProjectFileName(cleanedName);
-
-        // Load existing JSON
-        string json = await _fileStorage.ReadAllTextAsync(jsonPath);
-        JsonObject jsonDoc = string.IsNullOrWhiteSpace(json)
-            ? new JsonObject()
-            : JsonNode.Parse(json)?.AsObject() ?? new JsonObject();
+        // Load existing JSON using helper
+        JsonObject jsonDoc = await _jsonHelper.LoadProjectJsonAsync(project.Name);
 
         // Get or create "transformations" node as JsonObject
         JsonObject transformationsNode;
@@ -151,9 +133,8 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
 
         transformationsNode[transformation.Id.ToString()] = transformationObj;
 
-        // Save updated JSON
-        string updatedJson = jsonDoc.ToJsonString(JsonOptions);
-        await _fileStorage.WriteAllTextAsync(jsonPath, updatedJson);
+        // Save updated JSON using helper
+        await _jsonHelper.SaveProjectJsonAsync(project.Name, jsonDoc, JsonOptions);
     }
 
     /// <inheritdoc />
@@ -161,14 +142,8 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
     {
         ArgumentNullException.ThrowIfNull(project);
 
-        string cleanedName = FileNameHelper.CleanFileName(project.Name);
-        string jsonPath = _fileStorage.GetProjectFileName(cleanedName);
-
-        // Load existing JSON
-        string json = await _fileStorage.ReadAllTextAsync(jsonPath);
-        JsonObject jsonDoc = string.IsNullOrWhiteSpace(json)
-            ? new JsonObject()
-            : JsonNode.Parse(json)?.AsObject() ?? new JsonObject();
+        // Load existing JSON using helper
+        JsonObject jsonDoc = await _jsonHelper.LoadProjectJsonAsync(project.Name);
 
         // Find "transformations" node
         if (jsonDoc.TryGetPropertyValue("transformations", out var transformationsNode) &&
@@ -185,9 +160,8 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
             }
         }
 
-        // Save updated JSON
-        string updatedJson = jsonDoc.ToJsonString(JsonOptions);
-        await _fileStorage.WriteAllTextAsync(jsonPath, updatedJson);
+        // Save updated JSON using helper
+        await _jsonHelper.SaveProjectJsonAsync(project.Name, jsonDoc, JsonOptions);
     }
 
     /// <inheritdoc />
@@ -195,14 +169,8 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
     {
         ArgumentNullException.ThrowIfNull(project);
 
-        string cleanedName = FileNameHelper.CleanFileName(project.Name);
-        string jsonPath = _fileStorage.GetProjectFileName(cleanedName);
-
-        // Load existing JSON
-        string json = await _fileStorage.ReadAllTextAsync(jsonPath);
-        JsonObject jsonDoc = string.IsNullOrWhiteSpace(json)
-            ? new JsonObject()
-            : JsonNode.Parse(json)?.AsObject() ?? new JsonObject();
+        // Load existing JSON using helper
+        JsonObject jsonDoc = await _jsonHelper.LoadProjectJsonAsync(project.Name);
 
         // Find "transformations" node
         if (!jsonDoc.TryGetPropertyValue("transformations", out var transformationsNode) ||
@@ -519,19 +487,15 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
     {
         ArgumentNullException.ThrowIfNull(transformation);
 
-        // Get project JSON file path via ParentProject
+        // Get project directory path
         string cleanedName = FileNameHelper.CleanFileName(transformation.ParentProject.Name);
         string projectDir = _fileStorage.GetProjectPath(cleanedName);
-        string jsonPath = _fileStorage.GetProjectFileName(cleanedName);
 
         // Ensure Workspace directory exists
         await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Workspace"));
 
-        // Load existing JSON
-        string json = await _fileStorage.ReadAllTextAsync(jsonPath);
-        JsonObject jsonDoc = string.IsNullOrWhiteSpace(json)
-            ? new JsonObject()
-            : JsonNode.Parse(json)?.AsObject() ?? new JsonObject();
+        // Load existing JSON using helper
+        JsonObject jsonDoc = await _jsonHelper.LoadProjectJsonAsync(transformation.ParentProject.Name);
 
         // Get or create "transformations" node
         JsonObject transformationsNode;
@@ -566,9 +530,8 @@ internal class JSonProjectStore: IProjectStore, ITransformationStore
         // Serialize all transformation properties recursively (handling ImageData at all levels)
         await SerializeTransformationPropertiesAsync(transformation, transformationNode, transformationNode, projectDir);
 
-        // Save updated JSON
-        string updatedJson = jsonDoc.ToJsonString(JsonOptions);
-        await _fileStorage.WriteAllTextAsync(jsonPath, updatedJson);
+        // Save updated JSON using helper
+        await _jsonHelper.SaveProjectJsonAsync(transformation.ParentProject.Name, jsonDoc, JsonOptions);
     }
 
     /// <summary>
