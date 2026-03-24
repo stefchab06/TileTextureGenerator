@@ -12,6 +12,7 @@ namespace TileTextureGenerator.Core.Tests.Services;
 /// Unit tests for ProjectsManager service.
 /// Tests projects collection lifecycle: list types, create, select, delete, list projects.
 /// </summary>
+[Collection("ProjectRegistry")]
 public class ProjectsManagerTests
 {
     private const string FakeProjectTypeAName = "FakeProjectTypeA";

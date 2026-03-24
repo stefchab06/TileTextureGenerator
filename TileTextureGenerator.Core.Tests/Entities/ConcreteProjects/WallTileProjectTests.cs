@@ -13,6 +13,7 @@ namespace TileTextureGenerator.Core.Tests.Entities.ConcreteProjects;
 /// Unit tests for WallTileProject concrete entity.
 /// Tests specific behavior for wall tile texture projects.
 /// </summary>
+[Collection("ProjectRegistry")]
 public class WallTileProjectTests
 {
     private class FakeWallTileProjectStore : IProjectStore

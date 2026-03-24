@@ -12,6 +12,7 @@ namespace TileTextureGenerator.Core.Tests.Entities.ConcreteTransformations;
 /// Unit tests for HorizontalFloorTransformation concrete transformation.
 /// Tests execution, dimension calculations, and edge flap rendering.
 /// </summary>
+[Collection("TransformationRegistry")]
 public class HorizontalFloorTransformationTests
 {
     private class FakeTransformationStore : ITransformationStore
