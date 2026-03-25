@@ -15,10 +15,12 @@ L'application génère des images imprimables destinées à être utilisées ave
 - **Documentation technique** : Inclure les termes français ET anglais pour les menus/options VS
 
 ### État actuel du développement
-1. ✅ **Cœur métier (Core)** : Implémenté (entities, registries, ports)
-2. 🚧 **Persistance** : En cours (file system-based JSON)
-3. 📋 **UI** : À venir (multi-plateforme avec .NET MAUI, sujet à changement)
-4. 📋 **Multi-langue** : Planifié pour l'UI finale
+1. ✅ **Cœur métier (Core)** : Implémenté (entities, registries, ports, services)
+2. ✅ **Persistance** : Implémenté (file system-based JSON, JsonProjectsStore avec 23 tests)
+3. ✅ **Structure MAUI** : Implémentée (TileTextureGenerator App + Presentation.UI Library)
+4. ✅ **Système DI automatique** : Implémenté (auto-registration par conventions)
+5. 🚧 **Use Cases et UI** : En cours (premier use case CreateProject)
+6. 📋 **Multi-langue** : Planifié pour l'UI finale
 
 ---
 
@@ -248,6 +250,81 @@ Ou utiliser des points au lieu de tirets dans un seul message :git commit -m "fe
 
 ---
 
+## Architecture Use Cases clarifiée (Important !)
+
+### Définition des Use Cases
+
+**Use Case** = Scénario UML complet d'interactions utilisateur ↔ système (multi-étapes).
+
+**Exemple** : \"Supprimer un projet\"
+1. Utilisateur lance l'application
+2. Système affiche la liste des projets
+3. Utilisateur sélectionne un projet et demande suppression
+4. Système supprime et rafraîchit la liste
+
+### Flux architectural complet
+
+```
+UI (ViewModel)
+  ↓ utilise (classe concrète)
+Use Case (Adapters.UseCases)
+  ↓ utilise (interface)
+Port Input (Core/Ports/Input/IProjectsManager)
+  ↓ implémenté par
+Service (Core/Services/ProjectsManager)
+  ↓ utilise (interface)
+Port Output (Core/Ports/Output/IProjectsStore)
+  ↓ implémenté par
+Adapter Persistence (JsonProjectsStore)
+  ↓ utilise
+Infrastructure.FileSystem
+```
+
+### Règles clés
+
+1. **Use Cases UTILISENT les Ports Input** (ne les implémentent PAS)
+2. **Ports Input sont implémentés DANS le Core** (Core/Services/)
+3. **Ports Output sont implémentés HORS du Core** (Adapters.Persistence/)
+4. **Use Cases = Classes concrètes** (pas d'interfaces nécessaires, sauf testabilité avancée)
+5. **ViewModels utilisent les Use Cases** (pas directement les services Core, sauf opérations simples)
+
+### Quand créer un Use Case ?
+
+- ✅ Scénario multi-étapes avec orchestration
+- ✅ Workflow complexe impliquant plusieurs services
+- ✅ Besoin de retourner un résultat structuré pour l'UI
+- ❌ Opération simple = 1 appel de service → ViewModel appelle directement `IProjectsManager`
+
+### Système DI automatique
+
+**Emplacement** : `TileTextureGenerator/Configuration/DependencyInjectionExtensions.cs`
+
+**Fonctionnalités** :
+- Enregistrement automatique par conventions (I* interfaces, *Store, *Service, *ViewModel, *Page)
+- Initialisation automatique des registres (TextureProjectRegistry, TransformationTypeRegistry)
+- Scan de tous les assemblies TileTextureGenerator.*
+
+**Résultat** : Aucun enregistrement manuel nécessaire, système totalement automatisé.
+
+**Lors de l'ajout d'un nouveau service/ViewModel/UseCase** : Créer simplement la classe, elle sera automatiquement enregistrée.
+
+### Projets MAUI
+
+**TileTextureGenerator** (Application Exe) :
+- Point d'entrée de l'application
+- MauiProgram.cs : Configuration DI + initialisation registres
+- App.xaml : Bootstrap
+- Platforms/ : Manifests
+- AppIcon, SplashScreen
+- Configuration/DependencyInjectionExtensions.cs : Auto-registration
+
+**TileTextureGenerator.Presentation.UI** (Library) :
+- Pages, ViewModels, Views, Converters
+- ❌ PAS de Platforms/, AppIcon, SplashScreen, MauiProgram.cs
+- Réutilisable, découplé de l'application hôte
+
+---
+
 ## Notes pour GitHub Copilot
 
 - **Toujours** suivre les conventions du projet existant
@@ -257,4 +334,6 @@ Ou utiliser des points au lieu de tirets dans un seul message :git commit -m "fe
 - **Compiler** après chaque modification pour valider
 - **Langue code** : TOUT le code, documentation et commentaires DOIT être en anglais (même si on discute en français)
 - **Langue instructions** : Donner les instructions Visual Studio en FRANÇAIS (l'IDE est en français)
-- **Priorité actuelle** : Implémenter la persistance (file system), pas l'UI
+- **Use Cases** : Classes concrètes qui UTILISENT les Ports Input (ne les implémentent pas)
+- **DI automatique** : Ne pas enregistrer manuellement les services, utiliser le système d'auto-registration
+- **Priorité actuelle** : Implémenter les premiers Use Cases et l'UI MAUI

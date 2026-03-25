@@ -210,24 +210,120 @@ var transformation = TransformationTypeRegistry.Create("HorizontalFloorTransform
 
 ## Ports (Interfaces)
 
-### Input Ports (Use Cases / Services entrants)
+### Input Ports (Services entrants)
 
-- `IProjectManager` : opérations CRUD sur un projet
-- `ITransformationManager` : opérations CRUD sur une transformation
-- `IProjectsManager` : gestion de plusieurs projets
+**Définition** : Interfaces définies dans `Core/Ports/Input/`, **implémentées dans `Core/Services/`**.
+
+- `IProjectsManager` : gestion collection de projets (CRUD multi-projets)
+  - Implémenté par : `Core/Services/ProjectsManager`
+  - Méthodes : `ListProjectsAsync()`, `CreateProjectAsync()`, `SelectProjectAsync()`, `DeleteProjectAsync()`, `ListProjectTypesAsync()`
+
+- `IProjectManager` : opérations sur un projet individuel
+  - Implémenté par : `ProjectBase` (entités)
+  - Méthodes : `SaveChangesAsync()`, `AddTransformationAsync()`, `RemoveTransformationAsync()`, `GetTransformationAsync()`, `GetAvailableTransformationTypesAsync()`
+
 - `IImageInitializationService` : services d'initialisation d'images
+
+**Qui les utilise ?** Les **Use Cases** (dans `Adapters.UseCases`) appellent ces interfaces pour orchestrer les scénarios.
 
 ### Output Ports (Adaptateurs sortants)
 
-- `IProjectStore<TProject>` : persistance pour projets
+**Définition** : Interfaces définies dans `Core/Ports/Output/`, **implémentées dans `Adapters.Persistence/`**.
+
+- `IProjectsStore` : persistance collection de projets
+  - Implémenté par : `Adapters.Persistence/JsonProjectsStore`
+  - Méthodes : `ListProjectsAsync()`, `CreateProjectAsync()`, `LoadAsync()`, `DeleteAsync()`, `ExistsAsync()`
+
+- `IProjectStore<TProject>` : persistance d'un projet spécifique
+  - Implémenté par : `Adapters.Persistence/JsonProjectStore`
+
 - `ITransformationStore<TTransformation>` : persistance pour transformations
+  - Implémenté par : `Adapters.Persistence/JsonTransformationStore`
+
 - `IImageProcessingService` : traitement d'images (redimensionnement, conversion)
 
-**Principe** : Le Core définit les interfaces, les Adapters les implémentent.
+**Qui les utilise ?** Les **Services Core** et les **Entités** appellent ces interfaces pour persister les données.
+
+### Flux complet
+
+```
+UI (ViewModel)
+  ↓ appelle (classe concrète)
+Use Case (Adapters.UseCases)
+  ↓ appelle (interface)
+Port Input (Core/Ports/Input)
+  ↓ implémenté par
+Service (Core/Services)
+  ↓ appelle (interface)
+Port Output (Core/Ports/Output)
+  ↓ implémenté par
+Adapter Persistence
+  ↓ appelle
+Infrastructure.FileSystem
+```
+
+**Principe clé** : 
+- Les **Ports Input** sont implémentés **DANS le Core** (Services)
+- Les **Ports Output** sont implémentés **HORS du Core** (Adapters)
+- Les **Use Cases** UTILISENT les Ports Input (ne les implémentent pas)
 
 ---
 
 ## Adapters
+
+### UseCases (Orchestrateurs de scénarios)
+
+**Rôle** : Orchestrer des **scénarios UML complets** (interactions utilisateur ↔ système multi-étapes).
+
+**Emplacement** : `TileTextureGenerator.Adapters.UseCases/`
+
+**Caractéristiques** :
+- Classes concrètes (pas d'interfaces nécessaires, sauf pour testabilité avancée)
+- Utilisent les **Ports Input** du Core via injection de dépendances
+- Coordonnent plusieurs appels de services métier
+- Retournent des résultats typés pour l'UI
+
+**Exemple de scénario** : Suppression d'un projet
+```csharp
+// Use Case : Utilisateur supprime un projet
+// 1. Lance l'app → 2. Affiche liste → 3. Sélectionne projet → 4. Supprime → 5. Rafraîchit liste
+
+public class DeleteProjectUseCase
+{
+    private readonly IProjectsManager _projectsManager;
+
+    public DeleteProjectUseCase(IProjectsManager projectsManager)
+    {
+        _projectsManager = projectsManager;
+    }
+
+    public async Task<UseCaseResult> ExecuteAsync(string projectName)
+    {
+        // Étape 1 : Valider existence
+        var projects = await _projectsManager.ListProjectsAsync();
+        if (!projects.Any(p => p.Name == projectName))
+            return UseCaseResult.NotFound(projectName);
+
+        // Étape 2 : Supprimer
+        await _projectsManager.DeleteProjectAsync(projectName);
+
+        // Étape 3 : Rafraîchir liste pour UI
+        var updatedProjects = await _projectsManager.ListProjectsAsync();
+
+        return UseCaseResult.Success(updatedProjects);
+    }
+}
+```
+
+**Quand créer un Use Case ?**
+- Scénario multi-étapes impliquant plusieurs services
+- Workflow complexe avec logique conditionnelle
+- Orchestration de plusieurs entités ou agrégats
+- Besoin de retourner un résultat structuré pour l'UI
+
+**Quand NE PAS créer un Use Case ?**
+- Opération simple = 1 appel de service → ViewModel appelle directement `IProjectsManager`
+- Pas de logique d'orchestration
 
 ### Persistence (JSON)
 
@@ -412,9 +508,116 @@ Heavy     // Carton épais (200-300g)
 
 ## État actuel du projet
 
-### Phase actuelle : Persistance
-Nous avons terminé le **cœur métier (Core)** et travaillons maintenant sur la **couche de persistance** (file system-based JSON).
-L'objectif est de finaliser la persistance avant de commencer l'interface utilisateur.
+### Phase actuelle : Préparation UI
+
+Nous avons terminé le **cœur métier (Core)** et la **couche de persistance** (file system-based JSON).
+Nous préparons maintenant l'**interface utilisateur** avec .NET MAUI.
+
+## Structure des projets MAUI
+
+### TileTextureGenerator (Application - Point d'entrée)
+
+**Type** : Application MAUI exécutable (`<OutputType>Exe</OutputType>`)
+
+**Contenu** :
+- ✅ `MauiProgram.cs` : Configuration DI, initialisation registres
+- ✅ `App.xaml` / `App.xaml.cs` : Bootstrap de l'application
+- ✅ Dossier `Platforms/` : Manifests Android/iOS/Windows/macOS
+- ✅ `Resources/AppIcon/` : Icône de l'application
+- ✅ `Resources/Splash/` : Splash screen
+- ✅ `Configuration/DependencyInjectionExtensions.cs` : Auto-registration DI
+- ✅ Références vers tous les projets (Core, Adapters, Infrastructure, Presentation.UI)
+
+**Responsabilité** :
+- Héberger l'application
+- Configurer l'injection de dépendances automatique
+- Initialiser les registres (TextureProjectRegistry, TransformationTypeRegistry)
+- Démarrer l'UI
+
+### TileTextureGenerator.Presentation.UI (Bibliothèque MAUI)
+
+**Type** : Bibliothèque MAUI (`<OutputType>Library</OutputType>` ou non spécifié)
+
+**Contenu** :
+- ✅ Pages XAML (CreateProjectPage, ProjectListPage, etc.) [à venir]
+- ✅ ViewModels (CreateProjectViewModel, ProjectListViewModel, etc.) [à venir]
+- ✅ Views personnalisées (UserControls) [à venir]
+- ✅ Converters, Behaviors, Triggers [à venir]
+- ✅ `Resources/Images/` : Images spécifiques à l'UI
+- ❌ **PAS de dossier `Platforms/`** (pas de point d'entrée plateforme)
+- ❌ **PAS de AppIcon/SplashScreen** (gérés par l'application hôte)
+- ❌ **PAS de MauiProgram.cs** (géré par l'application hôte)
+
+**Responsabilité** :
+- Fournir les composants d'interface réutilisables
+- Implémenter le pattern MVVM
+- Référencer `Adapters.UseCases` pour orchestrer les scénarios
+
+**Avantage** : L'UI est découplée de l'application hôte, permettant de réutiliser les composants dans d'autres contextes.
+
+### Système d'enregistrement automatique DI
+
+**Emplacement** : `TileTextureGenerator/Configuration/DependencyInjectionExtensions.cs`
+
+**Fonctionnalités** :
+
+#### 1. Enregistrement automatique des services par conventions
+
+```csharp
+// Dans MauiProgram.cs
+builder.Services.AddAutoRegisteredServices();
+```
+
+**Conventions appliquées** :
+- Interfaces `I*` → Implémentation automatiquement trouvée
+- `*Store`, `*Repository` → Enregistrés comme `Scoped`
+- `*Service`, `*UseCase`, `*Handler` → Enregistrés comme `Scoped`
+- `*ViewModel` → Enregistré comme `Transient`
+- `*Page`, `*View` → Enregistré comme `Transient`
+
+**Scanne** : Tous les assemblies `TileTextureGenerator.*`
+
+#### 2. Initialisation automatique des registres
+
+```csharp
+// Dans MauiProgram.cs
+builder.Services.InitializeCoreRegistries();
+```
+
+**Actions** :
+- Injecte le factory DI dans `TextureProjectRegistry`
+- Force l'auto-registration de tous les types de projets
+- Injecte le factory DI dans `TransformationTypeRegistry`
+- Appelle `RegisterAll()` pour enregistrer tous les types de transformations
+
+**Résultat** : Aucun oubli d'enregistrement possible, système totalement automatisé.
+
+#### 3. Ajout de nouveaux composants
+
+**Exemple** : Ajouter un nouveau ViewModel
+
+```csharp
+// TileTextureGenerator.Presentation.UI/ViewModels/ProjectListViewModel.cs
+public class ProjectListViewModel  // Suffit de créer la classe
+{
+    public ProjectListViewModel(IProjectsManager manager) { }  // DI automatique
+}
+
+// Aucune configuration manuelle nécessaire !
+// La classe est automatiquement enregistrée comme Transient
+```
+
+**Exemple** : Ajouter un nouveau Use Case
+
+```csharp
+// TileTextureGenerator.Adapters.UseCases/CreateProjectUseCase.cs
+public class CreateProjectUseCase  // Suffit de créer la classe
+{
+    public CreateProjectUseCase(IProjectsManager manager) { }  // DI automatique
+}
+
+// Automatiquement enregistré comme Scoped
+```
 
 ### ✅ Implémenté
 - Core entities (ProjectBase, TransformationBase)
@@ -423,13 +626,19 @@ L'objectif est de finaliser la persistance avant de commencer l'interface utilis
 - Registres avec factory pattern (TextureProjectRegistry, TransformationTypeRegistry)
 - DTOs et enums (ProjectDto, TransformationDTO, TileShape, ProjectStatus, etc.)
 - Value objects (EdgeFlapConfiguration)
-- Ports/Interfaces (IProjectStore, ITransformationStore, IProjectManager, etc.)
-- Structure de tests (Core.Tests, Persistence.Tests)
+- Ports/Interfaces (IProjectStore, ITransformationStore, IProjectsManager, IProjectManager, etc.)
+- Services Core (ProjectsManager implémente IProjectsManager)
+- Structure de tests (Core.Tests, Persistence.Tests, UseCases.Tests)
+- Adaptateur Persistence : JSON serialization/deserialization (JsonProjectsStore avec 23 tests)
+- Infrastructure.FileSystem : Lecture/écriture de fichiers JSON
+- Projets MAUI : TileTextureGenerator (App) + Presentation.UI (Library)
+- Système DI automatique : DependencyInjectionExtensions avec auto-registration
+- Initialisation automatique des registres au démarrage
 
 ### 🚧 En cours (priorité actuelle)
-- **Adaptateur Persistence** : JSON serialization/deserialization avec gestion du polymorphisme
-- **Infrastructure.FileSystem** : Lecture/écriture de fichiers JSON
-- **Tests de persistence** : Validation de la sérialisation/désérialisation
+- **Use Cases** : Création du premier use case (CreateProjectUseCase)
+- **ViewModels et Pages** : Implémentation de l'UI MAUI
+- **Localisation** : Système multi-langue (EN/FR)
 
 ### 📋 À venir (après persistance)
 1. **UI multi-plateforme** : .NET MAUI (Windows, macOS, Linux)
