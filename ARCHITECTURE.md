@@ -30,30 +30,51 @@ Ces éléments physiques permettent de créer des donjons, terrains et décors p
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Adapters (Entrée)                        │
-│              (UI, API, CLI - non implémenté ici)            │
+│                    Presentation.UI (MAUI)                   │
+│              ViewModels, Pages, Views                       │
 └────────────────────────┬────────────────────────────────────┘
-                         │
+                         │ utilise (classes concrètes)
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│               Adapters.UseCases                             │
+│         Orchestrateurs de scénarios UML                     │
+│    (CreateProjectUseCase, DeleteProjectUseCase, etc.)       │
+└────────────────────────┬────────────────────────────────────┘
+                         │ utilise (via interfaces)
                          ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                   Core (Hexagone)                           │
 │  ┌──────────────────────────────────────────────────────┐   │
+│  │  Ports/Input (Interfaces)                            │   │
+│  │    IProjectsManager, IProjectManager, etc.           │   │
+│  └──────────────┬───────────────────────────────────────┘   │
+│                 │ implémenté par                            │
+│  ┌──────────────▼───────────────────────────────────────┐   │
+│  │  Services (Implémentations)                          │   │
+│  │    ProjectsManager (opérations métier atomiques)     │   │
+│  └──────────────┬───────────────────────────────────────┘   │
+│                 │ utilise                                   │
+│  ┌──────────────▼───────────────────────────────────────┐   │
 │  │  Entities (ProjectBase, TransformationBase)          │   │
-│  │  Services métier (ProjectsManager, etc.)             │   │
 │  │  DTOs, Enums, Models, Registries                     │   │
-│  └──────────────────────────────────────────────────────┘   │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │  Ports (Interfaces)                                  │   │
-│  │    ├── Input (IProjectManager, ITransformationMgr)  │   │
-│  │    └── Output (IProjectStore, ITransformationStore) │   │
+│  └──────────────┬───────────────────────────────────────┘   │
+│                 │ utilise (via interfaces)                  │
+│  ┌──────────────▼───────────────────────────────────────┐   │
+│  │  Ports/Output (Interfaces)                           │   │
+│  │    IProjectsStore, ITransformationStore              │   │
 │  └──────────────────────────────────────────────────────┘   │
 └────────────────────────┬────────────────────────────────────┘
-                         │
+                         │ implémenté par
                          ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                Adapters (Sortie)                            │
-│  ├── Persistence (JSON serialization)                      │
-│  └── Infrastructure.FileSystem (I/O fichiers)              │
+│            Adapters.Persistence                             │
+│         JsonProjectsStore, JsonTransformationStore          │
+└────────────────────────┬────────────────────────────────────┘
+                         │ utilise
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│          Infrastructure.FileSystem                          │
+│              I/O fichiers bas niveau                        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -63,6 +84,9 @@ Ces éléments physiques permettent de créer des donjons, terrains et décors p
 2. **Les Adapters dépendent du Core** : implémentent les interfaces (Ports)
 3. **Inversion de dépendances** : Core définit les interfaces, Adapters les implémentent
 4. **Isolation de la persistance** : aucune logique de sérialisation dans Core
+5. **Use Cases = Orchestrateurs** : Les use cases UTILISENT les ports Input, ne les implémentent PAS
+6. **Ports Input implémentés dans Core/Services** : Les services métier implémentent les ports Input
+7. **Pas d'interfaces superflues** : Use Cases sont des classes concrètes (pas d'interfaces sauf si testabilité requise)
 
 ---
 
