@@ -6,6 +6,17 @@
     xmlns:pages="clr-namespace:TileTextureGenerator.Presentation.UI.Pages;assembly=TileTextureGenerator.Presentation.UI"
     Title="TileTextureGenerator">
 
+    <Shell.TitleView>
+        <Grid>
+            <Label Text="TileTextureGenerator" 
+                   FontSize="20" 
+                   FontAttributes="Bold" 
+                   VerticalOptions="Center" 
+                   HorizontalOptions="Center" 
+                   TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+        </Grid>
+    </Shell.TitleView>
+
     <ShellContent
         Title="Project Management"
         ContentTemplate="{DataTemplate pages:CreateProjectPage}"

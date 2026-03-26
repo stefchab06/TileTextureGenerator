@@ -19,6 +19,7 @@ public class CreateProjectViewModel : INotifyPropertyChanged
     
     private string _projectName = string.Empty;
     private string? _selectedProjectType;
+    private ProjectTypeItem? _selectedProjectTypeItem;
     private bool _isBusy;
     private string? _errorMessage;
     private bool _projectAlreadyExists;
@@ -53,7 +54,9 @@ public class CreateProjectViewModel : INotifyPropertyChanged
             if (SetProperty(ref _projectName, value))
             {
                 ErrorMessage = null; // Clear error when user types
+                _ = CheckProjectExistsAsync(); // Check if project already exists (async, fire-and-forget)
                 ((Command)CreateProjectCommand).ChangeCanExecute();
+                OnPropertyChanged(nameof(IsCreateButtonActive)); // Update button color
             }
         }
     }
@@ -70,6 +73,24 @@ public class CreateProjectViewModel : INotifyPropertyChanged
             {
                 ErrorMessage = null;
                 ((Command)CreateProjectCommand).ChangeCanExecute();
+                OnPropertyChanged(nameof(IsCreateButtonActive)); // Update button color
+            }
+        }
+    }
+
+    /// <summary>
+    /// Selected project type item (for Picker binding).
+    /// Synchronizes with SelectedProjectType.
+    /// </summary>
+    public ProjectTypeItem? SelectedProjectTypeItem
+    {
+        get => _selectedProjectTypeItem;
+        set
+        {
+            if (SetProperty(ref _selectedProjectTypeItem, value))
+            {
+                // Update the technical name when item changes
+                SelectedProjectType = value?.TechnicalName;
             }
         }
     }
@@ -110,9 +131,16 @@ public class CreateProjectViewModel : INotifyPropertyChanged
             if (SetProperty(ref _projectAlreadyExists, value))
             {
                 ((Command)CreateProjectCommand).ChangeCanExecute();
+                OnPropertyChanged(nameof(IsCreateButtonActive)); // Notify UI for color change
             }
         }
     }
+
+    /// <summary>
+    /// Indicates whether the Create button should appear active (green).
+    /// True when all conditions are met: name not empty, name doesn't exist, type selected.
+    /// </summary>
+    public bool IsCreateButtonActive => CanCreateProject();
 
     #endregion
 
@@ -141,11 +169,8 @@ public class CreateProjectViewModel : INotifyPropertyChanged
                 ProjectTypes.Add(new ProjectTypeItem(technicalType, localizedName));
             }
 
-            // Select first type by default
-            if (ProjectTypes.Count > 0)
-            {
-                SelectedProjectType = ProjectTypes[0].TechnicalName;
-            }
+            // Do NOT select a type by default - force user to select explicitly
+            SelectedProjectType = null;
         }
         catch (Exception ex)
         {
@@ -209,8 +234,9 @@ public class CreateProjectViewModel : INotifyPropertyChanged
             {
                 // Success: Clear form
                 ProjectName = string.Empty;
+                SelectedProjectTypeItem = null; // This will also set SelectedProjectType to null
                 ErrorMessage = null;
-                
+
                 // TODO: Navigate to project details or show success message
                 // For now, just log success
             }

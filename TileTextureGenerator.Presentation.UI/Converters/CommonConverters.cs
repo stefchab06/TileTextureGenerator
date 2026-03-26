@@ -29,7 +29,7 @@ public class InvertedBoolConverter : IValueConverter
     {
         if (value is bool boolValue)
             return !boolValue;
-        
+
         return true; // Default to enabled if not bool
     }
 
@@ -37,7 +37,7 @@ public class InvertedBoolConverter : IValueConverter
     {
         if (value is bool boolValue)
             return !boolValue;
-        
+
         return false;
     }
 }
@@ -59,7 +59,47 @@ public class ProjectTypeConverter : IValueConverter
     {
         if (value is ViewModels.ProjectTypeItem item)
             return item.TechnicalName;
-        
+
         return value;
+    }
+}
+
+/// <summary>
+/// Converter that returns green color when true (button active), gray when false (button inactive).
+/// </summary>
+public class BoolToButtonColorConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is bool isActive && isActive)
+        {
+            return Color.FromArgb("#2E7D32"); // Green (Material Design Green 800)
+        }
+        return Color.FromArgb("#BDBDBD"); // Gray (Material Design Gray 400)
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+/// <summary>
+/// Converter that returns white when true (active text), dark gray when false (inactive text).
+/// </summary>
+public class BoolToButtonTextColorConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is bool isActive && isActive)
+        {
+            return Colors.White;
+        }
+        return Color.FromArgb("#757575"); // Dark gray (Material Design Gray 600)
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -1,5 +1,13 @@
 using Microsoft.Extensions.Logging;
 using TileTextureGenerator.Configuration;
+using TileTextureGenerator.Core.Ports.Input;
+using TileTextureGenerator.Core.Ports.Output;
+using TileTextureGenerator.Core.Services;
+using TileTextureGenerator.Adapters.Persistence.Ports;
+using TileTextureGenerator.Adapters.Persistence.Stores;
+using TileTextureGenerator.Adapters.UseCases;
+using TileTextureGenerator.Presentation.UI.Services;
+using TileTextureGenerator.Infrastructure.FileSystem;
 
 namespace TileTextureGenerator;
 
@@ -20,10 +28,24 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 #endif
 
-		// Auto-register all services by conventions
+		// Register Infrastructure services
+		builder.Services.AddSingleton<IFileStorage, FileStorage>();
+
+		// Register Core services (Input Ports implementations)
+		builder.Services.AddScoped<IProjectsManager, ProjectsManager>();
+
+		// Register Adapters.Persistence (Output Ports implementations)
+		builder.Services.AddScoped<IProjectsStore, JsonProjectsStore>();
+
+		// Register Use Cases
+		builder.Services.AddScoped<CreateProjectUseCase>();
+
+		// Register Presentation services (no interface)
+		builder.Services.AddSingleton<ProjectTypeLocalizer>();
+
+		// Auto-register remaining services by conventions
 		// This scans all TileTextureGenerator assemblies and registers:
-		// - Services, Stores, Repositories, Use Cases
-		// - ViewModels and Views (when they exist)
+		// - ViewModels and Views
 		builder.Services.AddAutoRegisteredServices();
 
 		// Initialize Core registries with DI factories
