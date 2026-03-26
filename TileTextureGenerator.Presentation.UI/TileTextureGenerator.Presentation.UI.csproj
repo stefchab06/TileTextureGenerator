@@ -26,11 +26,34 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <MauiXaml Include="Pages\CreateProjectPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\TileTextureGenerator.Adapters.UseCases\TileTextureGenerator.Adapters.UseCases.csproj" />
+		<!-- Embedded resources for localization -->
+		<EmbeddedResource Update="Resources\Strings\AppResources.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>AppResources.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
+		<EmbeddedResource Update="Resources\Strings\AppResources.fr.resx">
+			<DependentUpon>AppResources.resx</DependentUpon>
+		</EmbeddedResource>
+
+		<Compile Update="Resources\Strings\AppResources.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>AppResources.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\TileTextureGenerator.Adapters.UseCases\TileTextureGenerator.Adapters.UseCases.csproj" />
 	</ItemGroup>
 
 </Project>

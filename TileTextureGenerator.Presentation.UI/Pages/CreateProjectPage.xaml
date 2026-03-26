@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:TileTextureGenerator.Presentation.UI.ViewModels"
+             xmlns:res="clr-namespace:TileTextureGenerator.Presentation.UI.Resources.Strings"
+             xmlns:converters="clr-namespace:TileTextureGenerator.Presentation.UI.Converters"
+             x:Class="TileTextureGenerator.Presentation.UI.Pages.CreateProjectPage"
+             x:DataType="viewmodels:CreateProjectViewModel"
+             Title="{x:Static res:AppResources.ProjectManagement_Title}">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:IsNotNullConverter x:Key="IsNotNullConverter" />
+            <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+            <Label Text="{x:Static res:AppResources.ProjectManagement_Title}" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
+            <Frame IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNullConverter}}" BackgroundColor="#FFEBEE" Padding="10" CornerRadius="8">
+                <Label Text="{Binding ErrorMessage}" TextColor="#C62828" FontSize="14" />
+            </Frame>
+            <VerticalStackLayout Spacing="8">
+                <Label Text="{x:Static res:AppResources.ProjectManagement_ProjectName}" FontSize="16" FontAttributes="Bold" />
+                <Entry Placeholder="{x:Static res:AppResources.ProjectManagement_ProjectName}" Text="{Binding ProjectName}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" />
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="8">
+                <Label Text="{x:Static res:AppResources.ProjectManagement_ProjectType}" FontSize="16" FontAttributes="Bold" />
+                <Picker ItemsSource="{Binding ProjectTypes}" ItemDisplayBinding="{Binding LocalizedName}" SelectedIndex="0" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" SelectedIndexChanged="OnProjectTypeSelected" />
+            </VerticalStackLayout>
+            <Button Text="{x:Static res:AppResources.ProjectManagement_CreateButton}" Command="{Binding CreateProjectCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" BackgroundColor="#512BD4" TextColor="White" HeightRequest="50" CornerRadius="8" FontAttributes="Bold" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="#512BD4" HeightRequest="40" WidthRequest="40" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

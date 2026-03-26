@@ -41,4 +41,11 @@ public interface IProjectsManager
     /// </summary>
     /// <returns>Read-only list of registered project type identifiers.</returns>
     Task<IReadOnlyList<string>> ListProjectTypesAsync();
+
+    /// <summary>
+    /// Checks whether a project with the specified name exists.
+    /// </summary>
+    /// <param name="projectName">Name of the project to check.</param>
+    /// <returns>True if the project exists, false otherwise.</returns>
+    Task<bool> ProjectExistsAsync(string projectName);
 }

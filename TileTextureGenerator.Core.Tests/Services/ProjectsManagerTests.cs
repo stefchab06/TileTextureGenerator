@@ -284,4 +284,84 @@ public class ProjectsManagerTests
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => manager.DeleteProjectAsync("NonExistent"));
     }
+
+    [Fact]
+    public async Task ProjectExistsAsync_WithExistingProject_ReturnsTrue()
+    {
+        // Arrange
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
+        var projectName = "ExistingProject";
+
+        await manager.CreateProjectAsync(projectName, FakeProjectTypeAName);
+
+        // Act
+        var exists = await manager.ProjectExistsAsync(projectName);
+
+        // Assert
+        Assert.True(exists);
+    }
+
+    [Fact]
+    public async Task ProjectExistsAsync_WithNonExistingProject_ReturnsFalse()
+    {
+        // Arrange
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
+
+        // Act
+        var exists = await manager.ProjectExistsAsync("NonExistent");
+
+        // Assert
+        Assert.False(exists);
+    }
+
+    [Fact]
+    public async Task ProjectExistsAsync_DelegatesToProjectsStore()
+    {
+        // Arrange
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
+        var projectName = "TestProject";
+
+        // Create project in store
+        await manager.CreateProjectAsync(projectName, FakeProjectTypeAName);
+
+        // Verify it exists via manager
+        var existsBeforeDelete = await manager.ProjectExistsAsync(projectName);
+
+        // Delete and verify
+        await manager.DeleteProjectAsync(projectName);
+        var existsAfterDelete = await manager.ProjectExistsAsync(projectName);
+
+        // Assert
+        Assert.True(existsBeforeDelete, "Project should exist after creation");
+        Assert.False(existsAfterDelete, "Project should not exist after deletion");
+    }
+
+    [Fact]
+    public async Task ProjectExistsAsync_WithEmptyName_ThrowsArgumentException()
+    {
+        // Arrange
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => manager.ProjectExistsAsync(""));
+    }
+
+    [Fact]
+    public async Task ProjectExistsAsync_WithWhitespaceName_ThrowsArgumentException()
+    {
+        // Arrange
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => manager.ProjectExistsAsync("   "));
+    }
 }

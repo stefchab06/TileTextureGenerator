@@ -102,4 +102,15 @@ public class ProjectsManager : IProjectsManager
     {
         return await _projectsStore.ListProjectsAsync();
     }
+
+    /// <inheritdoc />
+    public async Task<bool> ProjectExistsAsync(string projectName)
+    {
+        ArgumentNullException.ThrowIfNull(projectName);
+
+        if (string.IsNullOrWhiteSpace(projectName))
+            throw new ArgumentException("Project name cannot be empty or whitespace.", nameof(projectName));
+
+        return await _projectsStore.ExistsAsync(projectName);
+    }
 }

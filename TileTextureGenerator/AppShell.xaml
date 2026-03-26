@@ -3,12 +3,12 @@
     x:Class="TileTextureGenerator.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:TileTextureGenerator"
+    xmlns:pages="clr-namespace:TileTextureGenerator.Presentation.UI.Pages;assembly=TileTextureGenerator.Presentation.UI"
     Title="TileTextureGenerator">
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Title="Project Management"
+        ContentTemplate="{DataTemplate pages:CreateProjectPage}"
+        Route="CreateProjectPage" />
 
 </Shell>
