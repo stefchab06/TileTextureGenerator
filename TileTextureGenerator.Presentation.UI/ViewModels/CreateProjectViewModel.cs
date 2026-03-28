@@ -36,6 +36,10 @@ public class CreateProjectViewModel : INotifyPropertyChanged
 
         ProjectTypes = [];
         CreateProjectCommand = new Command(async () => await CreateProjectAsync(), CanCreateProject);
+        CycleLanguageCommand = new Command(CycleLanguage);
+
+        // Subscribe to language changes to refresh project types
+        _projectTypeLocalizer.LanguageChanged += OnLanguageChanged;
         
         // Load project types on initialization
         _ = LoadProjectTypesAsync();
@@ -142,6 +146,11 @@ public class CreateProjectViewModel : INotifyPropertyChanged
     /// </summary>
     public bool IsCreateButtonActive => CanCreateProject();
 
+    /// <summary>
+    /// Gets the current language flag emoji for the toolbar button.
+    /// </summary>
+    public string CurrentLanguageFlag => _projectTypeLocalizer.CurrentLanguage.FlagImageSource;
+
     #endregion
 
     #region Commands
@@ -150,6 +159,11 @@ public class CreateProjectViewModel : INotifyPropertyChanged
     /// Command to create a new project.
     /// </summary>
     public ICommand CreateProjectCommand { get; }
+
+    /// <summary>
+    /// Command to cycle through supported languages.
+    /// </summary>
+    public ICommand CycleLanguageCommand { get; }
 
     #endregion
 
@@ -254,6 +268,34 @@ public class CreateProjectViewModel : INotifyPropertyChanged
         {
             IsBusy = false;
             ((Command)CreateProjectCommand).ChangeCanExecute();
+        }
+    }
+
+    private void CycleLanguage()
+    {
+        _projectTypeLocalizer.CycleLanguage();
+    }
+
+    private async void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        // Update language flag in toolbar
+        OnPropertyChanged(nameof(CurrentLanguageFlag));
+
+        // Reload project types with new language
+        await LoadProjectTypesAsync();
+
+        // Show simple alert notification in the NEW language
+        var message = _projectTypeLocalizer.CurrentLanguage.Code == "fr" 
+            ? "Langue modifiée. Redémarrez l'application pour appliquer les changements."
+            : "Language changed. Restart the application to apply changes.";
+
+        // For now, use DisplayAlert as a fallback (can be improved later)
+        if (Application.Current?.MainPage != null)
+        {
+            await Application.Current.MainPage.DisplayAlert(
+                _projectTypeLocalizer.CurrentLanguage.Code == "fr" ? "Information" : "Information", 
+                message, 
+                _projectTypeLocalizer.CurrentLanguage.Code == "fr" ? "OK" : "OK");
         }
     }
 

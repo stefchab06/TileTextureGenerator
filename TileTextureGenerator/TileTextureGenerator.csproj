@@ -28,7 +28,7 @@
 		<MauiXamlInflator>SourceGen</MauiXamlInflator>
 
 		<!-- Display name -->
-		<ApplicationTitle>TileTextureGenerator</ApplicationTitle>
+		<ApplicationTitle>Tile Texture Generator</ApplicationTitle>
 
 		<!-- App Identifier -->
 		<ApplicationId>com.talestiles.tiletexturegenerator</ApplicationId>

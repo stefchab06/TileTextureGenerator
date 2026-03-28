@@ -4,21 +4,9 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:TileTextureGenerator.Presentation.UI.Pages;assembly=TileTextureGenerator.Presentation.UI"
-    Title="TileTextureGenerator">
-
-    <Shell.TitleView>
-        <Grid>
-            <Label Text="TileTextureGenerator" 
-                   FontSize="20" 
-                   FontAttributes="Bold" 
-                   VerticalOptions="Center" 
-                   HorizontalOptions="Center" 
-                   TextColor="{AppThemeBinding Light=Black, Dark=White}" />
-        </Grid>
-    </Shell.TitleView>
+    Shell.NavBarIsVisible="False">
 
     <ShellContent
-        Title="Project Management"
         ContentTemplate="{DataTemplate pages:CreateProjectPage}"
         Route="CreateProjectPage" />
 

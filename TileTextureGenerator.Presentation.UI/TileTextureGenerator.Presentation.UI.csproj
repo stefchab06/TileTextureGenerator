@@ -36,6 +36,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- Custom Images for language flags -->
+		<MauiImage Include="Resources\Images\flag_en.png" />
+		<MauiImage Include="Resources\Images\flag_fr.png" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<!-- Embedded resources for localization -->
 		<EmbeddedResource Update="Resources\Strings\AppResources.resx">
 			<Generator>ResXFileCodeGenerator</Generator>

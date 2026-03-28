@@ -5,8 +5,8 @@
              xmlns:res="clr-namespace:TileTextureGenerator.Presentation.UI.Resources.Strings"
              xmlns:converters="clr-namespace:TileTextureGenerator.Presentation.UI.Converters"
              x:Class="TileTextureGenerator.Presentation.UI.Pages.CreateProjectPage"
-             x:DataType="viewmodels:CreateProjectViewModel"
-             Title="{x:Static res:AppResources.ProjectManagement_Title}">
+             x:DataType="viewmodels:CreateProjectViewModel">
+
     <ContentPage.Resources>
         <ResourceDictionary>
             <converters:IsNotNullConverter x:Key="IsNotNullConverter" />
@@ -16,7 +16,34 @@
         </ResourceDictionary>
     </ContentPage.Resources>
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="20">
+        <VerticalStackLayout Padding="20,10,20,20" Spacing="20">
+
+            <!-- Custom Header with centered title and right-aligned language button -->
+            <Grid ColumnSpacing="10" HeightRequest="50">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Static Page Title (not localized in real-time) -->
+                <Label Grid.Column="0" 
+                       Text="{x:Static res:AppResources.ProjectManagement_Title}" 
+                       FontSize="22" 
+                       FontAttributes="Bold" 
+                       VerticalOptions="Center" 
+                       HorizontalOptions="Center"
+                       TextColor="{AppThemeBinding Light=Black, Dark=White}" />
+
+                <!-- Language Toggle Button -->
+                <Button Grid.Column="1"
+                        ImageSource="{Binding CurrentLanguageFlag}"
+                        Command="{Binding CycleLanguageCommand}"
+                        BackgroundColor="Transparent"
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        VerticalOptions="Center"
+                        Padding="0" />
+            </Grid>
             <Frame IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNullConverter}}" BackgroundColor="#FFEBEE" Padding="10" CornerRadius="8">
                 <Label Text="{Binding ErrorMessage}" TextColor="#C62828" FontSize="14" />
             </Frame>
