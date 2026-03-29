@@ -7,7 +7,7 @@
     Shell.NavBarIsVisible="False">
 
     <ShellContent
-        ContentTemplate="{DataTemplate pages:CreateProjectPage}"
-        Route="CreateProjectPage" />
+        ContentTemplate="{DataTemplate pages:ManageProjectListPage}"
+        Route="ManageProjectListPage" />
 
 </Shell>

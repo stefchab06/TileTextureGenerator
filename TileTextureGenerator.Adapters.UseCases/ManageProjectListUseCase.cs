@@ -1,17 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Ports.Input;
 
 namespace TileTextureGenerator.Adapters.UseCases;
 
 /// <summary>
-/// Use case for project creation workflow.
-/// Orchestrates loading project types and creating a new project.
+/// Use case for project management workflow.
+/// Orchestrates loading project types and creating a new project, listing projects, deleting projects and loading one of them.
 /// </summary>
-public class CreateProjectUseCase
+public class ManageProjectListUseCase
 {
     private readonly IProjectsManager _projectsManager;
 
-    public CreateProjectUseCase(IProjectsManager projectsManager)
+    public ManageProjectListUseCase(IProjectsManager projectsManager)
     {
         ArgumentNullException.ThrowIfNull(projectsManager);
         _projectsManager = projectsManager;
@@ -47,7 +50,7 @@ public class CreateProjectUseCase
     /// <param name="projectName">Unique name for the new project.</param>
     /// <param name="projectType">Type identifier (e.g., "FloorTileProject").</param>
     /// <returns>Result containing the created project or error information.</returns>
-    public async Task<CreateProjectResult> ExecuteAsync(string projectName, string projectType)
+    public async Task<CreateProjectResult> CreateProjectAsync(string projectName, string projectType)
     {
         // Validate inputs first (don't throw, return validation error)
         if (string.IsNullOrWhiteSpace(projectName))
@@ -79,6 +82,29 @@ public class CreateProjectUseCase
         {
             // Unexpected errors
             return CreateProjectResult.UnexpectedError(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Lists all existing projects for display in the UI.
+    /// </summary>
+    /// <returns>Result containing the list of projects or error information.</returns>
+    public async Task<ListProjectsResult> ListProjectsAsync()
+    {
+        try
+        {
+            var projects = await _projectsManager.ListProjectsAsync();
+            var mapped = projects.Select(p => new ProjectListItemDto(
+                p.Name,
+                p.Type,
+                p.Status,
+                p.DisplayImage is not null ? p.DisplayImage.Value : null
+            )).ToList();
+            return ListProjectsResult.Success(mapped);
+        }
+        catch (Exception ex)
+        {
+            return ListProjectsResult.Error($"Failed to load projects: {ex.Message}");
         }
     }
 }

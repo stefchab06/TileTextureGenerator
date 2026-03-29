@@ -4,8 +4,8 @@
              xmlns:viewmodels="clr-namespace:TileTextureGenerator.Presentation.UI.ViewModels"
              xmlns:res="clr-namespace:TileTextureGenerator.Presentation.UI.Resources.Strings"
              xmlns:converters="clr-namespace:TileTextureGenerator.Presentation.UI.Converters"
-             x:Class="TileTextureGenerator.Presentation.UI.Pages.CreateProjectPage"
-             x:DataType="viewmodels:CreateProjectViewModel">
+             xmlns:services="clr-namespace:TileTextureGenerator.Presentation.UI.Services"
+             x:Class="TileTextureGenerator.Presentation.UI.Pages.ManageProjectListPage">
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -13,11 +13,15 @@
             <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
             <converters:BoolToButtonColorConverter x:Key="BoolToButtonColorConverter" />
             <converters:BoolToButtonTextColorConverter x:Key="BoolToButtonTextColorConverter" />
+            <services:ProjectTypeLocalizer x:Key="ProjectTypeLocalizer" />
+            <converters:ProjectTypeToLocalizedNameConverter x:Key="ProjectTypeToLocalizedNameConverter" Localizer="{StaticResource ProjectTypeLocalizer}" />
+            <converters:ProjectStatusToLocalizedStringConverter x:Key="ProjectStatusToLocalizedStringConverter" Localizer="{StaticResource ProjectTypeLocalizer}" />
+            <converters:ProjectImageOrPlaceholderConverter x:Key="ProjectImageOrPlaceholderConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
     <ScrollView>
         <VerticalStackLayout Padding="20,10,20,20" Spacing="20">
-
+            
             <!-- Custom Header with centered title and right-aligned language button -->
             <Grid ColumnSpacing="10" HeightRequest="50">
                 <Grid.ColumnDefinitions>
@@ -86,6 +90,61 @@
                     </VerticalStackLayout>
                 </Grid>
             </Grid>
+            <!-- Project List -->
+            <CollectionView x:Name="ProjectsCollectionView"
+                ItemsSource="{Binding Projects}"
+                Margin="0,20,0,0"
+                SelectionMode="None">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical" Span="2" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Stroke="#BDBDBD" StrokeThickness="2" StrokeShape="RoundRectangle 16" Margin="8" Padding="12" BackgroundColor="{AppThemeBinding Light=White, Dark=#222}">
+                            <VerticalStackLayout Spacing="8">
+                                <!-- Project Name -->
+                                <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" />
+                                <!-- Type (left) + Status (right) -->
+                                <Grid ColumnSpacing="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0" Text="{Binding Type}" FontSize="14" HorizontalOptions="Start" />
+                                    <Label Grid.Column="1" Text="{Binding Status}" FontSize="14" HorizontalOptions="End" />
+                                </Grid>
+                                <!-- Project Image -->
+                                <Frame Padding="0" CornerRadius="8" HeightRequest="128" HorizontalOptions="Center">
+                                    <Image Source="{Binding DisplayImage}" HeightRequest="128" Aspect="AspectFit" />
+                                </Frame>
+                                <!-- Action Buttons -->
+                                <Grid ColumnSpacing="12" Padding="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="1" Text="📂" BackgroundColor="#E3F2FD" CornerRadius="20" HeightRequest="40" WidthRequest="40" FontSize="20"
+                                            Command="{Binding BindingContext.LoadProjectCommand, Source={x:Reference ProjectsCollectionView}}"
+                                            CommandParameter="{Binding .}" />
+                                    <Button Grid.Column="2" Text="📄" BackgroundColor="#E8F5E9" CornerRadius="20" HeightRequest="40" WidthRequest="40" FontSize="20"
+                                            Command="{Binding BindingContext.GeneratePdfCommand, Source={x:Reference ProjectsCollectionView}}"
+                                            CommandParameter="{Binding .}" />
+                                    <Button Grid.Column="3" Text="🗄️" BackgroundColor="#FFF3E0" CornerRadius="20" HeightRequest="40" WidthRequest="40" FontSize="20"
+                                            Command="{Binding BindingContext.ArchiveProjectCommand, Source={x:Reference ProjectsCollectionView}}"
+                                            CommandParameter="{Binding .}" />
+                                    <Button Grid.Column="4" Text="🗑️" BackgroundColor="#FFEBEE" CornerRadius="20" HeightRequest="40" WidthRequest="40" FontSize="20"
+                                            Command="{Binding BindingContext.DeleteProjectCommand, Source={x:Reference ProjectsCollectionView}}"
+                                            CommandParameter="{Binding .}" />
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="#512BD4" HeightRequest="40" WidthRequest="40" HorizontalOptions="Center" />
         </VerticalStackLayout>
     </ScrollView>

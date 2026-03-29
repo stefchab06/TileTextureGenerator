@@ -38,7 +38,7 @@ public static class MauiProgram
 		builder.Services.AddScoped<IProjectsStore, JsonProjectsStore>();
 
 		// Register Use Cases
-		builder.Services.AddScoped<CreateProjectUseCase>();
+		builder.Services.AddScoped<ManageProjectListUseCase>();
 
 		// Register Presentation services (no interface)
 		builder.Services.AddSingleton<ProjectTypeLocalizer>();

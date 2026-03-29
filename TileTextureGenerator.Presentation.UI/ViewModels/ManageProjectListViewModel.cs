@@ -8,13 +8,13 @@ using TileTextureGenerator.Presentation.UI.Services;
 namespace TileTextureGenerator.Presentation.UI.ViewModels;
 
 /// <summary>
-/// ViewModel for the project creation page.
+/// ViewModel for the project list management page.
 /// Handles user input for project name and type selection,
-/// and coordinates with CreateProjectUseCase for project creation.
+/// and coordinates with ManageProjectListUseCase for project management.
 /// </summary>
-public class CreateProjectViewModel : INotifyPropertyChanged
+public class ManageProjectListViewModel : INotifyPropertyChanged
 {
-    private readonly CreateProjectUseCase _createProjectUseCase;
+    private readonly ManageProjectListUseCase _manageProjectListUseCase;
     private readonly ProjectTypeLocalizer _projectTypeLocalizer;
     
     private string _projectName = string.Empty;
@@ -23,15 +23,24 @@ public class CreateProjectViewModel : INotifyPropertyChanged
     private bool _isBusy;
     private string? _errorMessage;
     private bool _projectAlreadyExists;
+    // Commands for project card actions
+    public ICommand LoadProjectCommand { get; }
+    public ICommand GeneratePdfCommand { get; }
+    public ICommand ArchiveProjectCommand { get; }
+    public ICommand DeleteProjectCommand { get; }
 
-    public CreateProjectViewModel(
-        CreateProjectUseCase createProjectUseCase,
+    public ManageProjectListViewModel(
+        ManageProjectListUseCase manageProjectListUseCase,
         ProjectTypeLocalizer projectTypeLocalizer)
     {
-        ArgumentNullException.ThrowIfNull(createProjectUseCase);
+        LoadProjectCommand = new Command<ProjectListItemDto>(async (project) => await OnLoadProjectAsync(project));
+        GeneratePdfCommand = new Command<ProjectListItemDto>(async (project) => await OnGeneratePdfAsync(project));
+        ArchiveProjectCommand = new Command<ProjectListItemDto>(async (project) => await OnArchiveProjectAsync(project));
+        DeleteProjectCommand = new Command<ProjectListItemDto>(async (project) => await OnDeleteProjectAsync(project));
+        ArgumentNullException.ThrowIfNull(manageProjectListUseCase);
         ArgumentNullException.ThrowIfNull(projectTypeLocalizer);
 
-        _createProjectUseCase = createProjectUseCase;
+        _manageProjectListUseCase = manageProjectListUseCase;
         _projectTypeLocalizer = projectTypeLocalizer;
 
         ProjectTypes = [];
@@ -43,6 +52,69 @@ public class CreateProjectViewModel : INotifyPropertyChanged
         
         // Load project types on initialization
         _ = LoadProjectTypesAsync();
+        // Load projects on initialization
+        _ = LoadProjectsAsync();
+    }
+
+    // Handlers for project card actions
+    private async Task OnLoadProjectAsync(ProjectListItemDto project)
+    {
+        // Call appropriate use case (load project)
+        await LoadProjectsAsync();
+    }
+
+    private async Task OnGeneratePdfAsync(ProjectListItemDto project)
+    {
+        // Call appropriate use case (generate PDF)
+        await LoadProjectsAsync();
+    }
+
+    private async Task OnArchiveProjectAsync(ProjectListItemDto project)
+    {
+        // Call appropriate use case (archive project)
+        await LoadProjectsAsync();
+    }
+
+    private async Task OnDeleteProjectAsync(ProjectListItemDto project)
+    {
+        // Call appropriate use case (delete project)
+        await LoadProjectsAsync();
+    }
+
+
+    /// <summary>
+    /// Collection of projects for display in the UI.
+    /// </summary>
+    public ObservableCollection<ProjectListItemDto> Projects { get; } = new();
+
+    /// <summary>
+    /// Loads the list of projects for display.
+    /// </summary>
+    public async Task LoadProjectsAsync()
+    {
+        try
+        {
+            IsBusy = true;
+            Projects.Clear();
+            var result = await _manageProjectListUseCase.ListProjectsAsync();
+            if (result.IsSuccess && result.Projects is not null)
+            {
+                foreach (var project in result.Projects)
+                    Projects.Add(project);
+            }
+            else if (!result.IsSuccess)
+            {
+                ErrorMessage = result.ErrorMessage;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load projects: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     #region Properties
@@ -77,7 +149,7 @@ public class CreateProjectViewModel : INotifyPropertyChanged
             {
                 ErrorMessage = null;
                 ((Command)CreateProjectCommand).ChangeCanExecute();
-                OnPropertyChanged(nameof(IsCreateButtonActive)); // Update button color
+                OnPropertyChanged(nameof(IsCreateButtonActive));
             }
         }
     }
@@ -135,7 +207,7 @@ public class CreateProjectViewModel : INotifyPropertyChanged
             if (SetProperty(ref _projectAlreadyExists, value))
             {
                 ((Command)CreateProjectCommand).ChangeCanExecute();
-                OnPropertyChanged(nameof(IsCreateButtonActive)); // Notify UI for color change
+                OnPropertyChanged(nameof(IsCreateButtonActive));
             }
         }
     }
@@ -159,7 +231,6 @@ public class CreateProjectViewModel : INotifyPropertyChanged
     /// Command to create a new project.
     /// </summary>
     public ICommand CreateProjectCommand { get; }
-
     /// <summary>
     /// Command to cycle through supported languages.
     /// </summary>
@@ -174,8 +245,8 @@ public class CreateProjectViewModel : INotifyPropertyChanged
         try
         {
             IsBusy = true;
-            var technicalTypes = await _createProjectUseCase.LoadProjectTypesAsync();
-            
+            var technicalTypes = await _manageProjectListUseCase.LoadProjectTypesAsync();
+
             ProjectTypes.Clear();
             foreach (var technicalType in technicalTypes)
             {
@@ -214,7 +285,7 @@ public class CreateProjectViewModel : INotifyPropertyChanged
 
         try
         {
-            ProjectAlreadyExists = await _createProjectUseCase.ProjectExistsAsync(ProjectName);
+            ProjectAlreadyExists = await _manageProjectListUseCase.ProjectExistsAsync(ProjectName);
 
             if (ProjectAlreadyExists)
             {
@@ -242,7 +313,7 @@ public class CreateProjectViewModel : INotifyPropertyChanged
             IsBusy = true;
             ErrorMessage = null;
 
-            var result = await _createProjectUseCase.ExecuteAsync(ProjectName, SelectedProjectType!);
+            var result = await _manageProjectListUseCase.CreateProjectAsync(ProjectName, SelectedProjectType!);
 
             if (result.IsSuccess)
             {
@@ -251,8 +322,8 @@ public class CreateProjectViewModel : INotifyPropertyChanged
                 SelectedProjectTypeItem = null; // This will also set SelectedProjectType to null
                 ErrorMessage = null;
 
-                // TODO: Navigate to project details or show success message
-                // For now, just log success
+                // Refresh project list after creation
+                await LoadProjectsAsync();
             }
             else
             {

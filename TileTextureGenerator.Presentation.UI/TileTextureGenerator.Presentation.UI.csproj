@@ -26,12 +26,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <MauiXaml Include="Pages\CreateProjectPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 	</ItemGroup>
 

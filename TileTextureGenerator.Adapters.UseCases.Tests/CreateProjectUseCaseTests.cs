@@ -19,7 +19,7 @@ public class CreateProjectUseCaseTests
         // Arrange
         var expectedTypes = new List<string> { "FloorTileProject", "WallTileProject" };
         var mockManager = new MockProjectsManager { ProjectTypes = expectedTypes };
-        var useCase = new CreateProjectUseCase(mockManager);
+        var useCase = new ManageProjectListUseCase(mockManager);
 
         // Act
         var result = await useCase.LoadProjectTypesAsync();
@@ -31,14 +31,14 @@ public class CreateProjectUseCaseTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithValidParameters_ReturnsSuccessResult()
+    public async Task CreateProjectAsync_WithValidParameters_ReturnsSuccessResult()
     {
         // Arrange
         var mockManager = new MockProjectsManager();
-        var useCase = new CreateProjectUseCase(mockManager);
+        var useCase = new ManageProjectListUseCase(mockManager);
 
         // Act
-        var result = await useCase.ExecuteAsync("TestProject", "FloorTileProject");
+        var result = await useCase.CreateProjectAsync("TestProject", "FloorTileProject");
 
         // Assert - Add detailed error message if it fails
         Assert.True(result.IsSuccess, $"Expected success but got error: {result.ErrorMessage} (Type: {result.ErrorType})");
@@ -49,14 +49,14 @@ public class CreateProjectUseCaseTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithEmptyName_ReturnsValidationError()
+    public async Task CreateProjectAsync_WithEmptyName_ReturnsValidationError()
     {
         // Arrange
         var mockManager = new MockProjectsManager();
-        var useCase = new CreateProjectUseCase(mockManager);
+        var useCase = new ManageProjectListUseCase(mockManager);
 
         // Act
-        var result = await useCase.ExecuteAsync("", "FloorTileProject");
+        var result = await useCase.CreateProjectAsync("", "FloorTileProject");
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -66,14 +66,14 @@ public class CreateProjectUseCaseTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithWhitespaceName_ReturnsValidationError()
+    public async Task CreateProjectAsync_WithWhitespaceName_ReturnsValidationError()
     {
         // Arrange
         var mockManager = new MockProjectsManager();
-        var useCase = new CreateProjectUseCase(mockManager);
+        var useCase = new ManageProjectListUseCase(mockManager);
 
         // Act
-        var result = await useCase.ExecuteAsync("   ", "FloorTileProject");
+        var result = await useCase.CreateProjectAsync("   ", "FloorTileProject");
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -83,14 +83,14 @@ public class CreateProjectUseCaseTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithEmptyType_ReturnsValidationError()
+    public async Task CreateProjectAsync_WithEmptyType_ReturnsValidationError()
     {
         // Arrange
         var mockManager = new MockProjectsManager();
-        var useCase = new CreateProjectUseCase(mockManager);
+        var useCase = new ManageProjectListUseCase(mockManager);
 
         // Act
-        var result = await useCase.ExecuteAsync("TestProject", "");
+        var result = await useCase.CreateProjectAsync("TestProject", "");
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -100,14 +100,14 @@ public class CreateProjectUseCaseTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithInvalidType_ReturnsValidationError()
+    public async Task CreateProjectAsync_WithInvalidType_ReturnsValidationError()
     {
         // Arrange
         var mockManager = new MockProjectsManager { ThrowArgumentException = true };
-        var useCase = new CreateProjectUseCase(mockManager);
+        var useCase = new ManageProjectListUseCase(mockManager);
 
         // Act
-        var result = await useCase.ExecuteAsync("TestProject", "InvalidType");
+        var result = await useCase.CreateProjectAsync("TestProject", "InvalidType");
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -117,14 +117,14 @@ public class CreateProjectUseCaseTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenProjectAlreadyExists_ReturnsValidationError()
+    public async Task CreateProjectAsync_WhenProjectAlreadyExists_ReturnsValidationError()
     {
         // Arrange
         var mockManager = new MockProjectsManager { ThrowInvalidOperationException = true };
-        var useCase = new CreateProjectUseCase(mockManager);
+        var useCase = new ManageProjectListUseCase(mockManager);
 
         // Act
-        var result = await useCase.ExecuteAsync("ExistingProject", "FloorTileProject");
+        var result = await useCase.CreateProjectAsync("ExistingProject", "FloorTileProject");
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -134,14 +134,14 @@ public class CreateProjectUseCaseTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithUnexpectedException_ReturnsUnexpectedError()
+    public async Task CreateProjectAsync_WithUnexpectedException_ReturnsUnexpectedError()
     {
         // Arrange
         var mockManager = new MockProjectsManager { ThrowGenericException = true };
-        var useCase = new CreateProjectUseCase(mockManager);
+        var useCase = new ManageProjectListUseCase(mockManager);
 
         // Act
-        var result = await useCase.ExecuteAsync("TestProject", "FloorTileProject");
+        var result = await useCase.CreateProjectAsync("TestProject", "FloorTileProject");
 
         // Assert
         Assert.False(result.IsSuccess);
