@@ -7,11 +7,7 @@ using Xunit;
 
 namespace TileTextureGenerator.Adapters.UseCases.Tests;
 
-/// <summary>
-/// Tests for CreateProjectUseCase.
-/// Verifies project creation workflow orchestration.
-/// </summary>
-public class CreateProjectUseCaseTests
+public class ManageProjectListUseCaseTests
 {
     [Fact]
     public async Task LoadProjectTypesAsync_ReturnsListFromProjectsManager()
@@ -150,6 +146,71 @@ public class CreateProjectUseCaseTests
         Assert.Equal(CreateProjectErrorType.Unexpected, result.ErrorType);
     }
 
+    [Fact]
+    public async Task ProjectExistsAsync_WithNullOrWhitespaceName_ReturnsFalse()
+    {
+        var mockManager = new MockProjectsManager();
+        var useCase = new ManageProjectListUseCase(mockManager);
+        Assert.False(await useCase.ProjectExistsAsync(null));
+        Assert.False(await useCase.ProjectExistsAsync(""));
+        Assert.False(await useCase.ProjectExistsAsync("   "));
+    }
+
+    [Fact]
+    public async Task ProjectExistsAsync_WithValidName_DelegatesToManager()
+    {
+        var mockManager = new MockProjectsManager();
+        var useCase = new ManageProjectListUseCase(mockManager);
+        // Default mock returns false
+        Assert.False(await useCase.ProjectExistsAsync("Test"));
+        // Simulate project exists
+        mockManager.ProjectExistsResult = true;
+        Assert.True(await useCase.ProjectExistsAsync("Test"));
+    }
+
+    [Fact]
+    public async Task ListProjectsAsync_ReturnsMappedList()
+    {
+        var mockManager = new MockProjectsManager();
+        mockManager.Projects = new List<ProjectDto> {
+            new("P1", "FloorTileProject", ProjectStatus.New, DateTime.UtcNow, new byte[] { 1, 2, 3 }),
+            new("P2", "WallTileProject", ProjectStatus.Archived, DateTime.UtcNow, null)
+        };
+        var useCase = new ManageProjectListUseCase(mockManager);
+        var result = await useCase.ListProjectsAsync();
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Projects);
+        Assert.Equal(2, result.Projects.Count);
+        Assert.Equal("P1", result.Projects[0].Name);
+        Assert.Equal("FloorTileProject", result.Projects[0].Type);
+        Assert.Equal(ProjectStatus.New, result.Projects[0].Status);
+        Assert.NotNull(result.Projects[0].DisplayImage);
+        Assert.Equal("P2", result.Projects[1].Name);
+        Assert.Equal(ProjectStatus.Archived, result.Projects[1].Status);
+        Assert.Null(result.Projects[1].DisplayImage);
+    }
+
+    [Fact]
+    public async Task ListProjectsAsync_WhenManagerThrows_ReturnsError()
+    {
+        var mockManager = new MockProjectsManager { ThrowGenericException = true };
+        var useCase = new ManageProjectListUseCase(mockManager);
+        var result = await useCase.ListProjectsAsync();
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task ListProjectsAsync_WithEmptyList_ReturnsEmptyList()
+    {
+        var mockManager = new MockProjectsManager { Projects = new List<ProjectDto>() };
+        var useCase = new ManageProjectListUseCase(mockManager);
+        var result = await useCase.ListProjectsAsync();
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.Projects);
+        Assert.Empty(result.Projects);
+    }
+
     #region Mock Implementation
 
     /// <summary>
@@ -161,6 +222,8 @@ public class CreateProjectUseCaseTests
         public bool ThrowArgumentException { get; set; }
         public bool ThrowInvalidOperationException { get; set; }
         public bool ThrowGenericException { get; set; }
+        public IReadOnlyList<ProjectDto>? Projects { get; set; }
+        public bool ProjectExistsResult { get; set; }
 
         public Task<IReadOnlyList<string>> ListProjectTypesAsync()
         {
@@ -196,12 +259,14 @@ public class CreateProjectUseCaseTests
 
         public Task<IReadOnlyList<ProjectDto>> ListProjectsAsync()
         {
-            throw new NotImplementedException();
+            if (ThrowGenericException)
+                throw new Exception("Unexpected error");
+            return Task.FromResult<IReadOnlyList<ProjectDto>>(Projects);
         }
 
         public Task<bool> ProjectExistsAsync(string projectName)
         {
-            return Task.FromResult(false); // Default: project doesn't exist
+            return Task.FromResult(ProjectExistsResult);
         }
     }
 
@@ -250,6 +315,5 @@ public class CreateProjectUseCaseTests
             return Task.FromResult<TransformationBase?>(null);
         }
     }
-
     #endregion
 }
