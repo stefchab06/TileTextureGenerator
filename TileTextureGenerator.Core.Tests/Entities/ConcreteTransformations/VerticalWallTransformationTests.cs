@@ -57,7 +57,7 @@ public class VerticalWallTransformationTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithFullTile_ReturnsCorrectDimensions()
+    public async Task GenerateAsync_WithFullTile_ReturnsCorrectDimensions()
     {
         // Arrange
         var store = new FakeTransformationStore();
@@ -70,7 +70,7 @@ public class VerticalWallTransformationTests
         transformation.Initialize(project, Guid.NewGuid());
 
         // Act
-        var result = await transformation.ExecuteAsync();
+        var result = await transformation.GenerateAsync();
 
         // Assert
         Assert.NotEmpty(result.Bytes);
@@ -87,7 +87,7 @@ public class VerticalWallTransformationTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithoutBaseTexture_ThrowsInvalidOperationException()
+    public async Task GenerateAsync_WithoutBaseTexture_ThrowsInvalidOperationException()
     {
         // Arrange
         var store = new FakeTransformationStore();
@@ -96,11 +96,11 @@ public class VerticalWallTransformationTests
         transformation.Initialize(project, Guid.NewGuid());
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => transformation.ExecuteAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => transformation.GenerateAsync());
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithInvalidImage_ThrowsInvalidOperationException()
+    public async Task GenerateAsync_WithInvalidImage_ThrowsInvalidOperationException()
     {
         // Arrange
         var store = new FakeTransformationStore();
@@ -112,7 +112,7 @@ public class VerticalWallTransformationTests
         transformation.Initialize(project, Guid.NewGuid());
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => transformation.ExecuteAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => transformation.GenerateAsync());
     }
 
     [Fact]

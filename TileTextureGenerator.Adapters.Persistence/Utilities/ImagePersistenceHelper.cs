@@ -265,6 +265,60 @@ public sealed class ImagePersistenceHelper
     }
 
     /// <summary>
+    /// Serializes a generated output ImageData property for a transformation to JSON format.
+    /// Uses a GUID-based filename with reuse logic and saves in Outputs folder (e.g., "Outputs/{guid}.png").
+    /// </summary>
+    /// <param name="propertyName">Name of the property containing the ImageData (typically "GeneratedTexture").</param>
+    /// <param name="imageData">The ImageData to serialize.</param>
+    /// <param name="projectDir">Base directory of the project.</param>
+    /// <param name="existingNode">Existing JSON node to check for GUID reuse.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Tuple containing the JSON property name (lowercase + "Path") and the relative path value.</returns>
+    public async Task<(string jsonPropertyName, string jsonPathValue)> SerializeTransformationOutputImageDataAsync(
+        string propertyName,
+        ImageData imageData,
+        string projectDir,
+        JsonObject existingNode,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(propertyName);
+        ArgumentNullException.ThrowIfNull(projectDir);
+        ArgumentNullException.ThrowIfNull(existingNode);
+
+        if (string.IsNullOrWhiteSpace(propertyName))
+            throw new ArgumentException("Property name cannot be empty or whitespace.", nameof(propertyName));
+
+        // Generate JSON property name (fully lowercase + "Path")
+        string jsonPropertyName = $"{propertyName.ToLowerInvariant()}Path";
+
+        // Check if path already exists in JSON to reuse GUID
+        string? existingPath = null;
+        if (existingNode.TryGetPropertyValue(jsonPropertyName, out var pathNode) && 
+            pathNode is JsonValue jsonValue)
+        {
+            try
+            {
+                existingPath = jsonValue.GetValue<string>();
+            }
+            catch
+            {
+                // Parse failed, will generate new GUID
+            }
+        }
+
+        // Save image in Outputs directory with GUID-based filename
+        string relativePath = await SaveImageAsync(
+            imageData.Bytes,
+            projectDir,
+            "Outputs",  // Different from regular transformation images (Workspace)
+            fileName: null,  // Let SaveImageAsync generate or reuse GUID
+            existingPath: existingPath,
+            cancellationToken);
+
+        return (jsonPropertyName, relativePath);
+    }
+
+    /// <summary>
     /// Deserializes an ImageData from a JSON path property value.
     /// </summary>
     /// <param name="jsonPathValue">The path value from JSON (e.g., "Sources/DisplayImage.png" or "Workspace/{guid}.png").</param>

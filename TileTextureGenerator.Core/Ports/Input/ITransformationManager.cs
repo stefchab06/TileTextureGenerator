@@ -20,8 +20,8 @@ public interface ITransformationManager
     Task SaveChangesAsync();
 
     /// <summary>
-    /// Executes the transformation and generates the output image.
+    /// Generate output image based on concrete implementation of the transformation.
     /// </summary>
     /// <returns>The generated image as PNG.</returns>
-    Task<ImageData> ExecuteAsync();
+    Task<ImageData> GenerateAsync();
 }

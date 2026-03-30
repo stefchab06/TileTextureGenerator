@@ -39,4 +39,19 @@ public interface IProjectManager
     /// </summary>
     /// <returns>List of available transformation type metadata.</returns>
     Task<IReadOnlyList<TransformationTypeDTO>> GetAvailableTransformationTypesAsync();
+
+    /// <summary>
+    /// Generate all transformations of the project and the final pdf file.
+    /// </summary>
+    /// <returns>True if generation succeded.</returns>
+    Task<bool> GenerateAsync();
+
+
+    /// <summary>
+    /// Archive the project and all its transformations.
+    /// </summary>
+    /// <returns>True if Archive succeded.</returns>
+    Task<bool> ArchiveAsync();
+
+
 }

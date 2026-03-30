@@ -49,8 +49,9 @@ internal class JSonTransformationStore : ITransformationStore
         string cleanedName = FileNameHelper.CleanFileName(transformation.ParentProject.Name);
         string projectDir = _fileStorage.GetProjectPath(cleanedName);
 
-        // Ensure Workspace directory exists
+        // Ensure Workspace and Outputs directories exist
         await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Workspace"));
+        await _fileStorage.EnsureDirectoryExistsAsync(Path.Combine(projectDir, "Outputs"));
 
         // Load existing JSON using helper
         JsonObject jsonDoc = await _jsonHelper.LoadProjectJsonAsync(transformation.ParentProject.Name);
@@ -121,16 +122,31 @@ internal class JSonTransformationStore : ITransformationStore
             {
                 var imageData = (ImageData)value;
 
-                // Use helper to serialize transformation ImageData (with GUID reuse)
-                var (jsonPropertyName, jsonPathValue) = await _imageHelper.SerializeTransformationImageDataAsync(
-                    prop.Name,
-                    imageData,
-                    projectDir,
-                    existingNode
-                );
+                // Special handling for GeneratedTexture - save in Outputs folder
+                if (prop.Name == nameof(transformation.GeneratedTexture))
+                {
+                    var (jsonPropertyName, jsonPathValue) = await _imageHelper.SerializeTransformationOutputImageDataAsync(
+                        prop.Name,
+                        imageData,
+                        projectDir,
+                        existingNode
+                    );
 
-                // Add path property directly to transformation node
-                transformationNode[jsonPropertyName] = jsonPathValue;
+                    transformationNode[jsonPropertyName] = jsonPathValue;
+                }
+                else
+                {
+                    // Use helper to serialize transformation ImageData in Workspace (with GUID reuse)
+                    var (jsonPropertyName, jsonPathValue) = await _imageHelper.SerializeTransformationImageDataAsync(
+                        prop.Name,
+                        imageData,
+                        projectDir,
+                        existingNode
+                    );
+
+                    // Add path property directly to transformation node
+                    transformationNode[jsonPropertyName] = jsonPathValue;
+                }
             }
             else
             {

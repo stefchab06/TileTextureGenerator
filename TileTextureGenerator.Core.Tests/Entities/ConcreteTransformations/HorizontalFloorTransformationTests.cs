@@ -57,7 +57,7 @@ public class HorizontalFloorTransformationTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithFullTile_ReturnsCorrectDimensions()
+    public async Task GenerateAsync_WithFullTile_ReturnsCorrectDimensions()
     {
         // Arrange
         var store = new FakeTransformationStore();
@@ -70,7 +70,7 @@ public class HorizontalFloorTransformationTests
         transformation.Initialize(project, Guid.NewGuid());
 
         // Act
-        var result = await transformation.ExecuteAsync();
+        var result = await transformation.GenerateAsync();
 
         // Assert
         Assert.NotEmpty(result.Bytes);
@@ -87,7 +87,7 @@ public class HorizontalFloorTransformationTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithHalfHorizontalTile_ReturnsCorrectDimensions()
+    public async Task GenerateAsync_WithHalfHorizontalTile_ReturnsCorrectDimensions()
     {
         // Arrange
         var store = new FakeTransformationStore();
@@ -100,7 +100,7 @@ public class HorizontalFloorTransformationTests
         transformation.Initialize(project, Guid.NewGuid());
 
         // Act
-        var result = await transformation.ExecuteAsync();
+        var result = await transformation.GenerateAsync();
 
         // Assert - Flap is based on max dimension (400px -> 2" -> 200 DPI -> 50px flap)
         using var stream = new MemoryStream(result.Bytes);
@@ -112,7 +112,7 @@ public class HorizontalFloorTransformationTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithHalfVerticalTile_ReturnsCorrectDimensions()
+    public async Task GenerateAsync_WithHalfVerticalTile_ReturnsCorrectDimensions()
     {
         // Arrange
         var store = new FakeTransformationStore();
@@ -125,7 +125,7 @@ public class HorizontalFloorTransformationTests
         transformation.Initialize(project, Guid.NewGuid());
 
         // Act
-        var result = await transformation.ExecuteAsync();
+        var result = await transformation.GenerateAsync();
 
         // Assert
         using var stream = new MemoryStream(result.Bytes);
@@ -137,7 +137,7 @@ public class HorizontalFloorTransformationTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithoutBaseTexture_ThrowsInvalidOperationException()
+    public async Task GenerateAsync_WithoutBaseTexture_ThrowsInvalidOperationException()
     {
         // Arrange
         var store = new FakeTransformationStore();
@@ -146,11 +146,11 @@ public class HorizontalFloorTransformationTests
         transformation.Initialize(project, Guid.NewGuid());
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => transformation.ExecuteAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => transformation.GenerateAsync());
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithInvalidImage_ThrowsInvalidOperationException()
+    public async Task GenerateAsync_WithInvalidImage_ThrowsInvalidOperationException()
     {
         // Arrange
         var store = new FakeTransformationStore();
@@ -162,7 +162,7 @@ public class HorizontalFloorTransformationTests
         transformation.Initialize(project, Guid.NewGuid());
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => transformation.ExecuteAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => transformation.GenerateAsync());
     }
 
     [Theory]
@@ -170,7 +170,7 @@ public class HorizontalFloorTransformationTests
     [InlineData(200, 200, 250, 250)]  // 200px (max=200 -> dpi=100 -> flap=25) -> 200+2*25=250
     [InlineData(400, 400, 500, 500)]  // 400px (max=400 -> dpi=200 -> flap=50) -> 400+2*50=500
     [InlineData(800, 800, 1000, 1000)] // 800px (max=800 -> dpi=400 -> flap=100) -> 800+2*100=1000
-    public async Task ExecuteAsync_CalculatesFlapSizeCorrectly(
+    public async Task GenerateAsync_CalculatesFlapSizeCorrectly(
         int baseWidth,
         int baseHeight,
         int expectedWidth,
@@ -186,7 +186,7 @@ public class HorizontalFloorTransformationTests
         transformation.Initialize(project, Guid.NewGuid());
 
         // Act
-        var result = await transformation.ExecuteAsync();
+        var result = await transformation.GenerateAsync();
 
         // Assert
         using var stream = new MemoryStream(result.Bytes);

@@ -49,7 +49,7 @@ public sealed class HorizontalFloorTransformation : TransformationBase
     }
 
     /// <inheritdoc />
-    public override async Task<ImageData> ExecuteAsync()
+    protected override async Task<ImageData> ExecuteAsync()
     {
         // Validate BaseTexture
         if (!BaseTexture.HasValue || BaseTexture.Value.Bytes.Length == 0)

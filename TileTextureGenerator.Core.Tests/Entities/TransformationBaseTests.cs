@@ -25,7 +25,7 @@ public class TransformationBaseTests
 
         public override ImageData? Icon => new ImageData(new byte[] { 0x49, 0x43, 0x4F, 0x4E }); // "ICON" mock
 
-        public override Task<ImageData> ExecuteAsync()
+        protected override Task<ImageData> ExecuteAsync()
         {
             return Task.FromResult(_resultImage);
         }
@@ -144,7 +144,7 @@ public class TransformationBaseTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ReturnsGeneratedImage()
+    public async Task GenerateAsync_ReturnsGeneratedImage()
     {
         // Arrange
         var store = new FakeTransformationStore();
@@ -154,7 +154,7 @@ public class TransformationBaseTests
         transformation.Initialize(project, Guid.NewGuid());
 
         // Act
-        var result = await transformation.ExecuteAsync();
+        var result = await transformation.GenerateAsync();
 
         // Assert
         Assert.Equal(expectedImage, result);

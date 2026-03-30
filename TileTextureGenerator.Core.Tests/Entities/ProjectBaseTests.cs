@@ -255,7 +255,7 @@ public class ProjectBaseTests
     {
         public TestTransformation(ITransformationStore store) : base(store) { }
         public override ImageData? Icon => null;
-        public override Task<ImageData> ExecuteAsync() => Task.FromResult(new ImageData(Array.Empty<byte>()));
+        protected override Task<ImageData> ExecuteAsync() => Task.FromResult(new ImageData(Array.Empty<byte>()));
     }
 
     private class FakeTransformationStore : ITransformationStore

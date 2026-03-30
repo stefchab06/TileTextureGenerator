@@ -23,8 +23,8 @@ public abstract class ProjectBase : IProjectManager
     /// Unique name of the project.
     /// Immutable after initialization.
     /// </summary>
-    public string Name 
-    { 
+    public string Name
+    {
         get => _name ?? throw new InvalidOperationException("Project not initialized. Call Initialize first.");
         private set
         {
@@ -122,7 +122,7 @@ public abstract class ProjectBase : IProjectManager
         {
             Id = Guid.NewGuid(),
             Type = transformationType,
-            Icon = null 
+            Icon = null
         };
 
         while (Transformations.Any(t => t.Id == transformation.Id))
@@ -157,11 +157,35 @@ public abstract class ProjectBase : IProjectManager
     /// <inheritdoc />
     public virtual async Task<TransformationBase> GetTransformationAsync(Guid transformationId)
     {
-        return await _store.LoadTransformationAsync(this, transformationId) 
+        return await _store.LoadTransformationAsync(this, transformationId)
             ?? throw new InvalidOperationException($"Transformation with ID '{transformationId}' not found.");
     }
 
 
     /// <inheritdoc />
     public abstract Task<IReadOnlyList<TransformationTypeDTO>> GetAvailableTransformationTypesAsync();
+
+    /// <inheritdoc />
+    public async Task<bool>? GenerateAsync()
+    {
+        // TODO: implement it.
+        // Verify each tranformation has been executed and has an output image.
+        // Generate a pdf with all the output images and save it to disk.
+        Status = ProjectStatus.Generated;
+        LastModifiedDate = DateTime.UtcNow;
+        await _store.SaveAsync(this);
+        return true;
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> ArchiveAsync()
+    {
+        // TODO: implement it.
+        // Remove all workwpace files, all useless values in persistence.
+        // Keep only all the necessary to regenerate the pdf if needed.
+        Status = ProjectStatus.Archived;
+        LastModifiedDate = DateTime.UtcNow;
+        await _store.SaveAsync(this);
+        return true;
+    }
 }

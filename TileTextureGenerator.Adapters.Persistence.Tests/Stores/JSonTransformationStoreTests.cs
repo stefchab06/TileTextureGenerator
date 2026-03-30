@@ -338,6 +338,119 @@ public class JSonTransformationStoreTests
         Assert.Equal("HalfHorizontal", tileShape2Element.GetString());
     }
 
+    [Fact]
+    public async Task SaveAsync_GeneratedTexture_SavesInOutputsFolder()
+    {
+        // Arrange
+        var project = new FloorTileProject(_projectStore);
+        project.Initialize("TestProject");
+
+        var jsonPath = _fileStorage.GetProjectFileName("TestProject");
+        var initialJson = """
+        {
+          "name": "TestProject",
+          "type": "FloorTileProject",
+          "status": "New"
+        }
+        """;
+        await _fileStorage.WriteAllTextAsync(jsonPath, initialJson);
+
+        var transformation = new HorizontalFloorTransformation(_transformationStore);
+        var transformationId = Guid.NewGuid();
+        transformation.Initialize(project, transformationId);
+
+        var generatedImageData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 5, 6, 7, 8 }; // PNG header + data
+        // Use reflection to set GeneratedTexture (it's private setter)
+        var generatedTextureProperty = typeof(TransformationBase).GetProperty(nameof(TransformationBase.GeneratedTexture));
+        generatedTextureProperty!.SetValue(transformation, new ImageData(generatedImageData));
+
+        // Act
+        await ((ITransformationStore)_transformationStore).SaveAsync(transformation);
+
+        // Assert
+        string savedJson = await _fileStorage.ReadAllTextAsync(jsonPath);
+        var root = JsonDocument.Parse(savedJson).RootElement;
+
+        Assert.True(root.TryGetProperty("transformations", out var transformationsElement));
+        Assert.True(transformationsElement.TryGetProperty(transformationId.ToString(), out var transformationElement));
+
+        // Verify generatedTexturePath property exists
+        Assert.True(transformationElement.TryGetProperty("generatedtexturePath", out var pathElement));
+        string imagePath = pathElement.GetString()!;
+
+        // Verify path starts with Outputs/ (not Workspace/)
+        Assert.StartsWith("Outputs/", imagePath);
+        Assert.EndsWith(".png", imagePath);
+
+        // Verify image file was created in Outputs folder
+        var projectDir = _fileStorage.GetProjectPath("TestProject");
+        var fullImagePath = Path.Combine(projectDir, imagePath);
+        Assert.True(await _fileStorage.FileExistsAsync(fullImagePath));
+
+        // Verify image content
+        var savedImageData = await _fileStorage.ReadAllBytesAsync(fullImagePath);
+        Assert.Equal(generatedImageData, savedImageData);
+    }
+
+    [Fact]
+    public async Task SaveAsync_GeneratedTexture_ReusesGuidOnUpdate()
+    {
+        // Arrange
+        var project = new FloorTileProject(_projectStore);
+        project.Initialize("TestProject");
+
+        var transformationId = Guid.NewGuid();
+        var existingGuid = Guid.NewGuid();
+        var existingImagePath = $"Outputs/{existingGuid}.png";
+
+        // Create existing JSON with GeneratedTexture path
+        var jsonPath = _fileStorage.GetProjectFileName("TestProject");
+        var existingJson = $$"""
+        {
+          "name": "TestProject",
+          "type": "FloorTileProject",
+          "status": "New",
+          "transformations": {
+            "{{transformationId}}": {
+              "type": "HorizontalFloorTransformation",
+              "generatedtexturePath": "{{existingImagePath}}"
+            }
+          }
+        }
+        """;
+        await _fileStorage.WriteAllTextAsync(jsonPath, existingJson);
+
+        // Create existing image file in Outputs
+        var projectDir = _fileStorage.GetProjectPath("TestProject");
+        var oldImageData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 1, 1, 1 };
+        await _fileStorage.WriteAllBytesAsync(Path.Combine(projectDir, existingImagePath), oldImageData);
+
+        var transformation = new HorizontalFloorTransformation(_transformationStore);
+        transformation.Initialize(project, transformationId);
+
+        var newImageData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 9, 9, 9 }; // Different data
+        var generatedTextureProperty = typeof(TransformationBase).GetProperty(nameof(TransformationBase.GeneratedTexture));
+        generatedTextureProperty!.SetValue(transformation, new ImageData(newImageData));
+
+        // Act
+        await ((ITransformationStore)_transformationStore).SaveAsync(transformation);
+
+        // Assert
+        string savedJson = await _fileStorage.ReadAllTextAsync(jsonPath);
+        var root = JsonDocument.Parse(savedJson).RootElement;
+
+        Assert.True(root.TryGetProperty("transformations", out var transformationsElement));
+        Assert.True(transformationsElement.TryGetProperty(transformationId.ToString(), out var transformationElement));
+        Assert.True(transformationElement.TryGetProperty("generatedtexturePath", out var pathElement));
+
+        // Verify GUID was reused (same path)
+        Assert.Equal(existingImagePath, pathElement.GetString());
+
+        // Verify image was updated with new data in Outputs folder
+        var savedImageData = await _fileStorage.ReadAllBytesAsync(Path.Combine(projectDir, existingImagePath));
+        Assert.Equal(newImageData, savedImageData);
+    }
+
     #endregion
 
     private class FakeTransformationStore : ITransformationStore
