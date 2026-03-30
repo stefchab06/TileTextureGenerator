@@ -107,6 +107,35 @@ public class ManageProjectListUseCase
             return ListProjectsResult.Error($"Failed to load projects: {ex.Message}");
         }
     }
+
+    /// <summary>
+    /// Deletes a project by name.
+    /// </summary>
+    /// <param name="projectName">Name of the project to delete.</param>
+    /// <returns>Result indicating success or failure.</returns>
+    public async Task<DeleteProjectResult> DeleteProjectAsync(string projectName)
+    {
+        if (string.IsNullOrWhiteSpace(projectName))
+            return DeleteProjectResult.ValidationError("Project name cannot be empty or whitespace.");
+
+        try
+        {
+            await _projectsManager.DeleteProjectAsync(projectName);
+            return DeleteProjectResult.Success();
+        }
+        catch (ArgumentException ex)
+        {
+            return DeleteProjectResult.ValidationError(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return DeleteProjectResult.Error(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return DeleteProjectResult.Error($"Unexpected error: {ex.Message}");
+        }
+    }
 }
 
 /// <summary>
@@ -151,4 +180,32 @@ public enum CreateProjectErrorType
     None,
     Validation,
     Unexpected
+}
+
+/// <summary>
+/// Result of the DeleteProject use case execution.
+/// </summary>
+public class DeleteProjectResult
+{
+    public bool IsSuccess { get; private init; }
+    public string? ErrorMessage { get; private init; }
+
+    private DeleteProjectResult() { }
+
+    public static DeleteProjectResult Success() => new()
+    {
+        IsSuccess = true
+    };
+
+    public static DeleteProjectResult ValidationError(string message) => new()
+    {
+        IsSuccess = false,
+        ErrorMessage = message
+    };
+
+    public static DeleteProjectResult Error(string message) => new()
+    {
+        IsSuccess = false,
+        ErrorMessage = message
+    };
 }

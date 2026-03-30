@@ -80,4 +80,18 @@
   <data name="ProjectType_WallTileProject" xml:space="preserve">
     <value>Wall Texture</value>
   </data>
+
+  <!-- Delete Project Confirmation -->
+  <data name="DeleteProject_ConfirmTitle" xml:space="preserve">
+    <value>Delete Project</value>
+  </data>
+  <data name="DeleteProject_ConfirmMessage" xml:space="preserve">
+    <value>Are you sure you want to permanently delete the project '{0}'? This action cannot be undone.</value>
+  </data>
+  <data name="DeleteProject_ConfirmYes" xml:space="preserve">
+    <value>Yes, Delete</value>
+  </data>
+  <data name="DeleteProject_ConfirmNo" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
 </root>

@@ -77,8 +77,57 @@ public class ManageProjectListViewModel : INotifyPropertyChanged
 
     private async Task OnDeleteProjectAsync(ProjectListItemDto project)
     {
-        // Call appropriate use case (delete project)
-        await LoadProjectsAsync();
+        if (project is null || string.IsNullOrWhiteSpace(project.Name))
+            return;
+
+        try
+        {
+            // Get localized confirmation strings
+            var title = _projectTypeLocalizer.GetLocalizedString("DeleteProject_ConfirmTitle");
+            var message = string.Format(
+                _projectTypeLocalizer.GetLocalizedString("DeleteProject_ConfirmMessage"),
+                project.Name);
+            var confirmText = _projectTypeLocalizer.GetLocalizedString("DeleteProject_ConfirmYes");
+            var cancelText = _projectTypeLocalizer.GetLocalizedString("DeleteProject_ConfirmNo");
+
+            // Show confirmation dialog
+            if (Application.Current?.MainPage is null)
+                return;
+
+            var userConfirmed = await Application.Current.MainPage.DisplayAlert(
+                title,
+                message,
+                confirmText,
+                cancelText);
+
+            if (!userConfirmed)
+                return; // User cancelled
+
+            // Proceed with deletion
+            IsBusy = true;
+            ErrorMessage = null;
+
+            var result = await _manageProjectListUseCase.DeleteProjectAsync(project.Name);
+
+            if (result.IsSuccess)
+            {
+                // Success: Refresh project list
+                await LoadProjectsAsync();
+            }
+            else
+            {
+                // Display error message
+                ErrorMessage = result.ErrorMessage;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to delete project: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
 

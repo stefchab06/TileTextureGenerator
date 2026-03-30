@@ -211,6 +211,96 @@ public class ManageProjectListUseCaseTests
         Assert.Empty(result.Projects);
     }
 
+    [Fact]
+    public async Task DeleteProjectAsync_WithValidName_ReturnsSuccess()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager();
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.DeleteProjectAsync("TestProject");
+
+        // Assert
+        Assert.True(result.IsSuccess, $"Expected success but got error: {result.ErrorMessage}");
+        Assert.Null(result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task DeleteProjectAsync_WithEmptyName_ReturnsValidationError()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager();
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.DeleteProjectAsync("");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task DeleteProjectAsync_WithWhitespaceName_ReturnsValidationError()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager();
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.DeleteProjectAsync("   ");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task DeleteProjectAsync_WhenProjectNotFound_ReturnsError()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager { ThrowDeleteArgumentException = true };
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.DeleteProjectAsync("NonExistentProject");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task DeleteProjectAsync_WhenOperationFails_ReturnsError()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager { ThrowDeleteInvalidOperationException = true };
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.DeleteProjectAsync("TestProject");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task DeleteProjectAsync_WithUnexpectedException_ReturnsError()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager { ThrowDeleteGenericException = true };
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.DeleteProjectAsync("TestProject");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.NotNull(result.ErrorMessage);
+    }
+
     #region Mock Implementation
 
     /// <summary>
@@ -222,6 +312,9 @@ public class ManageProjectListUseCaseTests
         public bool ThrowArgumentException { get; set; }
         public bool ThrowInvalidOperationException { get; set; }
         public bool ThrowGenericException { get; set; }
+        public bool ThrowDeleteArgumentException { get; set; }
+        public bool ThrowDeleteInvalidOperationException { get; set; }
+        public bool ThrowDeleteGenericException { get; set; }
         public IReadOnlyList<ProjectDto>? Projects { get; set; }
         public bool ProjectExistsResult { get; set; }
 
@@ -254,7 +347,16 @@ public class ManageProjectListUseCaseTests
 
         public Task DeleteProjectAsync(string name)
         {
-            throw new NotImplementedException();
+            if (ThrowDeleteArgumentException)
+                throw new ArgumentException("Project not found");
+
+            if (ThrowDeleteInvalidOperationException)
+                throw new InvalidOperationException("Cannot delete project");
+
+            if (ThrowDeleteGenericException)
+                throw new Exception("Unexpected delete error");
+
+            return Task.CompletedTask;
         }
 
         public Task<IReadOnlyList<ProjectDto>> ListProjectsAsync()
