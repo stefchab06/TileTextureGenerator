@@ -173,21 +173,33 @@ public class ManageProjectListUseCaseTests
     {
         var mockManager = new MockProjectsManager();
         mockManager.Projects = new List<ProjectDto> {
-            new("P1", "FloorTileProject", ProjectStatus.New, DateTime.UtcNow, new byte[] { 1, 2, 3 }),
-            new("P2", "WallTileProject", ProjectStatus.Archived, DateTime.UtcNow, null)
+            new("P1", "FloorTileProject", ProjectStatus.New, DateTime.UtcNow, new byte[] { 1, 2, 3 }, ProjectActions.Load | ProjectActions.Delete),
+            new("P2", "WallTileProject", ProjectStatus.Archived, DateTime.UtcNow, null, ProjectActions.Delete)
         };
         var useCase = new ManageProjectListUseCase(mockManager);
         var result = await useCase.ListProjectsAsync();
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Projects);
         Assert.Equal(2, result.Projects.Count);
+
+        // Verify P1 (New status)
         Assert.Equal("P1", result.Projects[0].Name);
         Assert.Equal("FloorTileProject", result.Projects[0].Type);
         Assert.Equal(ProjectStatus.New, result.Projects[0].Status);
         Assert.NotNull(result.Projects[0].DisplayImage);
+        Assert.True(result.Projects[0].CanLoad, "New projects should have CanLoad=true");
+        Assert.False(result.Projects[0].CanGenerate, "New projects should have CanGenerate=false");
+        Assert.False(result.Projects[0].CanArchive, "New projects should have CanArchive=false");
+        Assert.True(result.Projects[0].CanDelete, "New projects should have CanDelete=true");
+
+        // Verify P2 (Archived status)
         Assert.Equal("P2", result.Projects[1].Name);
         Assert.Equal(ProjectStatus.Archived, result.Projects[1].Status);
         Assert.Null(result.Projects[1].DisplayImage);
+        Assert.False(result.Projects[1].CanLoad, "Archived projects should have CanLoad=false");
+        Assert.False(result.Projects[1].CanGenerate, "Archived projects should have CanGenerate=false");
+        Assert.False(result.Projects[1].CanArchive, "Archived projects should have CanArchive=false");
+        Assert.True(result.Projects[1].CanDelete, "Archived projects should have CanDelete=true");
     }
 
     [Fact]
@@ -299,6 +311,98 @@ public class ManageProjectListUseCaseTests
         // Assert
         Assert.False(result.IsSuccess);
         Assert.NotNull(result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task ListProjectsAsync_MapsPendingStatusActionsCorrectly()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager();
+        mockManager.Projects = new List<ProjectDto> {
+            new("PendingProject", "FloorTileProject", ProjectStatus.Pending, DateTime.UtcNow, null, 
+                ProjectActions.Load | ProjectActions.Generate | ProjectActions.Delete)
+        };
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.ListProjectsAsync();
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var project = result.Projects[0];
+        Assert.True(project.CanLoad, "Pending projects should have CanLoad=true");
+        Assert.True(project.CanGenerate, "Pending projects should have CanGenerate=true");
+        Assert.False(project.CanArchive, "Pending projects should have CanArchive=false");
+        Assert.True(project.CanDelete, "Pending projects should have CanDelete=true");
+    }
+
+    [Fact]
+    public async Task ListProjectsAsync_MapsGeneratedStatusActionsCorrectly()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager();
+        mockManager.Projects = new List<ProjectDto> {
+            new("GeneratedProject", "WallTileProject", ProjectStatus.Generated, DateTime.UtcNow, null, 
+                ProjectActions.Load | ProjectActions.Generate | ProjectActions.Archive | ProjectActions.Delete)
+        };
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.ListProjectsAsync();
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var project = result.Projects[0];
+        Assert.True(project.CanLoad, "Generated projects should have CanLoad=true");
+        Assert.True(project.CanGenerate, "Generated projects should have CanGenerate=true");
+        Assert.True(project.CanArchive, "Generated projects should have CanArchive=true");
+        Assert.True(project.CanDelete, "Generated projects should have CanDelete=true");
+    }
+
+    [Fact]
+    public async Task ListProjectsAsync_MapsUnexistingStatusActionsCorrectly()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager();
+        mockManager.Projects = new List<ProjectDto> {
+            new("UnexistingProject", "FloorTileProject", ProjectStatus.Unexisting, DateTime.UtcNow, null, 
+                ProjectActions.Delete)
+        };
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.ListProjectsAsync();
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var project = result.Projects[0];
+        Assert.False(project.CanLoad, "Unexisting projects should have CanLoad=false");
+        Assert.False(project.CanGenerate, "Unexisting projects should have CanGenerate=false");
+        Assert.False(project.CanArchive, "Unexisting projects should have CanArchive=false");
+        Assert.True(project.CanDelete, "Unexisting projects should have CanDelete=true");
+    }
+
+    [Fact]
+    public async Task ListProjectsAsync_MapsNoActionsCorrectly()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager();
+        mockManager.Projects = new List<ProjectDto> {
+            new("NoActionsProject", "FloorTileProject", ProjectStatus.New, DateTime.UtcNow, null, 
+                ProjectActions.None)
+        };
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.ListProjectsAsync();
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        var project = result.Projects[0];
+        Assert.False(project.CanLoad, "Projects with no actions should have CanLoad=false");
+        Assert.False(project.CanGenerate, "Projects with no actions should have CanGenerate=false");
+        Assert.False(project.CanArchive, "Projects with no actions should have CanArchive=false");
+        Assert.False(project.CanDelete, "Projects with no actions should have CanDelete=false");
     }
 
     #region Mock Implementation

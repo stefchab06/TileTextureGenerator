@@ -9,5 +9,9 @@ public record ProjectListItemDto(
     string Name,
     string Type,
     ProjectStatus Status,
-    byte[]? DisplayImage
+    byte[]? DisplayImage,
+    bool CanLoad,
+    bool CanGenerate,
+    bool CanArchive,
+    bool CanDelete
 );

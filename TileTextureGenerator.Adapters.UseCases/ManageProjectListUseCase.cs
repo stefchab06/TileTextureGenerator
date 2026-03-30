@@ -95,10 +95,14 @@ public class ManageProjectListUseCase
         {
             var projects = await _projectsManager.ListProjectsAsync();
             var mapped = projects.Select(p => new ProjectListItemDto(
-                p.Name,
-                p.Type,
-                p.Status,
-                p.DisplayImage is not null ? p.DisplayImage.Value : null
+                Name: p.Name,
+                Type: p.Type,
+                Status: p.Status,
+                DisplayImage: p.DisplayImage is not null ? p.DisplayImage.Value : null,
+                CanLoad: p.AvailableActions.HasFlag(Core.Enums.ProjectActions.Load),
+                CanGenerate: p.AvailableActions.HasFlag(Core.Enums.ProjectActions.Generate),
+                CanArchive: p.AvailableActions.HasFlag(Core.Enums.ProjectActions.Archive),
+                CanDelete: p.AvailableActions.HasFlag(Core.Enums.ProjectActions.Delete)
             )).ToList();
             return ListProjectsResult.Success(mapped);
         }

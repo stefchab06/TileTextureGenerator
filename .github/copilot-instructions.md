@@ -198,7 +198,15 @@ TileTextureGenerator.Core.Tests/              # Tests unitaires du Core
 5. **Compiler** (`dotnet build` ou dans VS : **Générer → Générer la solution**)
 6. **Exécuter les tests** (`dotnet test` ou dans VS : **Test → Exécuter tous les tests**)
 7. **Vérifier la couverture** (si tests ajoutés) : `dotcover collect -f cobertura -o coverage.cobertura.xml dotnet test`
-8. **Commit et push** : Via **Affichage → Modifications Git** dans Visual Studio ou en ligne de commande
+8. **PROPOSER le commit** : **TOUJOURS demander à l'utilisateur avant de commiter**
+
+### Règles Git importantes
+
+⚠️ **RÈGLE CRITIQUE** :
+- **NE JAMAIS commiter sans demander à l'utilisateur**
+- **PROPOSER un commit** quand une fonctionnalité complète est terminée (tous les tests passent, compilation OK)
+- **ATTENDRE l'approbation** de l'utilisateur avant d'exécuter `git commit` et `git push`
+- **Raison** : L'utilisateur préfère grouper les commits par fonctionnalité complète, pas par étape intermédiaire
 
 ### Commits Git sous PowerShell
 ⚠️ **Important** : PowerShell interprète les tirets (`-`) comme des opérateurs dans les messages multi-lignes.

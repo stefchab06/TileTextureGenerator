@@ -117,28 +117,64 @@
                                 <Frame Padding="0" CornerRadius="8" HeightRequest="128" HorizontalOptions="Center">
                                     <Image Source="{Binding DisplayImage}" HeightRequest="128" Aspect="AspectFit" />
                                 </Frame>
-                                <!-- Action Buttons -->
-                                <Grid ColumnSpacing="12" Padding="0,8,0,0">
+                                <!-- Action Buttons (Grid for margins + FlexLayout for centering) -->
+                                <Grid ColumnSpacing="0" Padding="0,8,0,0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
-                                    <Button Grid.Column="1" Text="📂" BackgroundColor="#E3F2FD" CornerRadius="20" HeightRequest="40" WidthRequest="40" FontSize="20"
-                                            Command="{Binding BindingContext.LoadProjectCommand, Source={x:Reference ProjectsCollectionView}}"
-                                            CommandParameter="{Binding .}" />
-                                    <Button Grid.Column="2" Text="📄" BackgroundColor="#E8F5E9" CornerRadius="20" HeightRequest="40" WidthRequest="40" FontSize="20"
-                                            Command="{Binding BindingContext.GeneratePdfCommand, Source={x:Reference ProjectsCollectionView}}"
-                                            CommandParameter="{Binding .}" />
-                                    <Button Grid.Column="3" Text="🗄️" BackgroundColor="#FFF3E0" CornerRadius="20" HeightRequest="40" WidthRequest="40" FontSize="20"
-                                            Command="{Binding BindingContext.ArchiveProjectCommand, Source={x:Reference ProjectsCollectionView}}"
-                                            CommandParameter="{Binding .}" />
-                                    <Button Grid.Column="4" Text="🗑️" BackgroundColor="#FFEBEE" CornerRadius="20" HeightRequest="40" WidthRequest="40" FontSize="20"
-                                            Command="{Binding BindingContext.DeleteProjectCommand, Source={x:Reference ProjectsCollectionView}}"
-                                            CommandParameter="{Binding .}" />
+
+                                    <FlexLayout Grid.Column="1"
+                                                JustifyContent="Center" 
+                                                AlignItems="Center" 
+                                                Wrap="NoWrap" 
+                                                Direction="Row">
+
+                                        <Button Text="📂" 
+                                                BackgroundColor="#E3F2FD" 
+                                                CornerRadius="20" 
+                                                HeightRequest="40" 
+                                                WidthRequest="40" 
+                                                FontSize="20"
+                                                Margin="6,0"
+                                                IsVisible="{Binding CanLoad}"
+                                                Command="{Binding BindingContext.LoadProjectCommand, Source={x:Reference ProjectsCollectionView}}"
+                                                CommandParameter="{Binding .}" />
+
+                                        <Button Text="📄" 
+                                                BackgroundColor="#E8F5E9" 
+                                                CornerRadius="20" 
+                                                HeightRequest="40" 
+                                                WidthRequest="40" 
+                                                FontSize="20"
+                                                Margin="6,0"
+                                                IsVisible="{Binding CanGenerate}"
+                                                Command="{Binding BindingContext.GeneratePdfCommand, Source={x:Reference ProjectsCollectionView}}"
+                                                CommandParameter="{Binding .}" />
+
+                                        <Button Text="🗄️" 
+                                                BackgroundColor="#FFF3E0" 
+                                                CornerRadius="20" 
+                                                HeightRequest="40" 
+                                                WidthRequest="40" 
+                                                FontSize="20"
+                                                Margin="6,0"
+                                                IsVisible="{Binding CanArchive}"
+                                                Command="{Binding BindingContext.ArchiveProjectCommand, Source={x:Reference ProjectsCollectionView}}"
+                                                CommandParameter="{Binding .}" />
+
+                                        <Button Text="🗑️" 
+                                                BackgroundColor="#FFEBEE" 
+                                                CornerRadius="20" 
+                                                HeightRequest="40" 
+                                                WidthRequest="40" 
+                                                FontSize="20"
+                                                Margin="6,0"
+                                                IsVisible="{Binding CanDelete}"
+                                                Command="{Binding BindingContext.DeleteProjectCommand, Source={x:Reference ProjectsCollectionView}}"
+                                                CommandParameter="{Binding .}" />
+                                    </FlexLayout>
                                 </Grid>
                             </VerticalStackLayout>
                         </Border>
