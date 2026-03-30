@@ -364,4 +364,87 @@ public class ProjectsManagerTests
         await Assert.ThrowsAsync<ArgumentException>(
             () => manager.ProjectExistsAsync("   "));
     }
+
+    [Fact]
+    public async Task ListProjectsAsync_ReturnsSortedByLastModifiedDate_MostRecentFirst()
+    {
+        // Arrange
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
+
+        // Create projects with different timestamps (simulate delay between creations)
+        var project1 = await manager.CreateProjectAsync("OldProject", FakeProjectTypeAName);
+        await Task.Delay(10); // Small delay to ensure different timestamps
+
+        var project2 = await manager.CreateProjectAsync("MiddleProject", FakeProjectTypeAName);
+        await Task.Delay(10);
+
+        var project3 = await manager.CreateProjectAsync("NewestProject", FakeProjectTypeAName);
+
+        // Act
+        var projects = await manager.ListProjectsAsync();
+
+        // Assert
+        Assert.Equal(3, projects.Count);
+        Assert.Equal("NewestProject", projects[0].Name); // Most recent first
+        Assert.Equal("MiddleProject", projects[1].Name);
+        Assert.Equal("OldProject", projects[2].Name); // Oldest last
+    }
+
+    [Fact]
+    public async Task ListProjectsAsync_SortsCorrectly_WithSpecificDates()
+    {
+        // Arrange
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+
+        // Manually insert projects with specific dates
+        var oldDate = new DateTime(2024, 1, 1, 10, 0, 0, DateTimeKind.Utc);
+        var middleDate = new DateTime(2024, 6, 15, 14, 30, 0, DateTimeKind.Utc);
+        var recentDate = new DateTime(2024, 12, 31, 23, 59, 59, DateTimeKind.Utc);
+
+        await store.CreateProjectAsync(new ProjectDto("Project1", FakeProjectTypeAName, ProjectStatus.New, oldDate, null));
+        await store.CreateProjectAsync(new ProjectDto("Project2", FakeProjectTypeAName, ProjectStatus.New, recentDate, null));
+        await store.CreateProjectAsync(new ProjectDto("Project3", FakeProjectTypeAName, ProjectStatus.New, middleDate, null));
+
+        var manager = new ProjectsManager(store);
+
+        // Act
+        var projects = await manager.ListProjectsAsync();
+
+        // Assert
+        Assert.Equal(3, projects.Count);
+        Assert.Equal("Project2", projects[0].Name); // Most recent (2024-12-31)
+        Assert.Equal("Project3", projects[1].Name); // Middle (2024-06-15)
+        Assert.Equal("Project1", projects[2].Name); // Oldest (2024-01-01)
+
+        // Verify dates are in descending order
+        Assert.True(projects[0].LastModifiedDate >= projects[1].LastModifiedDate);
+        Assert.True(projects[1].LastModifiedDate >= projects[2].LastModifiedDate);
+    }
+
+    [Fact]
+    public async Task ListProjectsAsync_HandlesIdenticalDates()
+    {
+        // Arrange
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+
+        var sameDate = new DateTime(2024, 6, 15, 12, 0, 0, DateTimeKind.Utc);
+
+        await store.CreateProjectAsync(new ProjectDto("ProjectA", FakeProjectTypeAName, ProjectStatus.New, sameDate, null));
+        await store.CreateProjectAsync(new ProjectDto("ProjectB", FakeProjectTypeAName, ProjectStatus.New, sameDate, null));
+
+        var manager = new ProjectsManager(store);
+
+        // Act
+        var projects = await manager.ListProjectsAsync();
+
+        // Assert
+        Assert.Equal(2, projects.Count);
+        // Both dates are identical, order between them is not critical but should be stable
+        Assert.Equal(sameDate, projects[0].LastModifiedDate);
+        Assert.Equal(sameDate, projects[1].LastModifiedDate);
+    }
 }

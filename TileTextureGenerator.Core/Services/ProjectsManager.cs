@@ -100,7 +100,8 @@ public class ProjectsManager : IProjectsManager
     /// <inheritdoc />
     public async Task<IReadOnlyList<ProjectDto>> ListProjectsAsync()
     {
-        return await _projectsStore.ListProjectsAsync();
+        var projects = await _projectsStore.ListProjectsAsync();
+        return projects.OrderByDescending(p => p.LastModifiedDate).ToList();
     }
 
     /// <inheritdoc />
