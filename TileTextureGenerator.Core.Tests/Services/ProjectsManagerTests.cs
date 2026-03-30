@@ -447,4 +447,125 @@ public class ProjectsManagerTests
         Assert.Equal(sameDate, projects[0].LastModifiedDate);
         Assert.Equal(sameDate, projects[1].LastModifiedDate);
     }
+
+    [Fact]
+    public async Task ListProjectsAsync_CalculatesAvailableActions_ForNewStatus()
+    {
+        // Arrange
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        await store.CreateProjectAsync(new ProjectDto("NewProject", FakeProjectTypeAName, ProjectStatus.New, DateTime.UtcNow, null));
+        var manager = new ProjectsManager(store);
+
+        // Act
+        var projects = await manager.ListProjectsAsync();
+
+        // Assert
+        var project = projects[0];
+        Assert.True(project.AvailableActions.HasFlag(ProjectActions.Load), "New projects should allow Load");
+        Assert.True(project.AvailableActions.HasFlag(ProjectActions.Delete), "New projects should allow Delete");
+        Assert.False(project.AvailableActions.HasFlag(ProjectActions.Generate), "New projects should NOT allow Generate");
+        Assert.False(project.AvailableActions.HasFlag(ProjectActions.Archive), "New projects should NOT allow Archive");
+    }
+
+    [Fact]
+    public async Task ListProjectsAsync_CalculatesAvailableActions_ForPendingStatus()
+    {
+        // Arrange
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        await store.CreateProjectAsync(new ProjectDto("PendingProject", FakeProjectTypeAName, ProjectStatus.Pending, DateTime.UtcNow, null));
+        var manager = new ProjectsManager(store);
+
+        // Act
+        var projects = await manager.ListProjectsAsync();
+
+        // Assert
+        var project = projects[0];
+        Assert.True(project.AvailableActions.HasFlag(ProjectActions.Load), "Pending projects should allow Load");
+        Assert.True(project.AvailableActions.HasFlag(ProjectActions.Generate), "Pending projects should allow Generate");
+        Assert.True(project.AvailableActions.HasFlag(ProjectActions.Delete), "Pending projects should allow Delete");
+        Assert.False(project.AvailableActions.HasFlag(ProjectActions.Archive), "Pending projects should NOT allow Archive");
+    }
+
+    [Fact]
+    public async Task ListProjectsAsync_CalculatesAvailableActions_ForGeneratedStatus()
+    {
+        // Arrange
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        await store.CreateProjectAsync(new ProjectDto("GeneratedProject", FakeProjectTypeAName, ProjectStatus.Generated, DateTime.UtcNow, null));
+        var manager = new ProjectsManager(store);
+
+        // Act
+        var projects = await manager.ListProjectsAsync();
+
+        // Assert
+        var project = projects[0];
+        Assert.True(project.AvailableActions.HasFlag(ProjectActions.Load), "Generated projects should allow Load");
+        Assert.True(project.AvailableActions.HasFlag(ProjectActions.Generate), "Generated projects should allow Generate");
+        Assert.True(project.AvailableActions.HasFlag(ProjectActions.Archive), "Generated projects should allow Archive");
+        Assert.True(project.AvailableActions.HasFlag(ProjectActions.Delete), "Generated projects should allow Delete");
+    }
+
+    [Fact]
+    public async Task ListProjectsAsync_CalculatesAvailableActions_ForArchivedStatus()
+    {
+        // Arrange
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        await store.CreateProjectAsync(new ProjectDto("ArchivedProject", FakeProjectTypeAName, ProjectStatus.Archived, DateTime.UtcNow, null));
+        var manager = new ProjectsManager(store);
+
+        // Act
+        var projects = await manager.ListProjectsAsync();
+
+        // Assert
+        var project = projects[0];
+        Assert.True(project.AvailableActions.HasFlag(ProjectActions.Delete), "Archived projects should allow Delete");
+        Assert.False(project.AvailableActions.HasFlag(ProjectActions.Load), "Archived projects should NOT allow Load");
+        Assert.False(project.AvailableActions.HasFlag(ProjectActions.Generate), "Archived projects should NOT allow Generate");
+        Assert.False(project.AvailableActions.HasFlag(ProjectActions.Archive), "Archived projects should NOT allow Archive");
+    }
+
+    [Fact]
+    public async Task ListProjectsAsync_CalculatesAvailableActions_ForUnexistingStatus()
+    {
+        // Arrange
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        await store.CreateProjectAsync(new ProjectDto("UnexistingProject", FakeProjectTypeAName, ProjectStatus.Unexisting, DateTime.UtcNow, null));
+        var manager = new ProjectsManager(store);
+
+        // Act
+        var projects = await manager.ListProjectsAsync();
+
+        // Assert
+        var project = projects[0];
+        Assert.True(project.AvailableActions.HasFlag(ProjectActions.Delete), "Unexisting projects should allow Delete");
+        Assert.False(project.AvailableActions.HasFlag(ProjectActions.Load), "Unexisting projects should NOT allow Load");
+        Assert.False(project.AvailableActions.HasFlag(ProjectActions.Generate), "Unexisting projects should NOT allow Generate");
+        Assert.False(project.AvailableActions.HasFlag(ProjectActions.Archive), "Unexisting projects should NOT allow Archive");
+    }
+
+    [Fact]
+    public async Task CreateProjectAsync_SetsAvailableActionsForNewProject()
+    {
+        // Arrange
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
+
+        // Act
+        await manager.CreateProjectAsync("TestProject", FakeProjectTypeAName);
+        var projects = await manager.ListProjectsAsync();
+
+        // Assert
+        var project = projects[0];
+        Assert.Equal(ProjectStatus.New, project.Status);
+        Assert.True(project.AvailableActions.HasFlag(ProjectActions.Load));
+        Assert.True(project.AvailableActions.HasFlag(ProjectActions.Delete));
+        Assert.False(project.AvailableActions.HasFlag(ProjectActions.Generate));
+        Assert.False(project.AvailableActions.HasFlag(ProjectActions.Archive));
+    }
 }

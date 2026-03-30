@@ -34,17 +34,24 @@ public sealed class ProjectDto
     /// </summary>
     public DateTime LastModifiedDate { get; init; }
 
+    /// <summary>
+    /// Actions available for this project based on its current status.
+    /// </summary>
+    public ProjectActions AvailableActions { get; init; }
+
     public ProjectDto(
         string name,
         string type,
         ProjectStatus status,
         DateTime lastModifiedDate,
-        ImageData? displayImage = null)
+        ImageData? displayImage = null,
+        ProjectActions availableActions = ProjectActions.None)
     {
         Name = name;
         Type = type;
         Status = status;
         LastModifiedDate = lastModifiedDate;
         DisplayImage = displayImage;
+        AvailableActions = availableActions;
     }
 }

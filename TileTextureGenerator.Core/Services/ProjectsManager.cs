@@ -47,13 +47,16 @@ public class ProjectsManager : IProjectsManager
         if (await _projectsStore.ExistsAsync(name))
             throw new InvalidOperationException($"A project with name '{name}' already exists.");
 
-        // Create DTO with basic properties
+        var status = ProjectStatus.New;
+
+        // Create DTO with basic properties and calculated available actions
         var projectDto = new ProjectDto(
             name: name,
             type: type,
-            status: ProjectStatus.New,
+            status: status,
             lastModifiedDate: DateTime.UtcNow,
-            displayImage: null
+            displayImage: null,
+            availableActions: CalculateAvailableActions(status)
         );
 
         // Persist the new project via DTO
@@ -101,7 +104,18 @@ public class ProjectsManager : IProjectsManager
     public async Task<IReadOnlyList<ProjectDto>> ListProjectsAsync()
     {
         var projects = await _projectsStore.ListProjectsAsync();
-        return projects.OrderByDescending(p => p.LastModifiedDate).ToList();
+
+        // Recalculate available actions for each project based on current status
+        var projectsWithActions = projects.Select(p => new ProjectDto(
+            name: p.Name,
+            type: p.Type,
+            status: p.Status,
+            lastModifiedDate: p.LastModifiedDate,
+            displayImage: p.DisplayImage,
+            availableActions: CalculateAvailableActions(p.Status)
+        )).OrderByDescending(p => p.LastModifiedDate).ToList();
+
+        return projectsWithActions;
     }
 
     /// <inheritdoc />
@@ -113,5 +127,31 @@ public class ProjectsManager : IProjectsManager
             throw new ArgumentException("Project name cannot be empty or whitespace.", nameof(projectName));
 
         return await _projectsStore.ExistsAsync(projectName);
+    }
+
+    /// <summary>
+    /// Calculates available actions for a project based on its status.
+    /// Business rules:
+    /// - Delete: always available
+    /// - Load: available when status is New, Pending, or Generated
+    /// - Generate: available when status is Pending or Generated
+    /// - Archive: available when status is Generated
+    /// </summary>
+    /// <param name="status">Current project status.</param>
+    /// <returns>Flags indicating available actions.</returns>
+    private static ProjectActions CalculateAvailableActions(ProjectStatus status)
+    {
+        var actions = ProjectActions.Delete; // Always available
+
+        if (status is ProjectStatus.New or ProjectStatus.Pending or ProjectStatus.Generated)
+            actions |= ProjectActions.Load;
+
+        if (status is ProjectStatus.Pending or ProjectStatus.Generated)
+            actions |= ProjectActions.Generate;
+
+        if (status == ProjectStatus.Generated)
+            actions |= ProjectActions.Archive;
+
+        return actions;
     }
 }
