@@ -86,11 +86,42 @@ public class JsonProjectsStoreTests : IDisposable
         // Assert
         string expectedJsonPath = _fileStorage.GetProjectFileName("TestProject");
         Assert.True(await _fileStorage.FileExistsAsync(expectedJsonPath));
-        
+
         string json = await _fileStorage.ReadAllTextAsync(expectedJsonPath);
         Assert.Contains("\"name\": \"TestProject\"", json, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("\"type\": \"FloorTileProject\"", json, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("\"status\": \"New\"", json, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task CreateProjectAsync_WithAvailableActions_DoesNotSerializeAvailableActions()
+    {
+        // Arrange
+        var dto = new ProjectDto(
+            name: "TestProject",
+            type: "FloorTileProject",
+            status: ProjectStatus.Generated,
+            lastModifiedDate: DateTime.UtcNow,
+            displayImage: null,
+            availableActions: ProjectActions.Load | ProjectActions.Generate | ProjectActions.Archive | ProjectActions.Delete
+        );
+
+        // Act
+        await _store.CreateProjectAsync(dto);
+
+        // Assert
+        string expectedJsonPath = _fileStorage.GetProjectFileName("TestProject");
+        string json = await _fileStorage.ReadAllTextAsync(expectedJsonPath);
+
+        // Verify AvailableActions is NOT in the JSON (case-insensitive)
+        Assert.DoesNotContain("availableactions", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("available_actions", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("AvailableActions", json, StringComparison.Ordinal);
+
+        // Verify other properties ARE in the JSON
+        Assert.Contains("\"name\"", json, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("\"type\"", json, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("\"status\"", json, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

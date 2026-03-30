@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using TileTextureGenerator.Adapters.Persistence.Converters;
 using TileTextureGenerator.Adapters.Persistence.Ports;
 using TileTextureGenerator.Adapters.Persistence.Utilities;
@@ -27,6 +28,10 @@ public sealed class JsonProjectsStore : IProjectsStore
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver
+        {
+            Modifiers = { IgnoreAvailableActionsModifier }
+        },
         Converters = 
         { 
             new JsonStringEnumConverter(),
@@ -34,6 +39,22 @@ public sealed class JsonProjectsStore : IProjectsStore
             new NullableImageDataJsonConverter()
         }
     };
+
+    /// <summary>
+    /// Modifier to ignore AvailableActions property during serialization.
+    /// AvailableActions is a calculated property that should not be persisted.
+    /// </summary>
+    private static void IgnoreAvailableActionsModifier(JsonTypeInfo typeInfo)
+    {
+        if (typeInfo.Type == typeof(ProjectDto))
+        {
+            var availableActionsProperty = typeInfo.Properties.FirstOrDefault(p => p.Name == "availableActions");
+            if (availableActionsProperty != null)
+            {
+                availableActionsProperty.ShouldSerialize = (_, _) => false;
+            }
+        }
+    }
 
     /// <summary>
     /// Initializes a new instance of JsonProjectsStore.
