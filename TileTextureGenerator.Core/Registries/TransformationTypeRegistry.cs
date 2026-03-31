@@ -104,22 +104,31 @@ public static class TransformationTypeRegistry
 
     /// <summary>
     /// Gets the icon for a transformation type by name.
-    /// Creates a temporary instance to retrieve the icon.
+    /// Uses reflection to access the static IconResourceName property and loads the embedded resource.
     /// </summary>
     /// <param name="typeName">The name of the transformation type</param>
-    /// <returns>The icon as PNG, or null if not found</returns>
+    /// <returns>The icon as PNG ImageData, or null if not found</returns>
     public static ImageData? GetIcon(string typeName)
     {
         var type = GetTypeByName(typeName);
-        if (type == null || !type.IsSubclassOf(typeof(Entities.TransformationBase)))
+        if (type == null || !type.IsAssignableTo(typeof(Entities.ITransformationMetadata)))
             return null;
 
         try
         {
-            // Need to instantiate with a dummy store to get the icon
-            // Icon is typically a static/computed property that doesn't need real store
-            var instance = (Entities.TransformationBase)Activator.CreateInstance(type, new object?[] { null })!;
-            return instance.Icon;
+            // Access the static IconResourceName property via reflection
+            var property = type.GetProperty(
+                nameof(Entities.ITransformationMetadata.IconResourceName),
+                BindingFlags.Public | BindingFlags.Static);
+
+            if (property == null)
+                return null;
+
+            var resourceName = (string?)property.GetValue(null);
+            if (string.IsNullOrWhiteSpace(resourceName))
+                return null;
+
+            return Helpers.EmbeddedResourceLoader.LoadIcon(resourceName);
         }
         catch
         {

@@ -15,4 +15,9 @@
     <PackageReference Include="SkiaSharp" Version="3.119.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Icons\HorizontalFloor.png" />
+    <EmbeddedResource Include="Resources\Icons\VerticalWall.png" />
+  </ItemGroup>
+
 </Project>

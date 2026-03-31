@@ -13,7 +13,7 @@ namespace TileTextureGenerator.Core.Tests.Entities;
 /// </summary>
 public class TransformationBaseTests
 {
-    private sealed class TestTransformation : TransformationBase
+    private sealed class TestTransformation : TransformationBase, ITransformationMetadata
     {
         private readonly ImageData _resultImage;
 
@@ -23,7 +23,7 @@ public class TransformationBaseTests
             _resultImage = new ImageData(resultImage ?? new byte[] { 0x89, 0x50, 0x4E, 0x47 }); // PNG header
         }
 
-        public override ImageData? Icon => new ImageData(new byte[] { 0x49, 0x43, 0x4F, 0x4E }); // "ICON" mock
+        public static string IconResourceName => "Test.png";
 
         protected override Task<ImageData> ExecuteAsync()
         {
@@ -129,18 +129,14 @@ public class TransformationBaseTests
     }
 
     [Fact]
-    public void Icon_ReturnsConcreteImplementation()
+    public void IconResourceName_ReturnsConcreteImplementation()
     {
-        // Arrange
-        var store = new FakeTransformationStore();
-        var transformation = new TestTransformation(store);
-
-        // Act
-        var icon = transformation.Icon;
+        // Arrange & Act
+        var iconResourceName = TestTransformation.IconResourceName;
 
         // Assert
-        Assert.NotNull(icon);
-        Assert.Equal(new byte[] { 0x49, 0x43, 0x4F, 0x4E }, icon);
+        Assert.NotNull(iconResourceName);
+        Assert.Equal("Test.png", iconResourceName);
     }
 
     [Fact]

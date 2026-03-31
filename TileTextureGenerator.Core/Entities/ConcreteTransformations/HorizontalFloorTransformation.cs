@@ -1,6 +1,5 @@
 using SkiaSharp;
 using TileTextureGenerator.Core.Enums;
-using TileTextureGenerator.Core.Helpers;
 using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Registries;
@@ -12,7 +11,7 @@ namespace TileTextureGenerator.Core.Entities.ConcreteTransformations;
 /// Adds rectangular flaps on all four sides (0.25" height) to be folded.
 /// The visible top surface remains flat without inclination.
 /// </summary>
-public sealed class HorizontalFloorTransformation : TransformationBase
+public sealed class HorizontalFloorTransformation : TransformationBase, ITransformationMetadata
 {
     private const double FlapHeightInInches = 0.25;
     private const double MaxTileDimensionInInches = 2.0;
@@ -36,10 +35,10 @@ public sealed class HorizontalFloorTransformation : TransformationBase
     public TileShape TileShape { get; set; } = TileShape.Full;
 
     /// <summary>
-    /// Icon for this transformation type (PNG, 64x64).
-    /// Generated programmatically showing a horizontal floor tile perspective.
+    /// Resource name for the horizontal floor transformation icon.
+    /// Points to the embedded resource in Core/Resources/Icons/.
     /// </summary>
-    public override ImageData? Icon => TransformationIconGenerator.GenerateHorizontalFloorIcon();
+    public static string IconResourceName => "HorizontalFloor.png";
 
     /// <summary>
     /// Constructor with dependency injection.

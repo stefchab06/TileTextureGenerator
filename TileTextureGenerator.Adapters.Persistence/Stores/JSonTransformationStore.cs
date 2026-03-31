@@ -107,9 +107,9 @@ internal class JSonTransformationStore : ITransformationStore
             // Skip indexed properties (like this[ImageSide])
             if (prop.GetIndexParameters().Length > 0) continue;
 
-            // Skip at root level: Icon, ParentProject, Id, Type (Type already handled separately)
-            if (prop.Name == nameof(transformation.Icon) || 
-                prop.Name == nameof(transformation.ParentProject) || 
+            // Skip at root level: ParentProject, Id, Type (Type already handled separately)
+            // Note: Icon property was removed from TransformationBase (replaced by static IconResourceName)
+            if (prop.Name == nameof(transformation.ParentProject) || 
                 prop.Name == nameof(transformation.Id) || 
                 prop.Name == nameof(transformation.Type))
                 continue;

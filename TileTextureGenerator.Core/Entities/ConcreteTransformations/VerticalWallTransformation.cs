@@ -1,6 +1,5 @@
 using SkiaSharp;
 using TileTextureGenerator.Core.Enums;
-using TileTextureGenerator.Core.Helpers;
 using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Registries;
@@ -12,7 +11,7 @@ namespace TileTextureGenerator.Core.Entities.ConcreteTransformations;
 /// Adds rectangular flaps on all four sides (0.25" height) to be folded.
 /// The visible surface is oriented for vertical wall mounting.
 /// </summary>
-public sealed class VerticalWallTransformation : TransformationBase
+public sealed class VerticalWallTransformation : TransformationBase, ITransformationMetadata
 {
     private const double FlapHeightInInches = 0.25;
     private const double MaxTileDimensionInInches = 2.0;
@@ -36,10 +35,10 @@ public sealed class VerticalWallTransformation : TransformationBase
     public TileShape TileShape { get; set; } = TileShape.Full;
 
     /// <summary>
-    /// Icon for this transformation type (PNG, 64x64).
-    /// Generated programmatically showing a vertical wall tile perspective.
+    /// Resource name for the vertical wall transformation icon.
+    /// Points to the embedded resource in Core/Resources/Icons/.
     /// </summary>
-    public override ImageData? Icon => TransformationIconGenerator.GenerateVerticalWallIcon();
+    public static string IconResourceName => "VerticalWall.png";
 
     /// <summary>
     /// Constructor with dependency injection.

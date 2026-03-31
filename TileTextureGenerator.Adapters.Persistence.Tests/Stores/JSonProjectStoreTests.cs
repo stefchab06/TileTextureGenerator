@@ -773,11 +773,8 @@ public class JSonProjectStoreTests
         // Assert
         Assert.NotNull(transformation);
 
-        // Icon should come from the transformation's Icon property (derived from registry)
-        // not from JSON
-        var icon = transformation.Icon;
-        // Icon may be null or generated - the important part is it's NOT "ThisShouldBeIgnored"
-        // We just verify the transformation was loaded correctly
+        // Icon is now static (not loaded from JSON), comes from static IconResourceName property
+        // The important part is the transformation was loaded correctly
         Assert.Equal("HorizontalFloorTransformation", transformation.Type);
     }
 

@@ -251,10 +251,10 @@ public class ProjectBaseTests
 
     #endregion
 
-    private sealed class TestTransformation : TransformationBase
+    private sealed class TestTransformation : TransformationBase, ITransformationMetadata
     {
         public TestTransformation(ITransformationStore store) : base(store) { }
-        public override ImageData? Icon => null;
+        public static string IconResourceName => "Test.png";
         protected override Task<ImageData> ExecuteAsync() => Task.FromResult(new ImageData(Array.Empty<byte>()));
     }
 

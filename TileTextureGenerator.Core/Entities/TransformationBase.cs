@@ -10,6 +10,7 @@ namespace TileTextureGenerator.Core.Entities;
 /// Contains common properties and behavior shared by all transformations.
 /// Implements ITransformationManager for self-management capabilities.
 /// Does NOT contain serialization logic (handled by persistence layer).
+/// Concrete classes must implement ITransformationMetadata to define their icon resource name.
 /// </summary>
 public abstract class TransformationBase : ITransformationManager
 {
@@ -62,12 +63,6 @@ public abstract class TransformationBase : ITransformationManager
     /// Type identifier for polymorphic instantiation (typically the class name).
     /// </summary>
     public string Type { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Icon representing this transformation type in the UI (PNG format, typically 32x32 or 64x64).
-    /// Must be overridden in concrete classes.
-    /// </summary>
-    public abstract ImageData? Icon { get; }
 
     /// <summary>
     /// Type of paper required for printing this transformation output.
