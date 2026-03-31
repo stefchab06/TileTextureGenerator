@@ -474,6 +474,12 @@ public class ManageProjectListUseCaseTests
         {
             return Task.FromResult(ProjectExistsResult);
         }
+
+        public Task ArchiveProjectAsync(string projectName)
+        {
+            // Simple stub for testing
+            return Task.CompletedTask;
+        }
     }
 
     /// <summary>

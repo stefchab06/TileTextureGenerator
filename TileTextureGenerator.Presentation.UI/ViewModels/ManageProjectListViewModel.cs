@@ -71,8 +71,57 @@ public class ManageProjectListViewModel : INotifyPropertyChanged
 
     private async Task OnArchiveProjectAsync(ProjectListItemDto project)
     {
-        // Call appropriate use case (archive project)
-        await LoadProjectsAsync();
+        if (project is null || string.IsNullOrWhiteSpace(project.Name))
+            return;
+
+        try
+        {
+            // Get localized confirmation strings
+            var title = _projectTypeLocalizer.GetLocalizedString("ArchiveProject_ConfirmTitle");
+            var message = string.Format(
+                _projectTypeLocalizer.GetLocalizedString("ArchiveProject_ConfirmMessage"),
+                project.Name);
+            var confirmText = _projectTypeLocalizer.GetLocalizedString("ArchiveProject_ConfirmYes");
+            var cancelText = _projectTypeLocalizer.GetLocalizedString("ArchiveProject_ConfirmNo");
+
+            // Show confirmation dialog
+            if (Application.Current?.MainPage is null)
+                return;
+
+            var userConfirmed = await Application.Current.MainPage.DisplayAlert(
+                title,
+                message,
+                confirmText,
+                cancelText);
+
+            if (!userConfirmed)
+                return; // User cancelled
+
+            // Proceed with archiving
+            IsBusy = true;
+            ErrorMessage = null;
+
+            var result = await _manageProjectListUseCase.ArchiveProjectAsync(project.Name);
+
+            if (result.IsSuccess)
+            {
+                // Success: Refresh project list
+                await LoadProjectsAsync();
+            }
+            else
+            {
+                // Display error message
+                ErrorMessage = result.ErrorMessage;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to archive project: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private async Task OnDeleteProjectAsync(ProjectListItemDto project)

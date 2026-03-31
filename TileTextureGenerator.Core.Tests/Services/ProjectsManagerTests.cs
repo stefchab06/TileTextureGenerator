@@ -102,6 +102,17 @@ public class ProjectsManagerTests
         {
             return Task.FromResult(_projects.ContainsKey(projectName));
         }
+
+        public Task ArchiveAsync(string projectName)
+        {
+            // Simple stub: mark as archived in the dictionary if exists
+            if (_projects.TryGetValue(projectName, out var dto))
+            {
+                var archivedDto = new ProjectDto(dto.Name, dto.Type, Core.Enums.ProjectStatus.Archived, DateTime.UtcNow);
+                _projects[projectName] = archivedDto;
+            }
+            return Task.CompletedTask;
+        }
     }
 
     [Fact]
@@ -567,5 +578,118 @@ public class ProjectsManagerTests
         Assert.True(project.AvailableActions.HasFlag(ProjectActions.Delete));
         Assert.False(project.AvailableActions.HasFlag(ProjectActions.Generate));
         Assert.False(project.AvailableActions.HasFlag(ProjectActions.Archive));
+    }
+
+    // ===== ArchiveProjectAsync Tests =====
+
+    [Fact]
+    public async Task ArchiveProjectAsync_WithNullProjectName_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(
+            () => manager.ArchiveProjectAsync(null!));
+    }
+
+    [Fact]
+    public async Task ArchiveProjectAsync_WithEmptyProjectName_ThrowsArgumentException()
+    {
+        // Arrange
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => manager.ArchiveProjectAsync(""));
+    }
+
+    [Fact]
+    public async Task ArchiveProjectAsync_WithWhitespaceProjectName_ThrowsArgumentException()
+    {
+        // Arrange
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            () => manager.ArchiveProjectAsync("   "));
+    }
+
+    [Fact]
+    public async Task ArchiveProjectAsync_WithNonExistentProject_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => manager.ArchiveProjectAsync("NonExistent"));
+    }
+
+    [Fact]
+    public async Task ArchiveProjectAsync_WithExistingProject_CallsStoreArchiveAsync()
+    {
+        // Arrange
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
+        var projectName = "ProjectToArchive";
+
+        await manager.CreateProjectAsync(projectName, FakeProjectTypeAName);
+
+        // Act
+        await manager.ArchiveProjectAsync(projectName);
+
+        // Assert
+        var project = await store.LoadAsync(projectName);
+        Assert.NotNull(project);
+        Assert.Equal(ProjectStatus.Archived, project.Status);
+    }
+
+    [Fact]
+    public async Task ArchiveProjectAsync_UpdatesProjectStatus_ToArchived()
+    {
+        // Arrange
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
+        var projectName = "TestProject";
+
+        await manager.CreateProjectAsync(projectName, FakeProjectTypeAName);
+
+        // Verify initial status is New
+        var projectBefore = await store.LoadAsync(projectName);
+        Assert.Equal(ProjectStatus.New, projectBefore!.Status);
+
+        // Act
+        await manager.ArchiveProjectAsync(projectName);
+
+        // Assert
+        var projectAfter = await store.LoadAsync(projectName);
+        Assert.NotNull(projectAfter);
+        Assert.Equal(ProjectStatus.Archived, projectAfter.Status);
+    }
+
+    [Fact]
+    public async Task ArchiveProjectAsync_ProjectStillExists_AfterArchiving()
+    {
+        // Arrange
+        TextureProjectRegistry.RegisterType<FakeProjectTypeA>();
+        var store = new FakeProjectsStore();
+        var manager = new ProjectsManager(store);
+        var projectName = "ArchivedProject";
+
+        await manager.CreateProjectAsync(projectName, FakeProjectTypeAName);
+
+        // Act
+        await manager.ArchiveProjectAsync(projectName);
+
+        // Assert
+        var exists = await manager.ProjectExistsAsync(projectName);
+        Assert.True(exists, "Archived project should still exist in store");
     }
 }

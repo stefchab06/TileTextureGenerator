@@ -94,4 +94,18 @@
   <data name="DeleteProject_ConfirmNo" xml:space="preserve">
     <value>Cancel</value>
   </data>
+
+  <!-- Archive Project Confirmation -->
+  <data name="ArchiveProject_ConfirmTitle" xml:space="preserve">
+    <value>Archive Project</value>
+  </data>
+  <data name="ArchiveProject_ConfirmMessage" xml:space="preserve">
+    <value>Are you sure you want to archive the project '{0}'? Workspace files will be deleted and the project will become read-only.</value>
+  </data>
+  <data name="ArchiveProject_ConfirmYes" xml:space="preserve">
+    <value>Yes, Archive</value>
+  </data>
+  <data name="ArchiveProject_ConfirmNo" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
 </root>

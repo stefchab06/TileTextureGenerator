@@ -61,6 +61,78 @@ namespace TileTextureGenerator.Presentation.UI.Resources.Strings {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à Are you sure you want to archive the project &apos;{0}&apos;? Workspace files will be deleted and the project will become read-only..
+        /// </summary>
+        internal static string ArchiveProject_ConfirmMessage {
+            get {
+                return ResourceManager.GetString("ArchiveProject_ConfirmMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Cancel.
+        /// </summary>
+        internal static string ArchiveProject_ConfirmNo {
+            get {
+                return ResourceManager.GetString("ArchiveProject_ConfirmNo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Archive Project.
+        /// </summary>
+        internal static string ArchiveProject_ConfirmTitle {
+            get {
+                return ResourceManager.GetString("ArchiveProject_ConfirmTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Yes, Archive.
+        /// </summary>
+        internal static string ArchiveProject_ConfirmYes {
+            get {
+                return ResourceManager.GetString("ArchiveProject_ConfirmYes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Are you sure you want to permanently delete the project &apos;{0}&apos;? This action cannot be undone..
+        /// </summary>
+        internal static string DeleteProject_ConfirmMessage {
+            get {
+                return ResourceManager.GetString("DeleteProject_ConfirmMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Cancel.
+        /// </summary>
+        internal static string DeleteProject_ConfirmNo {
+            get {
+                return ResourceManager.GetString("DeleteProject_ConfirmNo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Delete Project.
+        /// </summary>
+        internal static string DeleteProject_ConfirmTitle {
+            get {
+                return ResourceManager.GetString("DeleteProject_ConfirmTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Yes, Delete.
+        /// </summary>
+        internal static string DeleteProject_ConfirmYes {
+            get {
+                return ResourceManager.GetString("DeleteProject_ConfirmYes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à Create Project.
         /// </summary>
         internal static string ProjectManagement_CreateButton {

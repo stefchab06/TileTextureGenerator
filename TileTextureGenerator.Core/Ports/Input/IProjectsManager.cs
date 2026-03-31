@@ -48,4 +48,19 @@ public interface IProjectsManager
     /// <param name="projectName">Name of the project to check.</param>
     /// <returns>True if the project exists, false otherwise.</returns>
     Task<bool> ProjectExistsAsync(string projectName);
+
+    /// <summary>
+    /// Archives a project by removing temporary files and reducing storage to essential properties.
+    /// After archiving:
+    /// - Status is set to Archived
+    /// - Workspace folder is deleted
+    /// - JSON contains only base class properties
+    /// - PDF generation remains possible (GeneratedTexture preserved)
+    /// - Transformation modification is disabled (EdgeFlap removed)
+    /// </summary>
+    /// <param name="projectName">Name of the project to archive.</param>
+    /// <exception cref="ArgumentNullException">Thrown when projectName is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when projectName is empty or whitespace.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when project does not exist.</exception>
+    Task ArchiveProjectAsync(string projectName);
 }

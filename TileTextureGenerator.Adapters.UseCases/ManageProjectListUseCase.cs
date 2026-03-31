@@ -140,6 +140,40 @@ public class ManageProjectListUseCase
             return DeleteProjectResult.Error($"Unexpected error: {ex.Message}");
         }
     }
+
+    /// <summary>
+    /// Archives a project by name.
+    /// After archiving:
+    /// - Workspace folder is deleted
+    /// - JSON contains only base class properties
+    /// - PDF generation remains possible
+    /// - Transformation modification is disabled
+    /// </summary>
+    /// <param name="projectName">Name of the project to archive.</param>
+    /// <returns>Result indicating success or failure.</returns>
+    public async Task<ArchiveProjectResult> ArchiveProjectAsync(string projectName)
+    {
+        if (string.IsNullOrWhiteSpace(projectName))
+            return ArchiveProjectResult.ValidationError("Project name cannot be empty or whitespace.");
+
+        try
+        {
+            await _projectsManager.ArchiveProjectAsync(projectName);
+            return ArchiveProjectResult.Success();
+        }
+        catch (ArgumentException ex)
+        {
+            return ArchiveProjectResult.ValidationError(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return ArchiveProjectResult.Error(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return ArchiveProjectResult.Error($"Unexpected error: {ex.Message}");
+        }
+    }
 }
 
 /// <summary>
@@ -208,6 +242,34 @@ public class DeleteProjectResult
     };
 
     public static DeleteProjectResult Error(string message) => new()
+    {
+        IsSuccess = false,
+        ErrorMessage = message
+    };
+}
+
+/// <summary>
+/// Result of the ArchiveProject use case execution.
+/// </summary>
+public class ArchiveProjectResult
+{
+    public bool IsSuccess { get; private init; }
+    public string? ErrorMessage { get; private init; }
+
+    private ArchiveProjectResult() { }
+
+    public static ArchiveProjectResult Success() => new()
+    {
+        IsSuccess = true
+    };
+
+    public static ArchiveProjectResult ValidationError(string message) => new()
+    {
+        IsSuccess = false,
+        ErrorMessage = message
+    };
+
+    public static ArchiveProjectResult Error(string message) => new()
     {
         IsSuccess = false,
         ErrorMessage = message
