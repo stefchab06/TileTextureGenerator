@@ -29,6 +29,8 @@ public class ProjectBaseTests
     {
         public List<Guid> LoadedTransformationIds { get; } = [];
         public TransformationBase? TransformationToReturn { get; set; }
+        public bool ArchiveAsyncCalled { get; private set; }
+        public ProjectBase? ArchivedProject { get; private set; }
 
         public Task SaveAsync(ProjectBase project) => Task.CompletedTask;
         public Task AddTransformationAsync(ProjectBase project, TransformationDTO transformation) => Task.CompletedTask;
@@ -38,6 +40,13 @@ public class ProjectBaseTests
         {
             LoadedTransformationIds.Add(transformationId);
             return Task.FromResult(TransformationToReturn)!;
+        }
+
+        public Task ArchiveAsync(ProjectBase project)
+        {
+            ArchiveAsyncCalled = true;
+            ArchivedProject = project;
+            return Task.CompletedTask;
         }
     }
 
@@ -247,6 +256,85 @@ public class ProjectBaseTests
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => project.GetTransformationAsync(nonExistentId));
+    }
+
+    #endregion
+
+    #region ArchiveAsync Tests
+
+    [Fact]
+    public async Task ArchiveAsync_BeforeInitialize_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => project.ArchiveAsync());
+    }
+
+    [Fact]
+    public async Task ArchiveAsync_UpdatesStatusToArchived()
+    {
+        // Arrange
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+        project.Initialize("TestProject");
+        project.Status = ProjectStatus.Pending;
+
+        // Act
+        await project.ArchiveAsync();
+
+        // Assert
+        Assert.Equal(ProjectStatus.Archived, project.Status);
+    }
+
+    [Fact]
+    public async Task ArchiveAsync_UpdatesLastModifiedDate()
+    {
+        // Arrange
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+        project.Initialize("TestProject");
+        var beforeArchive = DateTime.UtcNow;
+
+        // Act
+        await project.ArchiveAsync();
+
+        // Assert
+        var afterArchive = DateTime.UtcNow;
+        Assert.InRange(project.LastModifiedDate, beforeArchive, afterArchive);
+    }
+
+    [Fact]
+    public async Task ArchiveAsync_CallsStoreArchiveAsync()
+    {
+        // Arrange
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+        project.Initialize("TestProject");
+
+        // Act
+        await project.ArchiveAsync();
+
+        // Assert
+        Assert.True(store.ArchiveAsyncCalled);
+        Assert.Equal(project, store.ArchivedProject);
+    }
+
+    [Fact]
+    public async Task ArchiveAsync_ReturnsTrue()
+    {
+        // Arrange
+        var store = new FakeProjectStore();
+        var project = new TestProject(store);
+        project.Initialize("TestProject");
+
+        // Act
+        var result = await project.ArchiveAsync();
+
+        // Assert
+        Assert.True(result);
     }
 
     #endregion

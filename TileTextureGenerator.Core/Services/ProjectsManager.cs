@@ -129,21 +129,6 @@ public class ProjectsManager : IProjectsManager
         return await _projectsStore.ExistsAsync(projectName);
     }
 
-    /// <inheritdoc />
-    public async Task ArchiveProjectAsync(string projectName)
-    {
-        ArgumentNullException.ThrowIfNull(projectName);
-
-        if (string.IsNullOrWhiteSpace(projectName))
-            throw new ArgumentException("Project name cannot be empty or whitespace.", nameof(projectName));
-
-        // Verify project exists before attempting archiving
-        if (!await _projectsStore.ExistsAsync(projectName))
-            throw new InvalidOperationException($"Project '{projectName}' not found.");
-
-        await _projectsStore.ArchiveAsync(projectName);
-    }
-
     /// <summary>
     /// Calculates available actions for a project based on its status.
     /// Business rules:

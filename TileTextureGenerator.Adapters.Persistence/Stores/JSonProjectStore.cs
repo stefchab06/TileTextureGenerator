@@ -441,4 +441,74 @@ internal class JSonProjectStore : IProjectStore
                (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) && 
                 IsSimpleType(Nullable.GetUnderlyingType(type)!));
     }
+
+    /// <summary>
+    /// Archives a project by removing workspace files and reducing JSON to base properties only.
+    /// This method is called by ProjectBase.ArchiveAsync() after updating Status and LastModifiedDate.
+    /// </summary>
+    /// <param name="project">The project to archive (with Status already set to Archived).</param>
+    public async Task ArchiveAsync(ProjectBase project)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+
+        string cleanedName = FileNameHelper.CleanFileName(project.Name);
+        string projectDir = _fileStorage.GetProjectPath(cleanedName);
+        string workspaceDir = Path.Combine(projectDir, "Workspace");
+        string jsonPath = Path.Combine(projectDir, $"{cleanedName}.json");
+
+        // Delete Workspace folder if exists
+        if (await _fileStorage.DirectoryExistsAsync(workspaceDir))
+        {
+            await _fileStorage.DeleteDirectoryAsync(workspaceDir, recursive: true);
+        }
+
+        // Serialize only base properties using PropertyFilterHelper
+        var archivableProperties = PropertyFilterHelper.GetArchivableProjectProperties(project);
+        var jsonObject = new Dictionary<string, object?>();
+
+        // Always include Name and Type (system properties)
+        jsonObject["name"] = project.Name;
+        jsonObject["type"] = project.Type;
+
+        // Serialize archivable properties
+        foreach (var prop in archivableProperties)
+        {
+            var value = prop.GetValue(project);
+
+            // Handle ImageData properties specially (save path, not bytes)
+            if (prop.PropertyType == typeof(ImageData) || prop.PropertyType == typeof(ImageData?))
+            {
+                if (value is ImageData imageData && imageData.Bytes.Length > 0)
+                {
+                    // Image already exists in Sources/, just reference it
+                    string relativePath = Path.Combine("Sources", $"{prop.Name}.png");
+                    jsonObject[$"{prop.Name.ToLowerInvariant()}Path"] = relativePath;
+                }
+            }
+            else if (prop.Name == "Transformations" && value is List<TransformationDTO> transformations)
+            {
+                // Serialize transformations in Option A format (object with GUID keys)
+                var transformationsObj = new Dictionary<string, object>();
+                foreach (var transformation in transformations)
+                {
+                    transformationsObj[transformation.Id.ToString()] = new
+                    {
+                        type = transformation.Type
+                        // Note: RequiredPaperType and GeneratedTexture path would need to be loaded
+                        // from the transformation store. For now, we only save Type.
+                        // This will be enhanced in a future iteration.
+                    };
+                }
+                jsonObject["transformations"] = transformationsObj;
+            }
+            else
+            {
+                jsonObject[prop.Name.ToLowerInvariant()] = value;
+            }
+        }
+
+        // Serialize and save JSON
+        string jsonContent = JsonSerializer.Serialize(jsonObject, JsonOptions);
+        await _fileStorage.WriteAllTextAsync(jsonPath, jsonContent);
+    }
 }

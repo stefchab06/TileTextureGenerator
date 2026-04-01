@@ -44,16 +44,5 @@ public interface IProjectsStore
     /// </summary>
     /// <returns>Read-only list of project DTOs.</returns>
     Task<IReadOnlyList<ProjectDto>> ListProjectsAsync();
-
-    /// <summary>
-    /// Archives a project by removing temporary files and reducing JSON to essential properties.
-    /// After archiving:
-    /// - Workspace folder is deleted
-    /// - JSON contains only base class properties (ProjectBase, TransformationBase)
-    /// - PDF generation remains possible (GeneratedTexture preserved)
-    /// - Transformation modification is disabled (EdgeFlap removed)
-    /// </summary>
-    /// <param name="projectName">Name of the project to archive.</param>
-    Task ArchiveAsync(string projectName);
 }
 

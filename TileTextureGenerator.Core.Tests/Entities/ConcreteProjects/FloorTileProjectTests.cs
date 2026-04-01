@@ -28,6 +28,8 @@ public class FloorTileProjectTests
         {
             return Task.FromResult(TransformationToReturn)!;
         }
+
+        public Task ArchiveAsync(ProjectBase project) => Task.CompletedTask;
     }
 
     [Fact]

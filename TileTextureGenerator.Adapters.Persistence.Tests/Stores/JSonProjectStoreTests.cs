@@ -40,6 +40,18 @@ public class JSonProjectStoreTests
         // Manually register transformation types (bypassing static constructors that may have run)
         TransformationTypeRegistry.Register<HorizontalFloorTransformation>();
         TransformationTypeRegistry.Register<VerticalWallTransformation>();
+
+        // Setup TextureProjectRegistry for Archive tests that use JsonProjectsStore
+        TextureProjectRegistry.SetFactory(type =>
+        {
+            if (type == typeof(FloorTileProject))
+                return new FloorTileProject(_store);
+
+            throw new InvalidOperationException($"Unsupported type: {type.Name}");
+        });
+
+        // Force auto-registration
+        TextureProjectRegistry.ForceAutoRegistration(typeof(FloorTileProject).Assembly);
     }
 
     #region SaveAsync Tests
@@ -776,6 +788,230 @@ public class JSonProjectStoreTests
         // Icon is now static (not loaded from JSON), comes from static IconResourceName property
         // The important part is the transformation was loaded correctly
         Assert.Equal("HorizontalFloorTransformation", transformation.Type);
+    }
+
+    #endregion
+
+    #region ArchiveAsync Tests
+
+    [Fact]
+    public async Task ArchiveAsync_WhenProjectIsNull_ThenThrowsArgumentNullException()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(
+            async () => await _store.ArchiveAsync(null!)
+        );
+    }
+
+    [Fact]
+    public async Task ArchiveAsync_DeletesWorkspaceFolder()
+    {
+        // Arrange - Use JsonProjectsStore to create the project structure
+        var projectsStore = new JsonProjectsStore(_fileStorage);
+        string projectName = "TestProject";
+        var displayImage = new ImageData([137, 80, 78, 71, 13, 10, 26, 10]); // PNG header
+        var dto = new ProjectDto(projectName, "FloorTileProject", ProjectStatus.Pending, DateTime.UtcNow)
+        {
+            DisplayImage = displayImage
+        };
+        await projectsStore.CreateProjectAsync(dto);
+
+        // Load project
+        var project = await projectsStore.LoadAsync(projectName);
+        Assert.NotNull(project);
+
+        string projectDir = _fileStorage.GetProjectPath(projectName);
+        string workspaceDir = Path.Combine(projectDir, "Workspace");
+
+        // Create a dummy file in Workspace
+        await _fileStorage.EnsureDirectoryExistsAsync(workspaceDir);
+        string dummyFile = Path.Combine(workspaceDir, "temp.png");
+        await _fileStorage.WriteAllBytesAsync(dummyFile, [1, 2, 3, 4]);
+
+        // Verify Workspace exists before archiving
+        Assert.True(await _fileStorage.DirectoryExistsAsync(workspaceDir));
+        Assert.True(await _fileStorage.FileExistsAsync(dummyFile));
+
+        // Update project status (simulating what ProjectBase.ArchiveAsync() would do)
+        project.Status = ProjectStatus.Archived;
+        project.LastModifiedDate = DateTime.UtcNow;
+
+        // Act
+        await _store.ArchiveAsync(project);
+
+        // Assert
+        Assert.False(await _fileStorage.DirectoryExistsAsync(workspaceDir));
+    }
+
+    [Fact]
+    public async Task ArchiveAsync_PreservesDisplayImage()
+    {
+        // Arrange
+        var projectsStore = new JsonProjectsStore(_fileStorage);
+        string projectName = "TestProject";
+        var displayImage = new ImageData([137, 80, 78, 71, 13, 10, 26, 10]);
+        var dto = new ProjectDto(projectName, "FloorTileProject", ProjectStatus.Pending, DateTime.UtcNow)
+        {
+            DisplayImage = displayImage
+        };
+        await projectsStore.CreateProjectAsync(dto);
+
+        // Load project
+        var project = await projectsStore.LoadAsync(projectName);
+        Assert.NotNull(project);
+
+        // Update project status
+        project.Status = ProjectStatus.Archived;
+        project.LastModifiedDate = DateTime.UtcNow;
+
+        // Act
+        await _store.ArchiveAsync(project);
+
+        // Assert
+        var loadedProject = await projectsStore.LoadAsync(projectName);
+        Assert.NotNull(loadedProject);
+        Assert.NotNull(loadedProject.DisplayImage);
+        Assert.Equal(displayImage.Bytes.Length, loadedProject.DisplayImage.Value.Bytes.Length);
+    }
+
+    [Fact]
+    public async Task ArchiveAsync_PersistsStatusAsArchived()
+    {
+        // Arrange
+        var projectsStore = new JsonProjectsStore(_fileStorage);
+        string projectName = "TestProject";
+        var displayImage = new ImageData([137, 80, 78, 71, 13, 10, 26, 10]);
+        var dto = new ProjectDto(projectName, "FloorTileProject", ProjectStatus.Pending, DateTime.UtcNow)
+        {
+            DisplayImage = displayImage
+        };
+        await projectsStore.CreateProjectAsync(dto);
+
+        // Load project
+        var project = await projectsStore.LoadAsync(projectName);
+        Assert.NotNull(project);
+
+        // Update project status
+        project.Status = ProjectStatus.Archived;
+        project.LastModifiedDate = DateTime.UtcNow;
+
+        // Act
+        await _store.ArchiveAsync(project);
+
+        // Assert
+        var loadedProject = await projectsStore.LoadAsync(projectName);
+        Assert.NotNull(loadedProject);
+        Assert.Equal(ProjectStatus.Archived, loadedProject.Status);
+    }
+
+    [Fact]
+    public async Task ArchiveAsync_PersistsLastModifiedDate()
+    {
+        // Arrange
+        var projectsStore = new JsonProjectsStore(_fileStorage);
+        string projectName = "TestProject";
+        var displayImage = new ImageData([137, 80, 78, 71, 13, 10, 26, 10]);
+        var initialDate = DateTime.UtcNow.AddDays(-1);
+        var dto = new ProjectDto(projectName, "FloorTileProject", ProjectStatus.Pending, initialDate)
+        {
+            DisplayImage = displayImage
+        };
+        await projectsStore.CreateProjectAsync(dto);
+
+        // Load project
+        var project = await projectsStore.LoadAsync(projectName);
+        Assert.NotNull(project);
+
+        // Update project with new date
+        var newDate = DateTime.UtcNow;
+        project.Status = ProjectStatus.Archived;
+        project.LastModifiedDate = newDate;
+
+        // Act
+        await _store.ArchiveAsync(project);
+
+        // Assert
+        var loadedProject = await projectsStore.LoadAsync(projectName);
+        Assert.NotNull(loadedProject);
+        // Compare with tolerance (milliseconds precision)
+        var diff = Math.Abs((loadedProject.LastModifiedDate - newDate).TotalMilliseconds);
+        Assert.True(diff < 1000, $"LastModifiedDate difference too large: {diff}ms");
+    }
+
+    [Fact]
+    public async Task ArchiveAsync_PreservesTransformationsList()
+    {
+        // Arrange
+        var projectsStore = new JsonProjectsStore(_fileStorage);
+        string projectName = "TestProject";
+        var displayImage = new ImageData([137, 80, 78, 71, 13, 10, 26, 10]);
+        var dto = new ProjectDto(projectName, "FloorTileProject", ProjectStatus.Pending, DateTime.UtcNow)
+        {
+            DisplayImage = displayImage
+        };
+        await projectsStore.CreateProjectAsync(dto);
+
+        // Load project
+        var project = await projectsStore.LoadAsync(projectName);
+        Assert.NotNull(project);
+
+        var transformation = new TransformationDTO
+        {
+            Id = Guid.NewGuid(),
+            Type = "HorizontalFloorTransformation",
+            Icon = null
+        };
+        project.Transformations.Add(transformation);
+
+        // Update project status
+        project.Status = ProjectStatus.Archived;
+        project.LastModifiedDate = DateTime.UtcNow;
+
+        // Act
+        await _store.ArchiveAsync(project);
+
+        // Assert
+        var loadedProject = await projectsStore.LoadAsync(projectName);
+        Assert.NotNull(loadedProject);
+        Assert.NotNull(loadedProject.Transformations);
+        Assert.Single(loadedProject.Transformations);
+        Assert.Equal(transformation.Id, loadedProject.Transformations[0].Id);
+        Assert.Equal(transformation.Type, loadedProject.Transformations[0].Type);
+    }
+
+    [Fact]
+    public async Task ArchiveAsync_SerializesOnlyBaseProperties()
+    {
+        // Arrange
+        var projectsStore = new JsonProjectsStore(_fileStorage);
+        string projectName = "TestProject";
+        var displayImage = new ImageData([137, 80, 78, 71, 13, 10, 26, 10]);
+        var dto = new ProjectDto(projectName, "FloorTileProject", ProjectStatus.Pending, DateTime.UtcNow)
+        {
+            DisplayImage = displayImage
+        };
+        await projectsStore.CreateProjectAsync(dto);
+
+        // Load project
+        var project = await projectsStore.LoadAsync(projectName) as FloorTileProject;
+        Assert.NotNull(project);
+
+        // Set concrete property (should NOT be serialized after archive)
+        project.TileShape = TileShape.HalfHorizontal;
+
+        // Update project status
+        project.Status = ProjectStatus.Archived;
+        project.LastModifiedDate = DateTime.UtcNow;
+
+        // Act
+        await _store.ArchiveAsync(project);
+
+        // Assert - Load and verify TileShape is NOT preserved (base properties only)
+        var loadedProject = await projectsStore.LoadAsync(projectName) as FloorTileProject;
+        Assert.NotNull(loadedProject);
+
+        // TileShape should be default (Full) because concrete properties are not serialized in archived state
+        Assert.Equal(TileShape.Full, loadedProject.TileShape);
     }
 
     #endregion

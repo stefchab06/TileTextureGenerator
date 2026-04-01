@@ -180,12 +180,16 @@ public abstract class ProjectBase : IProjectManager
     /// <inheritdoc />
     public async Task<bool> ArchiveAsync()
     {
-        // TODO: implement it.
-        // Remove all workwpace files, all useless values in persistence.
-        // Keep only all the necessary to regenerate the pdf if needed.
+        if (!_initialized)
+            throw new InvalidOperationException("Project not initialized. Call Initialize first.");
+
+        // Update project metadata before archiving
         Status = ProjectStatus.Archived;
         LastModifiedDate = DateTime.UtcNow;
-        await _store.SaveAsync(this);
+
+        // Delegate to store for workspace deletion and JSON reduction
+        await _store.ArchiveAsync(this);
+
         return true;
     }
 }

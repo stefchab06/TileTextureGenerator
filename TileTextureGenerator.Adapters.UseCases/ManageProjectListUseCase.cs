@@ -143,6 +143,7 @@ public class ManageProjectListUseCase
 
     /// <summary>
     /// Archives a project by name.
+    /// Loads the project and delegates archiving to the project entity itself.
     /// After archiving:
     /// - Workspace folder is deleted
     /// - JSON contains only base class properties
@@ -158,7 +159,12 @@ public class ManageProjectListUseCase
 
         try
         {
-            await _projectsManager.ArchiveProjectAsync(projectName);
+            // Step 1: Load the project
+            var project = await _projectsManager.SelectProjectAsync(projectName);
+
+            // Step 2: Delegate archiving to the project entity
+            await project.ArchiveAsync();
+
             return ArchiveProjectResult.Success();
         }
         catch (ArgumentException ex)

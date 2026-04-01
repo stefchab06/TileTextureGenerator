@@ -28,6 +28,8 @@ public class WallTileProjectTests
         {
             return Task.FromResult(TransformationToReturn)!;
         }
+
+        public Task ArchiveAsync(ProjectBase project) => Task.CompletedTask;
     }
 
     [Fact]

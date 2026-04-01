@@ -34,9 +34,16 @@ public interface IProjectStore
     /// <summary>
     /// Loads a transformation instance from storage by its ID.
     /// </summary>
+    /// <param name="project">The project containing the transformation.</param>
     /// <param name="transformationId">ID of the transformation to load.</param>
     /// <returns>The loaded transformation, or null if not found.</returns>
     Task<TransformationBase> LoadTransformationAsync(ProjectBase project, Guid transformationId);
 
-
+    /// <summary>
+    /// Archives a project by removing workspace files and reducing JSON to base properties only.
+    /// This method is called by ProjectBase.ArchiveAsync() after updating Status and LastModifiedDate.
+    /// The project instance passed in should already have Status=Archived and LastModifiedDate updated.
+    /// </summary>
+    /// <param name="project">The project to archive (with Status already set to Archived).</param>
+    Task ArchiveAsync(ProjectBase project);
 }

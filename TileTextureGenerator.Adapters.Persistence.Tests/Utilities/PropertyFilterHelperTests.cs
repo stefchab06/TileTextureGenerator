@@ -27,6 +27,7 @@ public class PropertyFilterHelperTests
         public Task AddTransformationAsync(ProjectBase project, TransformationDTO transformation) => Task.CompletedTask;
         public Task RemoveTransformationAsync(ProjectBase project, Guid transformationID) => Task.CompletedTask;
         public Task<TransformationBase> LoadTransformationAsync(ProjectBase project, Guid transformationId) => Task.FromResult<TransformationBase>(null!);
+        public Task ArchiveAsync(ProjectBase project) => Task.CompletedTask;
     }
 
     [Fact]
@@ -120,37 +121,6 @@ public class PropertyFilterHelperTests
         // Should NOT contain system properties
         Assert.DoesNotContain(archivableProperties, p => p.Name == nameof(ProjectBase.Name));
         Assert.DoesNotContain(archivableProperties, p => p.Name == nameof(ProjectBase.Type));
-    }
-
-    [Fact]
-    public void WhenGettingArchivableTransformationProperties_ThenReturnsOnlyBasePropertiesExcludingArchiveExcluded()
-    {
-        // Arrange - Create a transformation (need proper initialization)
-        // For now, we'll test with the type directly since we can't easily instantiate transformations in tests
-        var transformationType = typeof(HorizontalFloorTransformation);
-        var allProperties = transformationType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-        // Act - Filter manually to simulate what GetArchivableTransformationProperties does
-        var baseProperties = allProperties.Where(p => 
-            p.DeclaringType == typeof(TransformationBase) &&
-            p.Name != "ParentProject" &&
-            p.Name != "Icon" &&
-            p.Name != "Id" &&
-            p.Name != "Type"
-        ).ToList();
-
-        // Assert
-        Assert.NotEmpty(baseProperties);
-
-        // Should contain base properties
-        Assert.Contains(baseProperties, p => p.Name == nameof(TransformationBase.RequiredPaperType));
-        Assert.Contains(baseProperties, p => p.Name == nameof(TransformationBase.GeneratedTexture));
-
-        // Should NOT contain system properties
-        Assert.DoesNotContain(baseProperties, p => p.Name == nameof(TransformationBase.Id));
-        Assert.DoesNotContain(baseProperties, p => p.Name == nameof(TransformationBase.Type));
-        Assert.DoesNotContain(baseProperties, p => p.Name == nameof(TransformationBase.ParentProject));
-        // Note: Icon property was removed from TransformationBase (replaced by static IconResourceName)
     }
 
     [Fact]

@@ -526,6 +526,11 @@ public class ManageProjectListUseCaseTests
         {
             return Task.FromResult<TransformationBase?>(null);
         }
+
+        public Task ArchiveAsync(ProjectBase project)
+        {
+            return Task.CompletedTask;
+        }
     }
     #endregion
 }
