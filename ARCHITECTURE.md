@@ -11,10 +11,13 @@ Ces éléments physiques permettent de créer des donjons, terrains et décors p
 ### Technologies
 - **.NET 10** (C# 14)
 - **Architecture hexagonale** (Clean Architecture)
+- **.NET MAUI** (UI multi-plateforme : Windows, macOS, Linux)
 - **xUnit** pour les tests
 - **JSON** pour la persistance (file system-based)
 - **DI natif .NET** pour l'injection de dépendances
-- **UI future** : .NET MAUI (multi-plateforme : Windows, macOS, Linux, potentiellement mobile)
+
+### Documents d'architecture complémentaires
+- **[ARCHITECTURE_UI.md](./ARCHITECTURE_UI.md)** - Décisions d'architecture UI (.NET MAUI, MVVM, DataTemplateSelector)
 
 ### Conventions linguistiques
 - **Discussion d'équipe** : Français (langue maternelle)
