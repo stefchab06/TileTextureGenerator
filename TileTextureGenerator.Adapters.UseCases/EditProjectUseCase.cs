@@ -6,31 +6,50 @@ namespace TileTextureGenerator.Adapters.UseCases;
 
 /// <summary>
 /// Use case for editing an individual project.
-/// Wraps IProjectManager to provide a facade for UI operations.
+/// Wraps ProjectBase to provide a facade for UI operations.
 /// Created by ManageProjectListUseCase after loading/creating a project.
 /// </summary>
 public class EditProjectUseCase
 {
-    private readonly IProjectManager _projectManager;
+    private readonly ProjectBase _project;
 
-    public EditProjectUseCase(IProjectManager projectManager)
+    public EditProjectUseCase(ProjectBase project)
     {
-        ArgumentNullException.ThrowIfNull(projectManager);
-        _projectManager = projectManager;
+        ArgumentNullException.ThrowIfNull(project);
+        _project = project;
     }
 
     /// <summary>
-    /// Gets the project type identifier for UI template selection.
+    /// Exposes the project for UI binding and template selection.
+    /// </summary>
+    public ProjectBase Project => _project;
+
+    /// <summary>
+    /// Gets the project type identifier for UI display.
     /// </summary>
     /// <returns>Type name (e.g., "FloorTileProject").</returns>
-    public string GetProjectType() => _projectManager.Type;
+    public string GetProjectType() => _project.Type;
+
+    /// <summary>
+    /// Gets available transformation types for the current project with their icons.
+    /// Returns technical names and icon bytes for UI picker display.
+    /// </summary>
+    /// <returns>List of tuples (TechnicalName, IconBytes).</returns>
+    public async Task<IReadOnlyList<(string TechnicalName, byte[] Icon)>> GetAvailableTransformationTypesAsync()
+    {
+        var transformationTypes = await _project.GetAvailableTransformationTypesAsync();
+
+        return transformationTypes
+            .Select(dto => (dto.Name, dto.Icon?.Bytes ?? Array.Empty<byte>()))
+            .ToList();
+    }
 
     /// <summary>
     /// Saves all changes made to the project.
     /// </summary>
     public async Task SaveAsync()
     {
-        await _projectManager.SaveChangesAsync();
+        await _project.SaveChangesAsync();
     }
 
     /// <summary>
@@ -43,7 +62,7 @@ public class EditProjectUseCase
         if (string.IsNullOrWhiteSpace(transformationType))
             throw new ArgumentException("Transformation type cannot be empty or whitespace.", nameof(transformationType));
 
-        await _projectManager.AddTransformationAsync(transformationType);
+        await _project.AddTransformationAsync(transformationType);
     }
 
     /// <summary>
@@ -55,7 +74,7 @@ public class EditProjectUseCase
         if (transformationId == Guid.Empty)
             throw new ArgumentException("Transformation ID cannot be empty.", nameof(transformationId));
 
-        await _projectManager.RemoveTransformationAsync(transformationId);
+        await _project.RemoveTransformationAsync(transformationId);
     }
 
     /// <summary>
@@ -68,16 +87,7 @@ public class EditProjectUseCase
         if (transformationId == Guid.Empty)
             throw new ArgumentException("Transformation ID cannot be empty.", nameof(transformationId));
 
-        return await _projectManager.GetTransformationAsync(transformationId);
-    }
-
-    /// <summary>
-    /// Gets the list of transformation types available for the current project type.
-    /// </summary>
-    /// <returns>List of available transformation types with metadata (name and icon).</returns>
-    public async Task<IReadOnlyList<TransformationTypeDTO>> GetAvailableTransformationTypesAsync()
-    {
-        return await _projectManager.GetAvailableTransformationTypesAsync();
+        return await _project.GetTransformationAsync(transformationId);
     }
 
     /// <summary>
@@ -86,7 +96,11 @@ public class EditProjectUseCase
     /// <returns>True if generation succeeded.</returns>
     public async Task<bool> GenerateAsync()
     {
-        return await _projectManager.GenerateAsync();
+        var task = _project.GenerateAsync();
+        if (task == null)
+            return false;
+
+        return await task;
     }
 
     /// <summary>
@@ -95,6 +109,6 @@ public class EditProjectUseCase
     /// <returns>True if archiving succeeded.</returns>
     public async Task<bool> ArchiveAsync()
     {
-        return await _projectManager.ArchiveAsync();
+        return await _project.ArchiveAsync();
     }
 }
