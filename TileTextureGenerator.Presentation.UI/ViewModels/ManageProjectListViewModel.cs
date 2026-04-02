@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using TileTextureGenerator.Adapters.UseCases;
+using TileTextureGenerator.Presentation.UI.Pages;
 using TileTextureGenerator.Presentation.UI.Services;
 
 namespace TileTextureGenerator.Presentation.UI.ViewModels;
@@ -16,7 +17,7 @@ public class ManageProjectListViewModel : INotifyPropertyChanged
 {
     private readonly ManageProjectListUseCase _manageProjectListUseCase;
     private readonly ProjectTypeLocalizer _projectTypeLocalizer;
-    
+
     private string _projectName = string.Empty;
     private string? _selectedProjectType;
     private ProjectTypeItem? _selectedProjectTypeItem;
@@ -422,6 +423,14 @@ public class ManageProjectListViewModel : INotifyPropertyChanged
 
                 // Refresh project list after creation
                 await LoadProjectsAsync();
+
+                // Navigate to EditProjectPage with the EditProjectUseCase
+                if (result.EditUseCase != null)
+                {
+                    var editViewModel = new EditProjectViewModel(result.EditUseCase, _projectTypeLocalizer);
+                    await Shell.Current.GoToAsync("//EditProjectPage",
+                        new Dictionary<string, object> { ["ViewModel"] = editViewModel });
+                }
             }
             else
             {

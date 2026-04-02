@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TileTextureGenerator.Presentation.UI.ViewModels"
+             x:Class="TileTextureGenerator.Presentation.UI.Pages.EditProjectPage"
+             x:DataType="vm:EditProjectViewModel"
+             Title="{Binding ShellTitle}">
+
+    <!-- Toolbar with Close button -->
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Close" 
+                     Clicked="OnCloseClicked" 
+                     Order="Primary" 
+                     Priority="0" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <!-- Template zone (placeholder for future DataTemplateSelector) -->
+            <Frame BorderColor="{StaticResource Primary}"
+                   BackgroundColor="{StaticResource Secondary}"
+                   Padding="10">
+                <Label Text="Template zone - Properties will appear here once DataTemplateSelector is implemented"
+                       HorizontalTextAlignment="Center"
+                       FontSize="Small"
+                       TextColor="{StaticResource Gray600}" />
+            </Frame>
+
+            <!-- Save button (full width) -->
+            <Button Text="Save"
+                    Command="{Binding SaveCommand}"
+                    BackgroundColor="{StaticResource Primary}"
+                    TextColor="White"
+                    HeightRequest="50"
+                    FontSize="Medium"
+                    FontAttributes="Bold" />
+
+            <!-- Add Transformation section -->
+            <Frame BorderColor="{StaticResource Gray300}"
+                   Padding="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Add Transformation"
+                           FontSize="Medium"
+                           FontAttributes="Bold" />
+
+                    <HorizontalStackLayout Spacing="10">
+                        <!-- Transformation type picker (with images) -->
+                        <CollectionView ItemsSource="{Binding AvailableTransformationTypes}"
+                                        SelectedItem="{Binding SelectedTransformationType}"
+                                        SelectionMode="Single"
+                                        HorizontalOptions="FillAndExpand"
+                                        HeightRequest="80">
+                            <CollectionView.ItemsLayout>
+                                <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10" />
+                            </CollectionView.ItemsLayout>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:TransformationTypeItem">
+                                    <Frame BorderColor="{StaticResource Gray300}"
+                                           Padding="5"
+                                           CornerRadius="8"
+                                           HasShadow="False">
+                                        <Image Source="{Binding Icon, Converter={StaticResource ByteArrayToImageSourceConverter}}"
+                                               WidthRequest="60"
+                                               HeightRequest="60"
+                                               Aspect="AspectFit" />
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+
+                        <!-- Add button (round with +) -->
+                        <Frame WidthRequest="60"
+                               HeightRequest="60"
+                               CornerRadius="30"
+                               Padding="0"
+                               HasShadow="True"
+                               BorderColor="Transparent">
+                            <Frame.Background>
+                                <SolidColorBrush Color="{Binding SelectedTransformationType, Converter={StaticResource NullToBoolToColorConverter}, ConverterParameter='Green|Gray'}" />
+                            </Frame.Background>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding AddTransformationCommand}" />
+                            </Frame.GestureRecognizers>
+                            <Label Text="+"
+                                   FontSize="32"
+                                   FontAttributes="Bold"
+                                   TextColor="White"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+                        </Frame>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Transformations list (NOT implemented yet - placeholder) -->
+            <Frame BorderColor="{StaticResource Gray300}"
+                   Padding="10"
+                   IsVisible="False">
+                <Label Text="Transformations list will be implemented in a future iteration"
+                       HorizontalTextAlignment="Center"
+                       FontSize="Small"
+                       TextColor="{StaticResource Gray600}" />
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

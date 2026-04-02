@@ -10,4 +10,9 @@
         ContentTemplate="{DataTemplate pages:ManageProjectListPage}"
         Route="ManageProjectListPage" />
 
+    <!-- EditProjectPage route (navigated via code) -->
+    <ShellContent
+        ContentTemplate="{DataTemplate pages:EditProjectPage}"
+        Route="EditProjectPage" />
+
 </Shell>
