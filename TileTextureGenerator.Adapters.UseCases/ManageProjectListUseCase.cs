@@ -65,8 +65,11 @@ public class ManageProjectListUseCase
             // Step 2: Create project via Core service
             var project = await _projectsManager.CreateProjectAsync(projectName, projectType);
 
-            // Step 3: Return success result
-            return CreateProjectResult.Success(project);
+            // Step 3: Create EditProjectUseCase for immediate navigation to editor
+            var editUseCase = new EditProjectUseCase(project);
+
+            // Step 4: Return success result with edit context
+            return CreateProjectResult.Success(project, editUseCase);
         }
         catch (ArgumentException ex)
         {
@@ -189,15 +192,17 @@ public class CreateProjectResult
 {
     public bool IsSuccess { get; private init; }
     public ProjectBase? CreatedProject { get; private init; }
+    public EditProjectUseCase? EditUseCase { get; private init; }
     public string? ErrorMessage { get; private init; }
     public CreateProjectErrorType ErrorType { get; private init; }
 
     private CreateProjectResult() { }
 
-    public static CreateProjectResult Success(ProjectBase project) => new()
+    public static CreateProjectResult Success(ProjectBase project, EditProjectUseCase editUseCase) => new()
     {
         IsSuccess = true,
         CreatedProject = project,
+        EditUseCase = editUseCase,
         ErrorType = CreateProjectErrorType.None
     };
 
