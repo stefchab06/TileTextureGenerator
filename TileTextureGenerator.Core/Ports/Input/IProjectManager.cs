@@ -10,6 +10,12 @@ namespace TileTextureGenerator.Core.Ports.Input;
 public interface IProjectManager
 {
     /// <summary>
+    /// Type identifier for polymorphic instantiation and UI template selection.
+    /// Typically the class name (e.g., "FloorTileProject").
+    /// </summary>
+    string Type { get; }
+
+    /// <summary>
     /// Saves all changes made to the project.
     /// Updates LastModifiedDate automatically.
     /// </summary>
