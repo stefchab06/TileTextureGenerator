@@ -405,6 +405,55 @@ public class ManageProjectListUseCaseTests
         Assert.False(project.CanDelete, "Projects with no actions should have CanDelete=false");
     }
 
+    [Fact]
+    public async Task CreateProjectAsync_WithValidParameters_ReturnsEditUseCaseNotNull()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager();
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.CreateProjectAsync("TestProject", "FloorTileProject");
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.EditUseCase);
+        Assert.NotNull(result.EditUseCase.Project);
+        Assert.Equal("TestProject", result.EditUseCase.Project.Name);
+    }
+
+    [Fact]
+    public async Task CreateProjectAsync_WithValidationError_EditUseCaseIsNull()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager();
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.CreateProjectAsync("", "FloorTileProject");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Null(result.EditUseCase);
+        Assert.Equal(CreateProjectErrorType.Validation, result.ErrorType);
+    }
+
+    [Fact]
+    public async Task CreateProjectAsync_WithUnexpectedException_EditUseCaseIsNull()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager { ThrowGenericException = true };
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.CreateProjectAsync("TestProject", "FloorTileProject");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Null(result.EditUseCase);
+        Assert.Equal(CreateProjectErrorType.Unexpected, result.ErrorType);
+    }
+
     #region Mock Implementation
 
     /// <summary>
