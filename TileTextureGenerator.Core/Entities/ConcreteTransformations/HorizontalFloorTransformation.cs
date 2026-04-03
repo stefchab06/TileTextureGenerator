@@ -19,8 +19,7 @@ public sealed class HorizontalFloorTransformation : TransformationBase, ITransfo
 
     static HorizontalFloorTransformation()
     {
-        // TODO: Create TransformationRegistry similar to ProjectRegistry
-        // TransformationRegistry.RegisterType<HorizontalFloorTransformation>();
+        TransformationTypeRegistry.Register<HorizontalFloorTransformation>();
     }
 
     /// <summary>

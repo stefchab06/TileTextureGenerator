@@ -45,29 +45,20 @@
                            FontAttributes="Bold" />
 
                     <HorizontalStackLayout Spacing="10">
-                        <!-- Transformation type picker (with images) -->
-                        <CollectionView ItemsSource="{Binding AvailableTransformationTypes}"
-                                        SelectedItem="{Binding SelectedTransformationType}"
-                                        SelectionMode="Single"
-                                        HorizontalOptions="FillAndExpand"
-                                        HeightRequest="80">
-                            <CollectionView.ItemsLayout>
-                                <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10" />
-                            </CollectionView.ItemsLayout>
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate x:DataType="vm:TransformationTypeItem">
-                                    <Frame BorderColor="{StaticResource Gray300}"
-                                           Padding="5"
-                                           CornerRadius="8"
-                                           HasShadow="False">
-                                        <Image Source="{Binding Icon, Converter={StaticResource ByteArrayToImageSourceConverter}}"
-                                               WidthRequest="60"
-                                               HeightRequest="60"
-                                               Aspect="AspectFit" />
-                                    </Frame>
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
+                        <!-- Preview image of selected transformation type -->
+                        <Image Source="{Binding SelectedTransformationType.Icon, Converter={StaticResource ByteArrayToImageSourceConverter}}"
+                               WidthRequest="60"
+                               HeightRequest="60"
+                               Aspect="AspectFit"
+                               IsVisible="{Binding SelectedTransformationType, Converter={StaticResource IsNotNullConverter}}" />
+
+                        <!-- Transformation type picker (text dropdown) -->
+                        <Picker ItemsSource="{Binding AvailableTransformationTypes}"
+                                ItemDisplayBinding="{Binding TechnicalName}"
+                                SelectedItem="{Binding SelectedTransformationType}"
+                                Title="Select transformation type"
+                                HorizontalOptions="FillAndExpand"
+                                VerticalOptions="Center" />
 
                         <!-- Add button (round with +) -->
                         <Frame WidthRequest="60"

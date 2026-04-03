@@ -35,8 +35,9 @@ public static class TransformationTypeRegistry
 
         if (_types.ContainsKey(typeName))
         {
-            throw new InvalidOperationException(
-                $"Transformation type '{typeName}' is already registered.");
+            // Already registered - this is normal when called from both static constructor
+            // and ForceAutoRegistrationFromCore(). Just ignore silently.
+            return;
         }
 
         _types[typeName] = typeof(T);

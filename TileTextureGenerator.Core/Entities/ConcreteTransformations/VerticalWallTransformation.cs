@@ -19,8 +19,7 @@ public sealed class VerticalWallTransformation : TransformationBase, ITransforma
 
     static VerticalWallTransformation()
     {
-        // TODO: Create TransformationRegistry similar to ProjectRegistry
-        // TransformationRegistry.RegisterType<VerticalWallTransformation>();
+        TransformationTypeRegistry.Register<VerticalWallTransformation>();
     }
 
     /// <summary>
