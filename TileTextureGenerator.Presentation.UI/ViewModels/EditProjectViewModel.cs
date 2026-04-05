@@ -49,9 +49,9 @@ public class EditProjectViewModel : INotifyPropertyChanged
     public string ProjectTypeLocalized => _projectTypeLocalizer.GetLocalizedName(Project.Type);
 
     /// <summary>
-    /// Shell title: "ProjectName - Type".
+    /// Shell title: "ProjectName (Type)".
     /// </summary>
-    public string ShellTitle => $"{ProjectName} - {ProjectTypeLocalized}";
+    public string ShellTitle => $"{ProjectName} ({ProjectTypeLocalized})";
 
     /// <summary>
     /// Available transformation types for picker (image + technical name).

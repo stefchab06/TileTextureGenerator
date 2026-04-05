@@ -4,6 +4,7 @@
              xmlns:vm="clr-namespace:TileTextureGenerator.Presentation.UI.ViewModels"
              x:Class="TileTextureGenerator.Presentation.UI.Pages.EditProjectPage"
              x:DataType="vm:EditProjectViewModel"
+             Shell.NavBarIsVisible="True"
              Title="{Binding ShellTitle}">
 
     <!-- Toolbar with Close button -->
