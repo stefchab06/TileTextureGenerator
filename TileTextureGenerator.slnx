@@ -1,4 +1,19 @@
 <Solution>
+  <Folder Name="/documentation/">
+    <File Path="documentation/README.md" />
+  </Folder>
+  <Folder Name="/documentation/diagrams/" />
+  <Folder Name="/documentation/diagrams/architecture/">
+    <File Path="documentation/diagrams/architecture/architecture-hexagonale-overview.puml" />
+    <File Path="documentation/diagrams/architecture/architecture-hexagonale.puml" />
+  </Folder>
+  <Folder Name="/documentation/diagrams/class-diagrams/">
+    <File Path="documentation/diagrams/class-diagrams/domain-entities.puml" />
+  </Folder>
+  <Folder Name="/documentation/diagrams/sequence-diagrams/">
+    <File Path="documentation/diagrams/sequence-diagrams/sequence-create-project.puml" />
+    <File Path="documentation/diagrams/sequence-diagrams/sequence-load-project.puml" />
+  </Folder>
   <Project Path="TileTextureGenerator.Adapters.Persistence.Tests/TileTextureGenerator.Adapters.Persistence.Tests.csproj" />
   <Project Path="TileTextureGenerator.Adapters.Persistence/TileTextureGenerator.Adapters.Persistence.csproj" />
   <Project Path="TileTextureGenerator.Adapters.UseCases.Tests/TileTextureGenerator.Adapters.UseCases.Tests.csproj" />
