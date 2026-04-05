@@ -183,6 +183,41 @@ public class ManageProjectListUseCase
             return ArchiveProjectResult.Error($"Unexpected error: {ex.Message}");
         }
     }
+
+    /// <summary>
+    /// Loads an existing project for editing.
+    /// </summary>
+    /// <param name="projectName">Name of the project to load.</param>
+    /// <returns>Result containing the loaded project or error information.</returns>
+    public async Task<LoadProjectResult> LoadProjectAsync(string projectName)
+    {
+        if (string.IsNullOrWhiteSpace(projectName))
+            return LoadProjectResult.ValidationError("Project name cannot be empty or whitespace.");
+
+        try
+        {
+            // Step 1: Load the project via Core service
+            var project = await _projectsManager.SelectProjectAsync(projectName);
+
+            // Step 2: Create EditProjectUseCase for editing
+            var editUseCase = new EditProjectUseCase(project);
+
+            // Step 3: Return success result with edit context
+            return LoadProjectResult.Success(project, editUseCase);
+        }
+        catch (ArgumentException ex)
+        {
+            return LoadProjectResult.ValidationError(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return LoadProjectResult.Error(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return LoadProjectResult.Error($"Unexpected error: {ex.Message}");
+        }
+    }
 }
 
 /// <summary>
@@ -281,6 +316,38 @@ public class ArchiveProjectResult
     };
 
     public static ArchiveProjectResult Error(string message) => new()
+    {
+        IsSuccess = false,
+        ErrorMessage = message
+    };
+}
+
+/// <summary>
+/// Result of the LoadProject use case execution.
+/// </summary>
+public class LoadProjectResult
+{
+    public bool IsSuccess { get; private init; }
+    public ProjectBase? LoadedProject { get; private init; }
+    public EditProjectUseCase? EditUseCase { get; private init; }
+    public string? ErrorMessage { get; private init; }
+
+    private LoadProjectResult() { }
+
+    public static LoadProjectResult Success(ProjectBase project, EditProjectUseCase editUseCase) => new()
+    {
+        IsSuccess = true,
+        LoadedProject = project,
+        EditUseCase = editUseCase
+    };
+
+    public static LoadProjectResult ValidationError(string message) => new()
+    {
+        IsSuccess = false,
+        ErrorMessage = message
+    };
+
+    public static LoadProjectResult Error(string message) => new()
     {
         IsSuccess = false,
         ErrorMessage = message

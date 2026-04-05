@@ -60,8 +60,31 @@ public class ManageProjectListViewModel : INotifyPropertyChanged
     // Handlers for project card actions
     private async Task OnLoadProjectAsync(ProjectListItemDto project)
     {
-        // Call appropriate use case (load project)
-        await LoadProjectsAsync();
+        if (project is null || string.IsNullOrWhiteSpace(project.Name))
+            return;
+
+        try
+        {
+            // Load project via use case
+            var result = await _manageProjectListUseCase.LoadProjectAsync(project.Name);
+
+            if (result.IsSuccess && result.EditUseCase != null)
+            {
+                // Navigate to EditProjectPage with the EditProjectUseCase
+                var editViewModel = new EditProjectViewModel(result.EditUseCase, _projectTypeLocalizer);
+                await Shell.Current.GoToAsync("//EditProjectPage",
+                    new Dictionary<string, object> { ["ViewModel"] = editViewModel });
+            }
+            else
+            {
+                // Show error message
+                ErrorMessage = result.ErrorMessage ?? "Failed to load project.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Unexpected error: {ex.Message}";
+        }
     }
 
     private async Task OnGeneratePdfAsync(ProjectListItemDto project)

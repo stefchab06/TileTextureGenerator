@@ -454,6 +454,89 @@ public class ManageProjectListUseCaseTests
         Assert.Equal(CreateProjectErrorType.Unexpected, result.ErrorType);
     }
 
+    [Fact]
+    public async Task LoadProjectAsync_WithValidName_ReturnsSuccessWithEditUseCase()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager();
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.LoadProjectAsync("ExistingProject");
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.LoadedProject);
+        Assert.Equal("ExistingProject", result.LoadedProject.Name);
+        Assert.NotNull(result.EditUseCase);
+        Assert.NotNull(result.EditUseCase.Project);
+        Assert.Null(result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task LoadProjectAsync_WithEmptyName_ReturnsValidationError()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager();
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.LoadProjectAsync("");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Null(result.EditUseCase);
+        Assert.NotNull(result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task LoadProjectAsync_WithWhitespaceName_ReturnsValidationError()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager();
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.LoadProjectAsync("   ");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Null(result.EditUseCase);
+        Assert.NotNull(result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task LoadProjectAsync_WhenProjectNotFound_ReturnsError()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager { ThrowSelectInvalidOperationException = true };
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.LoadProjectAsync("NonExistent");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Null(result.EditUseCase);
+        Assert.NotNull(result.ErrorMessage);
+    }
+
+    [Fact]
+    public async Task LoadProjectAsync_WithUnexpectedException_ReturnsError()
+    {
+        // Arrange
+        var mockManager = new MockProjectsManager { ThrowSelectGenericException = true };
+        var useCase = new ManageProjectListUseCase(mockManager);
+
+        // Act
+        var result = await useCase.LoadProjectAsync("TestProject");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Null(result.EditUseCase);
+        Assert.NotNull(result.ErrorMessage);
+    }
+
     #region Mock Implementation
 
     /// <summary>
@@ -468,6 +551,8 @@ public class ManageProjectListUseCaseTests
         public bool ThrowDeleteArgumentException { get; set; }
         public bool ThrowDeleteInvalidOperationException { get; set; }
         public bool ThrowDeleteGenericException { get; set; }
+        public bool ThrowSelectInvalidOperationException { get; set; }
+        public bool ThrowSelectGenericException { get; set; }
         public IReadOnlyList<ProjectDto>? Projects { get; set; }
         public bool ProjectExistsResult { get; set; }
 
@@ -495,7 +580,16 @@ public class ManageProjectListUseCaseTests
 
         public Task<ProjectBase> SelectProjectAsync(string name)
         {
-            throw new NotImplementedException();
+            if (ThrowSelectInvalidOperationException)
+                throw new InvalidOperationException("Project not found");
+
+            if (ThrowSelectGenericException)
+                throw new Exception("Unexpected error");
+
+            // Create and return a mock project
+            var project = new MockProject();
+            project.Initialize(name);
+            return Task.FromResult<ProjectBase>(project);
         }
 
         public Task DeleteProjectAsync(string name)
