@@ -17,6 +17,7 @@ public class ManageProjectListViewModel : INotifyPropertyChanged
 {
     private readonly ManageProjectListUseCase _manageProjectListUseCase;
     private readonly ProjectTypeLocalizer _projectTypeLocalizer;
+    private readonly TransformationTypeLocalizer _transformationTypeLocalizer;
 
     private string _projectName = string.Empty;
     private string? _selectedProjectType;
@@ -32,7 +33,8 @@ public class ManageProjectListViewModel : INotifyPropertyChanged
 
     public ManageProjectListViewModel(
         ManageProjectListUseCase manageProjectListUseCase,
-        ProjectTypeLocalizer projectTypeLocalizer)
+        ProjectTypeLocalizer projectTypeLocalizer,
+        TransformationTypeLocalizer transformationTypeLocalizer)
     {
         LoadProjectCommand = new Command<ProjectListItemDto>(async (project) => await OnLoadProjectAsync(project));
         GeneratePdfCommand = new Command<ProjectListItemDto>(async (project) => await OnGeneratePdfAsync(project));
@@ -40,9 +42,11 @@ public class ManageProjectListViewModel : INotifyPropertyChanged
         DeleteProjectCommand = new Command<ProjectListItemDto>(async (project) => await OnDeleteProjectAsync(project));
         ArgumentNullException.ThrowIfNull(manageProjectListUseCase);
         ArgumentNullException.ThrowIfNull(projectTypeLocalizer);
+        ArgumentNullException.ThrowIfNull(transformationTypeLocalizer);
 
         _manageProjectListUseCase = manageProjectListUseCase;
         _projectTypeLocalizer = projectTypeLocalizer;
+        _transformationTypeLocalizer = transformationTypeLocalizer;
 
         ProjectTypes = [];
         CreateProjectCommand = new Command(async () => await CreateProjectAsync(), CanCreateProject);
@@ -71,7 +75,7 @@ public class ManageProjectListViewModel : INotifyPropertyChanged
             if (result.IsSuccess && result.EditUseCase != null)
             {
                 // Navigate to EditProjectPage with the EditProjectUseCase
-                var editViewModel = new EditProjectViewModel(result.EditUseCase, _projectTypeLocalizer);
+                var editViewModel = new EditProjectViewModel(result.EditUseCase, _projectTypeLocalizer, _transformationTypeLocalizer);
                 await Shell.Current.GoToAsync("//EditProjectPage",
                     new Dictionary<string, object> { ["ViewModel"] = editViewModel });
             }
@@ -450,7 +454,7 @@ public class ManageProjectListViewModel : INotifyPropertyChanged
                 // Navigate to EditProjectPage with the EditProjectUseCase
                 if (result.EditUseCase != null)
                 {
-                    var editViewModel = new EditProjectViewModel(result.EditUseCase, _projectTypeLocalizer);
+                    var editViewModel = new EditProjectViewModel(result.EditUseCase, _projectTypeLocalizer, _transformationTypeLocalizer);
                     await Shell.Current.GoToAsync("//EditProjectPage",
                         new Dictionary<string, object> { ["ViewModel"] = editViewModel });
                 }

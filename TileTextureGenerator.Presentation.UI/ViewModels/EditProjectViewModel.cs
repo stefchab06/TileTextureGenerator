@@ -15,19 +15,25 @@ public class EditProjectViewModel : INotifyPropertyChanged
 {
     private readonly EditProjectUseCase _editUseCase;
     private readonly ProjectTypeLocalizer _projectTypeLocalizer;
+    private readonly TransformationTypeLocalizer _transformationTypeLocalizer;
     private TransformationTypeItem? _selectedTransformationType;
     private bool _isSaving;
+    private bool _isTransformationPickerExpanded;
 
-    public EditProjectViewModel(EditProjectUseCase editUseCase, ProjectTypeLocalizer projectTypeLocalizer)
+    public EditProjectViewModel(EditProjectUseCase editUseCase, ProjectTypeLocalizer projectTypeLocalizer, TransformationTypeLocalizer transformationTypeLocalizer)
     {
         ArgumentNullException.ThrowIfNull(editUseCase);
         ArgumentNullException.ThrowIfNull(projectTypeLocalizer);
+        ArgumentNullException.ThrowIfNull(transformationTypeLocalizer);
 
         _editUseCase = editUseCase;
         _projectTypeLocalizer = projectTypeLocalizer;
+        _transformationTypeLocalizer = transformationTypeLocalizer;
 
         SaveCommand = new Command(async () => await SaveAsync(), () => !IsSaving);
         AddTransformationCommand = new Command(async () => await AddTransformationAsync(), CanAddTransformation);
+        ToggleTransformationPickerCommand = new Command(ToggleTransformationPicker);
+        SelectTransformationTypeCommand = new Command<TransformationTypeItem>(OnTransformationTypeSelected);
 
         // Load available transformation types
         _ = LoadTransformationTypesAsync();
@@ -69,6 +75,7 @@ public class EditProjectViewModel : INotifyPropertyChanged
             if (SetProperty(ref _selectedTransformationType, value))
             {
                 ((Command)AddTransformationCommand).ChangeCanExecute();
+                OnPropertyChanged(nameof(IsAddButtonActive));
             }
         }
     }
@@ -84,24 +91,42 @@ public class EditProjectViewModel : INotifyPropertyChanged
             if (SetProperty(ref _isSaving, value))
             {
                 ((Command)SaveCommand).ChangeCanExecute();
+                OnPropertyChanged(nameof(IsAddButtonActive));
             }
         }
     }
 
+    /// <summary>
+    /// Indicates if the transformation picker is expanded.
+    /// </summary>
+    public bool IsTransformationPickerExpanded
+    {
+        get => _isTransformationPickerExpanded;
+        set => SetProperty(ref _isTransformationPickerExpanded, value);
+    }
+
+    /// <summary>
+    /// Indicates if the Add Transformation button is active (green) or inactive (gray).
+    /// </summary>
+    public bool IsAddButtonActive => SelectedTransformationType != null && !IsSaving;
+
     public ICommand SaveCommand { get; }
     public ICommand AddTransformationCommand { get; }
+    public ICommand ToggleTransformationPickerCommand { get; }
+    public ICommand SelectTransformationTypeCommand { get; }
 
     private async Task LoadTransformationTypesAsync()
     {
         try
         {
             var types = await _editUseCase.GetAvailableTransformationTypesAsync();
-            
+
             foreach (var (technicalName, iconBytes) in types)
             {
                 AvailableTransformationTypes.Add(new TransformationTypeItem
                 {
                     TechnicalName = technicalName,
+                    LocalizedName = _transformationTypeLocalizer.GetLocalizedName(technicalName),
                     Icon = iconBytes
                 });
             }
@@ -146,10 +171,11 @@ public class EditProjectViewModel : INotifyPropertyChanged
         try
         {
             await _editUseCase.AddTransformationAsync(SelectedTransformationType.TechnicalName);
-            
-            // Reset selection after adding
+
+            // Reset selection and collapse picker after adding
             SelectedTransformationType = null;
-            
+            IsTransformationPickerExpanded = false;
+
             // TODO: Refresh transformations list (future iteration)
         }
         catch (Exception ex)
@@ -157,6 +183,18 @@ public class EditProjectViewModel : INotifyPropertyChanged
             // TODO: Error handling (future iteration)
             System.Diagnostics.Debug.WriteLine($"Add transformation failed: {ex.Message}");
         }
+    }
+
+    private void ToggleTransformationPicker()
+    {
+        IsTransformationPickerExpanded = !IsTransformationPickerExpanded;
+    }
+
+    private void OnTransformationTypeSelected(TransformationTypeItem item)
+    {
+        SelectedTransformationType = item;
+        IsTransformationPickerExpanded = false;
+        ((Command)AddTransformationCommand).ChangeCanExecute();
     }
 
     // INotifyPropertyChanged implementation
@@ -179,10 +217,11 @@ public class EditProjectViewModel : INotifyPropertyChanged
 }
 
 /// <summary>
-/// Item for transformation type picker (icon + technical name).
+/// Item for transformation type picker (icon + technical name + localized name).
 /// </summary>
 public class TransformationTypeItem
 {
     public string TechnicalName { get; set; } = string.Empty;
+    public string LocalizedName { get; set; } = string.Empty;
     public byte[] Icon { get; set; } = Array.Empty<byte>();
 }

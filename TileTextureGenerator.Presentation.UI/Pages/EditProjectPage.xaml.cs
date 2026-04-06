@@ -39,4 +39,15 @@ public partial class EditProjectPage : ContentPage
     {
         await Shell.Current.GoToAsync("//ManageProjectListPage");
     }
+
+    /// <summary>
+    /// Called when user presses hardware back button.
+    /// Navigates back to ManageProjectList.
+    /// </summary>
+    protected override bool OnBackButtonPressed()
+    {
+        // Navigate to ManageProjectList instead of default back behavior
+        Task.Run(async () => await Shell.Current.GoToAsync("//ManageProjectListPage"));
+        return true; // Prevent default back navigation
+    }
 }

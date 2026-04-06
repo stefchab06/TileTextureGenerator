@@ -42,6 +42,7 @@ public static class MauiProgram
 
 		// Register Presentation services (no interface)
 		builder.Services.AddSingleton<ProjectTypeLocalizer>();
+		builder.Services.AddSingleton<TransformationTypeLocalizer>();
 
 		// Auto-register remaining services by conventions
 		// This scans all TileTextureGenerator assemblies and registers:

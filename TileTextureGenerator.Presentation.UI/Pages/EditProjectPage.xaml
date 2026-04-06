@@ -2,14 +2,23 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:TileTextureGenerator.Presentation.UI.ViewModels"
+             xmlns:res="clr-namespace:TileTextureGenerator.Presentation.UI.Resources.Strings"
+             xmlns:converters="clr-namespace:TileTextureGenerator.Presentation.UI.Converters"
              x:Class="TileTextureGenerator.Presentation.UI.Pages.EditProjectPage"
              x:DataType="vm:EditProjectViewModel"
              Shell.NavBarIsVisible="True"
              Title="{Binding ShellTitle}">
 
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:BoolToButtonColorConverter x:Key="BoolToButtonColorConverter" />
+            <converters:BoolToButtonTextColorConverter x:Key="BoolToButtonTextColorConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
     <!-- Toolbar with Close button -->
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Close" 
+        <ToolbarItem Text="{x:Static res:AppResources.EditProject_Close}"
                      Clicked="OnCloseClicked" 
                      Order="Primary" 
                      Priority="0" />
@@ -22,14 +31,14 @@
             <Frame BorderColor="{StaticResource Primary}"
                    BackgroundColor="{StaticResource Secondary}"
                    Padding="10">
-                <Label Text="Template zone - Properties will appear here once DataTemplateSelector is implemented"
+                <Label Text="{x:Static res:AppResources.EditProject_TemplatePlaceholder}"
                        HorizontalTextAlignment="Center"
                        FontSize="Small"
                        TextColor="{StaticResource Gray600}" />
             </Frame>
 
             <!-- Save button (full width) -->
-            <Button Text="Save"
+            <Button Text="{x:Static res:AppResources.EditProject_Save}"
                     Command="{Binding SaveCommand}"
                     BackgroundColor="{StaticResource Primary}"
                     TextColor="White"
@@ -41,47 +50,102 @@
             <Frame BorderColor="{StaticResource Gray300}"
                    Padding="10">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Add Transformation"
-                           FontSize="Medium"
-                           FontAttributes="Bold" />
 
-                    <HorizontalStackLayout Spacing="10">
-                        <!-- Preview image of selected transformation type -->
-                        <Image Source="{Binding SelectedTransformationType.Icon, Converter={StaticResource ByteArrayToImageSourceConverter}}"
-                               WidthRequest="60"
-                               HeightRequest="60"
-                               Aspect="AspectFit"
-                               IsVisible="{Binding SelectedTransformationType, Converter={StaticResource IsNotNullConverter}}" />
+                    <!-- Collapsible Transformation Picker -->
+                    <VerticalStackLayout Spacing="0">
+                        <!-- Header + Add Button (Grid layout like ManageProjectListPage) -->
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
 
-                        <!-- Transformation type picker (text dropdown) -->
-                        <Picker ItemsSource="{Binding AvailableTransformationTypes}"
-                                ItemDisplayBinding="{Binding TechnicalName}"
-                                SelectedItem="{Binding SelectedTransformationType}"
-                                Title="Select transformation type"
-                                HorizontalOptions="FillAndExpand"
-                                VerticalOptions="Center" />
+                            <!-- Header (expandable picker) -->
+                            <VerticalStackLayout Grid.Column="0" Spacing="8">
+                                <Label Text="{x:Static res:AppResources.EditProject_TransformationType}" FontSize="14" FontAttributes="Bold" />
+                                <Frame BorderColor="{StaticResource Gray300}"
+                                       Padding="10"
+                                       CornerRadius="8"
+                                       HasShadow="False"
+                                       BackgroundColor="{StaticResource Secondary}">
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding ToggleTransformationPickerCommand}" />
+                                    </Frame.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <!-- Preview image (if selected) -->
+                                        <Image Grid.Column="0"
+                                               Source="{Binding SelectedTransformationType.Icon, Converter={StaticResource ByteArrayToImageSourceConverter}}"
+                                               WidthRequest="40"
+                                               HeightRequest="40"
+                                               Aspect="AspectFit"
+                                               Margin="0,0,10,0"
+                                               IsVisible="{Binding SelectedTransformationType, Converter={StaticResource IsNotNullConverter}}" />
 
-                        <!-- Add button (round with +) -->
-                        <Frame WidthRequest="60"
-                               HeightRequest="60"
-                               CornerRadius="30"
-                               Padding="0"
-                               HasShadow="True"
-                               BorderColor="Transparent">
-                            <Frame.Background>
-                                <SolidColorBrush Color="{Binding SelectedTransformationType, Converter={StaticResource NullToBoolToColorConverter}, ConverterParameter='Green|Gray'}" />
-                            </Frame.Background>
-                            <Frame.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding AddTransformationCommand}" />
-                            </Frame.GestureRecognizers>
-                            <Label Text="+"
-                                   FontSize="32"
-                                   FontAttributes="Bold"
-                                   TextColor="White"
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center" />
-                        </Frame>
-                    </HorizontalStackLayout>
+                                        <!-- Label -->
+                                        <Label Grid.Column="1"
+                                               Text="{Binding SelectedTransformationType.LocalizedName, FallbackValue={x:Static res:AppResources.EditProject_SelectTransformationType}}"
+                                               VerticalOptions="Center"
+                                               FontSize="Body" />
+
+                                        <!-- Arrow icon (▼ when collapsed, ▲ when expanded) -->
+                                        <Label Grid.Column="2"
+                                               Text="{Binding IsTransformationPickerExpanded, Converter={StaticResource BoolToTextConverter}, ConverterParameter='▲|▼'}"
+                                               VerticalOptions="Center"
+                                               FontSize="Large"
+                                               Margin="10,0,0,0" />
+                                    </Grid>
+                                </Frame>
+                            </VerticalStackLayout>
+
+                            <!-- Add button (always visible, color changes based on selection) -->
+                            <VerticalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="End">
+                                <Label Text=" " FontSize="14" />
+                                <Button Text="+"
+                                        Command="{Binding AddTransformationCommand}"
+                                        BackgroundColor="{Binding IsAddButtonActive, Converter={StaticResource BoolToButtonColorConverter}}"
+                                        TextColor="{Binding IsAddButtonActive, Converter={StaticResource BoolToButtonTextColorConverter}}"
+                                        WidthRequest="50"
+                                        HeightRequest="50"
+                                        CornerRadius="25"
+                                        FontSize="24"
+                                        Padding="0" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <!-- Dropdown list (visible when expanded) -->
+                        <CollectionView ItemsSource="{Binding AvailableTransformationTypes}"
+                                        SelectionMode="None"
+                                        IsVisible="{Binding IsTransformationPickerExpanded}"
+                                        HeightRequest="{Binding AvailableTransformationTypes.Count, Converter={StaticResource CountToHeightConverter}}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:TransformationTypeItem">
+                                    <Frame BorderColor="{StaticResource Gray200}"
+                                           Padding="10"
+                                           Margin="0,2"
+                                           CornerRadius="4"
+                                           HasShadow="False"
+                                           BackgroundColor="White">
+                                        <Frame.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:EditProjectViewModel}}, Path=SelectTransformationTypeCommand}"
+                                                                  CommandParameter="{Binding .}" />
+                                        </Frame.GestureRecognizers>
+                                        <Grid ColumnDefinitions="Auto,*">
+                                            <Image Grid.Column="0"
+                                                   Source="{Binding Icon, Converter={StaticResource ByteArrayToImageSourceConverter}}"
+                                                   WidthRequest="50"
+                                                   HeightRequest="50"
+                                                   Aspect="AspectFit"
+                                                   Margin="0,0,10,0" />
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding LocalizedName}"
+                                                   VerticalOptions="Center"
+                                                   FontSize="Body" />
+                                        </Grid>
+                                    </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
                 </VerticalStackLayout>
             </Frame>
 
@@ -89,7 +153,7 @@
             <Frame BorderColor="{StaticResource Gray300}"
                    Padding="10"
                    IsVisible="False">
-                <Label Text="Transformations list will be implemented in a future iteration"
+                <Label Text="{x:Static res:AppResources.EditProject_TransformationsListPlaceholder}"
                        HorizontalTextAlignment="Center"
                        FontSize="Small"
                        TextColor="{StaticResource Gray600}" />

@@ -133,6 +133,60 @@ namespace TileTextureGenerator.Presentation.UI.Resources.Strings {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à Close.
+        /// </summary>
+        internal static string EditProject_Close {
+            get {
+                return ResourceManager.GetString("EditProject_Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Save.
+        /// </summary>
+        internal static string EditProject_Save {
+            get {
+                return ResourceManager.GetString("EditProject_Save", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Select transformation type.
+        /// </summary>
+        internal static string EditProject_SelectTransformationType {
+            get {
+                return ResourceManager.GetString("EditProject_SelectTransformationType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à This is where future template will be displayed.
+        /// </summary>
+        internal static string EditProject_TemplatePlaceholder {
+            get {
+                return ResourceManager.GetString("EditProject_TemplatePlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à This is where transformation list will apear.
+        /// </summary>
+        internal static string EditProject_TransformationsListPlaceholder {
+            get {
+                return ResourceManager.GetString("EditProject_TransformationsListPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Transformation type.
+        /// </summary>
+        internal static string EditProject_TransformationType {
+            get {
+                return ResourceManager.GetString("EditProject_TransformationType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à Create Project.
         /// </summary>
         internal static string ProjectManagement_CreateButton {

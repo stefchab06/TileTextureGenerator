@@ -1,4 +1,5 @@
 using TileTextureGenerator.Core.DTOs;
+using TileTextureGenerator.Core.Entities.ConcreteTransformations;
 using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
@@ -12,9 +13,10 @@ namespace TileTextureGenerator.Core.Entities.ConcreteProjects;
 /// </summary>
 public sealed class WallTileProject : ProjectBase
 {
-    private static readonly string[] AvailableTransformationTypes = 
+    private static readonly string[] AvailableTransformationTypes =
     {
-        nameof(ConcreteTransformations.VerticalWallTransformation)
+        nameof(ConcreteTransformations.VerticalWallTransformation),
+        nameof(ConcreteTransformations.HorizontalFloorTransformation)
     };
 
     static WallTileProject()

@@ -159,4 +159,22 @@
   <data name="ArchiveProject_ConfirmNo" xml:space="preserve">
     <value>Annuler</value>
   </data>
+  <data name="EditProject_TemplatePlaceholder" xml:space="preserve">
+    <value>C'est ici que les futures "template" seront affichées</value>
+  </data>
+  <data name="EditProject_Save" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="EditProject_TransformationType" xml:space="preserve">
+    <value>Type de transformation</value>
+  </data>
+  <data name="EditProject_TransformationsListPlaceholder" xml:space="preserve">
+    <value>C'est ici que la liste des transformation apparaitra</value>
+  </data>
+  <data name="EditProject_Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="EditProject_SelectTransformationType" xml:space="preserve">
+    <value>Choisissez un type de transformation</value>
+  </data>
 </root>
