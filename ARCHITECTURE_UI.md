@@ -1,203 +1,545 @@
-# Architecture UI - TileTextureGenerator
+# UI Architecture - TileTextureGenerator
 
-## Vue d'ensemble
+## Overview
 
-Ce document décrit les **décisions d'architecture pour la couche présentation** (.NET MAUI) de TileTextureGenerator. Il complète le document principal [`ARCHITECTURE.md`](./ARCHITECTURE.md) en se concentrant sur les patterns UI, le binding MVVM, et la gestion du polymorphisme ProjectBase dans l'interface utilisateur.
-
----
-
-## Problématique principale
-
-### Contexte métier
-L'application doit permettre d'éditer **différents types de projets** (FloorTileProject, WallTileProject, futurs types) avec :
-- **Partie commune** : Propriétés `ProjectBase` (Name, Status, DisplayImage, Transformations) → identique pour tous
-- **Partie spécifique** : Propriétés concrètes (TileShape, SourceImage, WallHeight, etc.) → **différentes par type**
-
-### Contraintes DDD
-- ❌ Les entités Core **ne doivent PAS connaître l'UI** (pas d'attributs `[Display]`, pas de `INotifyPropertyChanged`)
-- ❌ Les entités Core **ne sont PAS observables** (violation de responsabilité métier)
-- ✅ Séparation stricte : Presentation ↔ Core (dépendance unidirectionnelle)
+This document describes the **presentation layer architecture** (.NET MAUI) of TileTextureGenerator. It complements the main [`ARCHITECTURE.md`](./ARCHITECTURE.md) document by focusing on UI patterns, MVVM binding, and handling polymorphic ProjectBase in the user interface.
 
 ---
 
-## Décision d'architecture : DataTemplateSelector + ViewModels typés
+## Core Problem
 
-### Approche choisie ⭐
+### Business Context
+The application must support editing **different project types** (FloorTileProject, WallTileProject, future types) with:
+- **Common part**: `ProjectBase` properties (Name, Status, DisplayImage, Transformations) → identical for all
+- **Specific part**: Concrete properties (TileShape, SourceImage, WallHeight, etc.) → **different per type**
 
-**Pattern MAUI** : **DataTemplateSelector with Typed ViewModels**
-
-**Principe** :
-1. Une **Page principale** (`EditProjectPage`) contient les sections communes
-2. Un **ContentView** avec `DataTemplateSelector` choisit dynamiquement la vue spécifique selon le type concret
-3. Chaque type de projet a son **triplet** : `View.xaml` + `View.xaml.cs` + `ViewModel.cs`
+### Hexagonal Architecture Constraints
+- ❌ Core entities **must NOT know the UI** (no `[Display]` attributes, no `INotifyPropertyChanged`)
+- ❌ Core entities **are NOT observable** (violates business responsibility)
+- ✅ Strict separation: Presentation ↔ Adapters ↔ Core (unidirectional dependencies)
+- ✅ **NO direct Core reference in Presentation.UI** (achieved via JSON contract)
 
 ---
 
-## Structure de fichiers
+## Architectural Decision: JSON-based + Dynamic Templates
+
+### Chosen Approach ⭐
+
+**Pattern**: **JSON Contract + TemplatedContentView + Convention-based ViewModels**
+
+**Principles**:
+1. **Hexagonal Decoupling**: Presentation.UI does NOT reference Core
+2. **JSON as Contract**: `EditProjectUseCase` exposes project properties as `JsonObject`
+3. **Shared Reference**: Same `JsonObject` instance shared between `EditProjectViewModel` and template ViewModels
+4. **Dynamic Template Selection**: `TemplatedContentView` selects template by `ConcreteTypeName` (string)
+5. **Convention-based Instantiation**: ViewModels auto-discovered by naming convention
+
+---
+
+## File Structure
 
 ```
 TileTextureGenerator.Presentation.UI/
 ├─ Pages/
-│  ├─ ManageProjectListPage.xaml             # Liste des projets
-│  └─ EditProjectPage.xaml                   # Édition (partie commune)
+│  ├─ ManageProjectListPage.xaml             # Project list
+│  └─ EditProjectPage.xaml                   # Edit (common parts + dynamic template)
 │
-├─ Views/
-│  └─ ProjectDetails/                        # Vues spécifiques par type
-│     ├─ FloorTileProjectDetailsView.xaml
-│     ├─ FloorTileProjectDetailsView.xaml.cs
-│     ├─ FloorTileProjectDetailsViewModel.cs
-│     ├─ WallTileProjectDetailsView.xaml
-│     ├─ WallTileProjectDetailsView.xaml.cs
-│     └─ WallTileProjectDetailsViewModel.cs
+├─ Templates/                                 # Type-specific templates
+│  ├─ FloorTileTemplate.xaml
+│  ├─ FloorTileTemplate.xaml.cs
+│  ├─ PlaceholderTemplate.xaml               # Fallback for non-implemented types
+│  └─ PlaceholderTemplate.xaml.cs
 │
 ├─ ViewModels/
-│  ├─ ManageProjectListViewModel.cs          # Liste
-│  └─ EditProjectViewModel.cs                # Coordination générale
+│  ├─ ManageProjectListViewModel.cs          # List coordination
+│  ├─ EditProjectViewModel.cs                # Edit coordination (generic)
+│  └─ FloorTileProjectViewModel.cs           # Specific template ViewModel
 │
-└─ Selectors/
-   └─ ProjectTypeTemplateSelector.cs         # Switch types → templates
+├─ Controls/
+│  └─ TemplatedContentView.cs                # Dynamic template instantiation
+│
+├─ Selectors/
+│  └─ ProjectTemplateSelector.cs             # TypeName → DataTemplate mapping
+│
+└─ Services/
+   └─ TileShapeLocalizer.cs                  # Enum string → localized name
 ```
 
 ---
 
-## Architecture détaillée
+## Detailed Architecture
 
-### 1. EditProjectPage (Page principale)
+### 1. Data Flow: Core → JSON → UI
 
-**Responsabilité** : Coordonner l'affichage des sections communes et spécifiques.
+```
+┌─────────────────────────────────────────────┐
+│  Core.Entities.FloorTileProject            │
+│  - TileShape: TileShape.Full (enum)        │
+│  - SourceImage: ImageData { Bytes: [...] } │
+└───────────────┬─────────────────────────────┘
+                │ Serialized by
+                ↓
+┌─────────────────────────────────────────────┐
+│  Adapters.UseCases.EditProjectUseCase      │
+│  GetPropertiesJson() →                      │
+│  {                                          │
+│    "TileShape": "Full",       ← String!    │
+│    "SourceImage": {                         │
+│      "Bytes": "iVBORw0KGg..." ← base64     │
+│    }                                        │
+│  }                                          │
+└───────────────┬─────────────────────────────┘
+                │ Shared reference
+                ↓
+┌─────────────────────────────────────────────┐
+│  Presentation.UI.ViewModels                 │
+│  EditProjectViewModel                       │
+│    └─ _propertiesJson (shared)             │
+│         └─ FloorTileProjectViewModel        │
+│              └─ reads/writes _propertiesJson│
+└─────────────────────────────────────────────┘
+```
 
-**Sections** :
+**Key Benefit**: UI modifies JSON → automatically reflected in Core on Save (shared reference).
+
+---
+
+### 2. EditProjectPage Structure
+
 ```
 ┌────────────────────────────────────────────┐
 │  EditProjectPage.xaml                      │
 ├────────────────────────────────────────────┤
-│  1. Section ProjectBase (statique)         │
-│     - Name (ReadOnly)                      │
-│     - Status                               │
-│     - DisplayImage                         │
-│     - LastModifiedDate                     │
+│  1. Project Properties (Dynamic Template)  │
+│     ┌──────────────────────────────────┐  │
+│     │ TemplatedContentView             │  │
+│     │  - TypeName: "FloorTileProject"  │  │
+│     │  - TemplateData: FloorTileVM     │  │
+│     │  - Selector: ProjectTemplateS... │  │
+│     └──────────────────────────────────┘  │
+│        │                                   │
+│        ├─ IF FloorTileProject             │
+│        │   → FloorTileTemplate.xaml       │
+│        │                                   │
+│        └─ ELSE                             │
+│            → PlaceholderTemplate.xaml     │
 ├────────────────────────────────────────────┤
-│  2. ContentView dynamique                  │
-│     └─ ProjectTypeTemplateSelector         │
-│        ├─ FloorTileDetailsView (si Floor)  │
-│        └─ WallTileDetailsView (si Wall)    │
+│  2. Save Button                            │
+│     - Calls EditViewModel.SaveAsync()     │
+│     - Updates Core from JSON               │
 ├────────────────────────────────────────────┤
-│  3. Section Transformations (statique)     │
-│     - CollectionView (liste)               │
-│     - Add/Remove/Edit commands             │
-├────────────────────────────────────────────┤
-│  4. Actions (statique)                     │
-│     - Generate PDF                         │
-│     - Archive                              │
-│     - Save changes                         │
+│  3. Transformations (Collapsible Picker)   │
+│     - Add/Remove transformations           │
 └────────────────────────────────────────────┘
 ```
 
-**XAML structure** :
+**XAML Extract** (simplified):
 ```xaml
-<ContentPage xmlns="..." x:Class="...EditProjectPage">
-    <!-- Section 1: Common properties (ProjectBase) -->
-    <StackLayout>
-        <Entry Text="{Binding Project.Name}" IsReadOnly="True" />
-        <Label Text="{Binding Project.Status}" />
-        <Image Source="{Binding Project.DisplayImage}" />
-    </StackLayout>
-    
-    <!-- Section 2: Type-specific properties (ContentView + Selector) -->
-    <ContentView Content="{Binding Project}">
-        <ContentView.ContentTemplate>
-            <local:ProjectTypeTemplateSelector>
-                <local:ProjectTypeTemplateSelector.FloorTileTemplate>
-                    <DataTemplate>
-                        <views:FloorTileProjectDetailsView />
-                    </DataTemplate>
-                </local:ProjectTypeTemplateSelector.FloorTileTemplate>
-                
-                <local:ProjectTypeTemplateSelector.WallTileTemplate>
-                    <DataTemplate>
-                        <views:WallTileProjectDetailsView />
-                    </DataTemplate>
-                </local:ProjectTypeTemplateSelector.WallTileTemplate>
-            </local:ProjectTypeTemplateSelector>
-        </ContentView.ContentTemplate>
-    </ContentView>
-    
-    <!-- Section 3: Transformations -->
-    <CollectionView ItemsSource="{Binding Project.Transformations}">
-        <!-- ... -->
-    </CollectionView>
-    
-    <!-- Section 4: Actions -->
-    <Button Text="Validate Changes" Command="{Binding SaveCommand}" />
+<ContentPage xmlns:controls="clr-namespace:...Controls"
+             xmlns:selectors="clr-namespace:...Selectors"
+             x:DataType="vm:EditProjectViewModel">
+
+    <ContentPage.Resources>
+        <selectors:ProjectTemplateSelector x:Key="ProjectTemplateSelector">
+            <selectors:ProjectTemplateSelector.FloorTileTemplate>
+                <DataTemplate>
+                    <templates:FloorTileTemplate />
+                </DataTemplate>
+            </selectors:ProjectTemplateSelector.FloorTileTemplate>
+        </selectors:ProjectTemplateSelector>
+    </ContentPage.Resources>
+
+    <Frame>
+        <controls:TemplatedContentView 
+            TemplateSelector="{StaticResource ProjectTemplateSelector}"
+            TypeName="{Binding ConcreteTypeName}"
+            TemplateData="{Binding ProjectViewModel}" />
+    </Frame>
 </ContentPage>
 ```
 
 ---
 
-### 2. ProjectTypeTemplateSelector
+### 3. TemplatedContentView (Custom Control)
 
-**Responsabilité** : Sélectionner le bon DataTemplate selon le type concret du projet.
+**Responsibility**: Dynamically select and instantiate the correct template based on `ConcreteTypeName`.
 
-**Code** :
+**Code**:
 ```csharp
-namespace TileTextureGenerator.Presentation.UI.Selectors;
-
-/// <summary>
-/// Selects the appropriate DataTemplate based on the concrete project type.
-/// Each registered project type must have a corresponding template property.
-/// </summary>
-public class ProjectTypeTemplateSelector : DataTemplateSelector
+public class TemplatedContentView : ContentView
 {
-    public DataTemplate FloorTileTemplate { get; set; } = null!;
-    public DataTemplate WallTileTemplate { get; set; } = null!;
+    public ProjectTemplateSelector? TemplateSelector { get; set; }
+    public string? TypeName { get; set; }
+    public object? TemplateData { get; set; }
 
-    protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
+    private void UpdateContent()
     {
-        return item switch
+        Content = null;
+
+        if (TemplateSelector == null || string.IsNullOrEmpty(TypeName))
+            return;
+
+        var template = TemplateSelector.SelectTemplateByTypeName(TypeName);
+
+        if (template != null)
         {
-            FloorTileProject => FloorTileTemplate 
-                ?? throw new InvalidOperationException("FloorTileTemplate not initialized."),
-            
-            WallTileProject => WallTileTemplate 
-                ?? throw new InvalidOperationException("WallTileTemplate not initialized."),
-            
-            _ => throw new NotSupportedException(
-                $"No DataTemplate defined for project type: {item?.GetType().Name}. " +
-                $"Add a new template property and case in OnSelectTemplate.")
-        };
+            var view = (View)template.CreateContent();
+            view.BindingContext = TemplateData;
+            Content = view;
+        }
+        else
+        {
+            // No specific template found: use placeholder
+            Content = new PlaceholderTemplate();
+        }
     }
 }
 ```
 
-**Contrat** : Pour chaque type dans `TextureProjectRegistry`, il DOIT exister :
-1. Une propriété `DataTemplate` dans le selector
-2. Un case dans le `switch` expression
+**Benefits**:
+- ✅ Template instantiated **only if used** (memory efficient)
+- ✅ Automatic fallback to `PlaceholderTemplate`
+- ✅ No hardcoded type checks
 
 ---
 
-### 3. FloorTileProjectDetailsView + ViewModel
+### 4. ProjectTemplateSelector (Convention-based)
 
-**Responsabilité** : Éditer les propriétés spécifiques à FloorTileProject.
+**Responsibility**: Map `ConcreteTypeName` (string) to `DataTemplate` using reflection.
 
-#### FloorTileProjectDetailsView.xaml
+**Code**:
+```csharp
+public class ProjectTemplateSelector : DataTemplateSelector
+{
+    public DataTemplate? FloorTileTemplate { get; set; }
+    // WallTileTemplate will be added later
+
+    public IReadOnlyDictionary<string, DataTemplate?> GetTemplateMappings()
+    {
+        var mappings = new Dictionary<string, DataTemplate?>();
+
+        // Scan all DataTemplate properties
+        var properties = GetType().GetProperties()
+            .Where(p => p.PropertyType == typeof(DataTemplate) && p.CanRead);
+
+        foreach (var prop in properties)
+        {
+            // Convention: "FloorTileTemplate" → "FloorTileProject"
+            if (prop.Name.EndsWith("Template"))
+            {
+                var typeName = prop.Name[..^"Template".Length] + "Project";
+                var template = (DataTemplate?)prop.GetValue(this);
+                mappings[typeName] = template;
+            }
+        }
+
+        return mappings;
+    }
+
+    public DataTemplate? SelectTemplateByTypeName(string concreteTypeName)
+    {
+        var mappings = GetTemplateMappings();
+        return mappings.TryGetValue(concreteTypeName, out var template) 
+            ? template 
+            : null;
+    }
+}
+```
+
+**Convention**:
+- Property name `XxxTemplate` → maps to type `XxxProject`
+- Example: `FloorTileTemplate` → `FloorTileProject`
+
+---
+
+### 5. FloorTileProjectViewModel (Unified Constructor)
+
+**Responsibility**: Provide observable properties for `FloorTileTemplate.xaml`.
+
+**Unified Constructor Signature** (all template ViewModels):
+```csharp
+public FloorTileProjectViewModel(
+    JsonObject propertiesJson,           // Shared JSON reference
+    EditProjectViewModel parentViewModel // Provides services
+)
+```
+
+**Code Extract**:
+```csharp
+public class FloorTileProjectViewModel : INotifyPropertyChanged
+{
+    private readonly JsonObject _propertiesJson;
+    private readonly TileShapeLocalizer _tileShapeLocalizer;
+
+    public FloorTileProjectViewModel(
+        JsonObject propertiesJson, 
+        EditProjectViewModel parentViewModel)
+    {
+        _propertiesJson = propertiesJson;
+        _tileShapeLocalizer = parentViewModel.TileShapeLocalizer;
+
+        // Load TileShape from JSON (string value like "Full")
+        var tileShapeValue = _propertiesJson["TileShape"]?.GetValue<string>() ?? "Full";
+        SelectedTileShape = AvailableTileShapes.FirstOrDefault(x => x.Value == tileShapeValue);
+    }
+
+    public TileShapeItem? SelectedTileShape
+    {
+        get => _selectedTileShape;
+        set
+        {
+            if (SetProperty(ref _selectedTileShape, value))
+            {
+                // Update JSON (shared reference!)
+                if (value != null)
+                    _propertiesJson["TileShape"] = value.Value; // String, not enum!
+            }
+        }
+    }
+}
+```
+
+**Key Points**:
+- ✅ Works with `JsonObject` (not Core entities)
+- ✅ Enums stored as **strings** in JSON ("Full" not 0)
+- ✅ Shared reference: modifications auto-reflected
+
+---
+
+### 6. EditProjectViewModel (Generic Coordination)
+
+**Responsibility**: Orchestrate the editing workflow (100% generic, no type-specific code).
+
+**Key Code**:
+```csharp
+public class EditProjectViewModel : INotifyPropertyChanged
+{
+    private readonly JsonObject _propertiesJson; // Shared with template VM
+
+    public EditProjectViewModel(
+        EditProjectUseCase editUseCase,
+        TileShapeLocalizer tileShapeLocalizer, 
+        /* ... other services */)
+    {
+        _propertiesJson = editUseCase.GetPropertiesJson(); // Get once
+        _projectViewModel = CreateProjectViewModel();       // Generic!
+    }
+
+    public string ConcreteTypeName => _editUseCase.ConcreteTypeName;
+    public object? ProjectViewModel => _projectViewModel;
+    public TileShapeLocalizer TileShapeLocalizer => _tileShapeLocalizer;
+
+    private object? CreateProjectViewModel()
+    {
+        // Convention: "FloorTileProject" → "FloorTileProjectViewModel"
+        var viewModelTypeName = 
+            $"TileTextureGenerator.Presentation.UI.ViewModels.{ConcreteTypeName}ViewModel";
+        var viewModelType = Type.GetType(viewModelTypeName);
+
+        if (viewModelType == null)
+            return null; // PlaceholderTemplate will be used
+
+        // Unified signature: (JsonObject, EditProjectViewModel)
+        return Activator.CreateInstance(viewModelType, _propertiesJson, this);
+    }
+
+    private async Task SaveAsync()
+    {
+        // Generic: works for ALL project types!
+        _editUseCase.UpdatePropertiesFromJson(_propertiesJson);
+        await _editUseCase.SaveAsync();
+    }
+}
+```
+
+**Benefits**:
+- ✅ **Zero type-specific code** (convention-based)
+- ✅ Works for all future project types
+- ✅ Shared JSON reference auto-updates Core
+
+---
+
+## Adding a New Project Type (Step-by-Step)
+
+### 1. Create the Template XAML
+
+**File**: `TileTextureGenerator.Presentation.UI/Templates/WallTileTemplate.xaml`
+
 ```xaml
-<ContentView xmlns="..." 
-             x:Class="...FloorTileProjectDetailsView"
-             x:DataType="vm:FloorTileProjectDetailsViewModel">
-    
-    <StackLayout>
-        <Label Text="Tile Shape" />
-        <Picker ItemsSource="{Binding AvailableTileShapes}" 
-                SelectedItem="{Binding SelectedTileShape}" />
-        
-        <Label Text="Source Image" />
-        <local:ImagePickerControl ImageData="{Binding SelectedSourceImage}" />
-    </StackLayout>
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             x:Class="TileTextureGenerator.Presentation.UI.Templates.WallTileTemplate">
+
+    <VerticalStackLayout Spacing="20">
+        <Label Text="Wall Height" />
+        <Picker ItemsSource="{Binding AvailableHeights}"
+                SelectedItem="{Binding SelectedHeight}" />
+    </VerticalStackLayout>
 </ContentView>
 ```
 
-#### FloorTileProjectDetailsView.xaml.cs
+### 2. Create the Code-Behind
+
+**File**: `TileTextureGenerator.Presentation.UI/Templates/WallTileTemplate.xaml.cs`
+
 ```csharp
+namespace TileTextureGenerator.Presentation.UI.Templates;
+
+public partial class WallTileTemplate : ContentView
+{
+    public WallTileTemplate()
+    {
+        InitializeComponent();
+    }
+}
+```
+
+### 3. Create the ViewModel
+
+**File**: `TileTextureGenerator.Presentation.UI/ViewModels/WallTileProjectViewModel.cs`
+
+```csharp
+using System.Text.Json.Nodes;
+
+namespace TileTextureGenerator.Presentation.UI.ViewModels;
+
+public class WallTileProjectViewModel : INotifyPropertyChanged
+{
+    private readonly JsonObject _propertiesJson;
+
+    // MANDATORY: Unified constructor signature
+    public WallTileProjectViewModel(
+        JsonObject propertiesJson, 
+        EditProjectViewModel parentViewModel)
+    {
+        _propertiesJson = propertiesJson;
+
+        // Read properties from JSON
+        var heightValue = _propertiesJson["WallHeight"]?.GetValue<string>() ?? "Standard";
+        // ...
+    }
+
+    // Properties bound to XAML
+    public string? SelectedHeight
+    {
+        get => _propertiesJson["WallHeight"]?.GetValue<string>();
+        set
+        {
+            _propertiesJson["WallHeight"] = value; // Update shared JSON
+            OnPropertyChanged();
+        }
+    }
+
+    // INotifyPropertyChanged implementation...
+}
+```
+
+### 4. Register Template in EditProjectPage.xaml
+
+**File**: `TileTextureGenerator.Presentation.UI/Pages/EditProjectPage.xaml`
+
+Add in `<ContentPage.Resources>`:
+```xaml
+<selectors:ProjectTemplateSelector x:Key="ProjectTemplateSelector">
+    <selectors:ProjectTemplateSelector.FloorTileTemplate>
+        <DataTemplate>
+            <templates:FloorTileTemplate />
+        </DataTemplate>
+    </selectors:ProjectTemplateSelector.FloorTileTemplate>
+
+    <!-- ADD THIS -->
+    <selectors:ProjectTemplateSelector.WallTileTemplate>
+        <DataTemplate>
+            <templates:WallTileTemplate />
+        </DataTemplate>
+    </selectors:ProjectTemplateSelector.WallTileTemplate>
+</selectors:ProjectTemplateSelector>
+```
+
+### 5. Add Property in ProjectTemplateSelector
+
+**File**: `TileTextureGenerator.Presentation.UI/Selectors/ProjectTemplateSelector.cs`
+
+Add property:
+```csharp
+public class ProjectTemplateSelector : DataTemplateSelector
+{
+    public DataTemplate? FloorTileTemplate { get; set; }
+    public DataTemplate? WallTileTemplate { get; set; } // ADD THIS
+
+    // GetTemplateMappings() auto-scans properties (no code change needed!)
+}
+```
+
+### 6. DONE! 🎉
+
+**That's it!** The system is 100% convention-based:
+- ✅ `WallTileTemplate` property → maps to `WallTileProject`
+- ✅ `WallTileProjectViewModel` auto-discovered by naming convention
+- ✅ JSON contract auto-handled
+- ✅ No code changes in `EditProjectViewModel` or `TemplatedContentView`
+
+---
+
+## Key Conventions
+
+| Convention | Example | Result |
+|------------|---------|--------|
+| **Template Property Name** | `FloorTileTemplate` | Maps to `FloorTileProject` |
+| **ViewModel Class Name** | `FloorTileProjectViewModel` | Auto-discovered by reflection |
+| **ViewModel Constructor** | `(JsonObject, EditProjectViewModel)` | **MANDATORY** signature |
+| **Enum Serialization** | `TileShape.Full` | Stored as `"Full"` (string in JSON) |
+| **Image Serialization** | `byte[]` | Stored as base64 string |
+
+---
+
+## Testing Strategy
+
+### Unit Tests for ProjectTemplateSelector
+
+```csharp
+[Fact]
+public void WhenAllRegisteredProjects_ThenEachHasTemplate()
+{
+    // Arrange
+    var selector = new ProjectTemplateSelector 
+    { 
+        FloorTileTemplate = new DataTemplate(typeof(FloorTileTemplate))
+    };
+
+    var registeredTypes = new[] { "FloorTileProject", "WallTileProject" };
+
+    // Act & Assert
+    foreach (var typeName in registeredTypes)
+    {
+        var template = selector.SelectTemplateByTypeName(typeName);
+        Assert.NotNull(template); 
+        // ❌ Will fail for WallTileProject (TDD: implement WallTileTemplate)
+    }
+}
+```
+
+---
+
+## Benefits of this Architecture
+
+✅ **Hexagonal Compliance**: Presentation.UI does NOT reference Core  
+✅ **JSON Contract**: Stable interface between layers  
+✅ **Convention-based**: Minimal boilerplate for new types  
+✅ **Memory Efficient**: Templates instantiated only when needed  
+✅ **Testable**: Template mappings verifiable via tests  
+✅ **Maintainable**: Adding new project types = ~5 files, zero logic changes  
+✅ **Enum Readability**: JSON contains `"Full"` not `0`  
+✅ **Shared Reference**: UI modifications auto-reflected on Save  
+
+---
+
+## Related Documents
+
+- [`ARCHITECTURE.md`](./ARCHITECTURE.md) - Overall architecture
+- [`ARCHITECTURE_SERIALIZATION.md`](./ARCHITECTURE_SERIALIZATION.md) - JSON persistence
+- [`.github/copilot-instructions.md`](.github/copilot-instructions.md) - Development guidelines
+
 public partial class FloorTileProjectDetailsView : ContentView
 {
     public FloorTileProjectDetailsView()

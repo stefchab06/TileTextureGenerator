@@ -4,6 +4,9 @@
              xmlns:vm="clr-namespace:TileTextureGenerator.Presentation.UI.ViewModels"
              xmlns:res="clr-namespace:TileTextureGenerator.Presentation.UI.Resources.Strings"
              xmlns:converters="clr-namespace:TileTextureGenerator.Presentation.UI.Converters"
+             xmlns:selectors="clr-namespace:TileTextureGenerator.Presentation.UI.Selectors"
+             xmlns:templates="clr-namespace:TileTextureGenerator.Presentation.UI.Templates"
+             xmlns:controls="clr-namespace:TileTextureGenerator.Presentation.UI.Controls"
              x:Class="TileTextureGenerator.Presentation.UI.Pages.EditProjectPage"
              x:DataType="vm:EditProjectViewModel"
              Shell.NavBarIsVisible="True"
@@ -13,6 +16,17 @@
         <ResourceDictionary>
             <converters:BoolToButtonColorConverter x:Key="BoolToButtonColorConverter" />
             <converters:BoolToButtonTextColorConverter x:Key="BoolToButtonTextColorConverter" />
+            <converters:IsNotNullConverter x:Key="IsNotNullConverter" />
+            <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+
+            <!-- Project Template Selector -->
+            <selectors:ProjectTemplateSelector x:Key="ProjectTemplateSelector">
+                <selectors:ProjectTemplateSelector.FloorTileTemplate>
+                    <DataTemplate>
+                        <templates:FloorTileTemplate />
+                    </DataTemplate>
+                </selectors:ProjectTemplateSelector.FloorTileTemplate>
+            </selectors:ProjectTemplateSelector>
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -27,14 +41,15 @@
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="20">
 
-            <!-- Template zone (placeholder for future DataTemplateSelector) -->
+            <!-- Project properties (dynamic template selection with automatic placeholder fallback) -->
             <Frame BorderColor="{StaticResource Primary}"
                    BackgroundColor="{StaticResource Secondary}"
                    Padding="10">
-                <Label Text="{x:Static res:AppResources.EditProject_TemplatePlaceholder}"
-                       HorizontalTextAlignment="Center"
-                       FontSize="Small"
-                       TextColor="{StaticResource Gray600}" />
+
+                <!-- TemplatedContentView automatically displays PlaceholderTemplate if no specific template exists -->
+                <controls:TemplatedContentView TemplateSelector="{StaticResource ProjectTemplateSelector}"
+                                               TypeName="{Binding ConcreteTypeName}"
+                                               TemplateData="{Binding ProjectViewModel}" />
             </Frame>
 
             <!-- Save button (full width) -->

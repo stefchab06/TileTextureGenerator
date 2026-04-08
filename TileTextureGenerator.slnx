@@ -14,6 +14,13 @@
     <File Path="documentation/diagrams/sequence-diagrams/sequence-create-project.puml" />
     <File Path="documentation/diagrams/sequence-diagrams/sequence-load-project.puml" />
   </Folder>
+  <Folder Name="/documentation/md files/">
+    <File Path="ARCHITECTURE.md" />
+    <File Path="ARCHITECTURE_SERIALIZATION.md" />
+    <File Path="ARCHITECTURE_UI.md" />
+    <File Path="README.md" />
+    <File Path="TODO.md" />
+  </Folder>
   <Project Path="TileTextureGenerator.Adapters.Persistence.Tests/TileTextureGenerator.Adapters.Persistence.Tests.csproj" />
   <Project Path="TileTextureGenerator.Adapters.Persistence/TileTextureGenerator.Adapters.Persistence.csproj" />
   <Project Path="TileTextureGenerator.Adapters.UseCases.Tests/TileTextureGenerator.Adapters.UseCases.Tests.csproj" />

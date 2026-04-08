@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using Microsoft.Maui.Controls;
 using TileTextureGenerator.Presentation.UI.Services;
-using TileTextureGenerator.Core.Enums;
+using TileTextureGenerator.Adapters.UseCases.Enums;
 
 namespace TileTextureGenerator.Presentation.UI.Converters;
 

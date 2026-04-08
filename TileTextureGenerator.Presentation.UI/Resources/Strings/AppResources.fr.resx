@@ -177,4 +177,25 @@
   <data name="EditProject_SelectTransformationType" xml:space="preserve">
     <value>Choisissez un type de transformation</value>
   </data>
+  <data name="FloorTileProject_TileShape" xml:space="preserve">
+    <value>Forme de tuile</value>
+  </data>
+  <data name="TileShape_Full" xml:space="preserve">
+    <value>Tuile entière</value>
+  </data>
+  <data name="TileShape_HalfHorizontal" xml:space="preserve">
+    <value>Demi tuile horizontale</value>
+  </data>
+  <data name="TileShape_HalfVertical" xml:space="preserve">
+    <value>Demi tuile verticale</value>
+  </data>
+  <data name="FloorTileProject_SourceImage" xml:space="preserve">
+    <value>Image source</value>
+  </data>
+  <data name="FloorTileProject_SourceImagePlaceholder" xml:space="preserve">
+    <value>Cliquez ici pour charger une image</value>
+  </data>
+  <data name="FloorTileProject_SelectTileShape" xml:space="preserve">
+    <value>Sélectionnez la forme de tuile</value>
+  </data>
 </root>

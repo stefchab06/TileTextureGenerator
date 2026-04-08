@@ -16,43 +16,68 @@ public class EditProjectViewModel : INotifyPropertyChanged
     private readonly EditProjectUseCase _editUseCase;
     private readonly ProjectTypeLocalizer _projectTypeLocalizer;
     private readonly TransformationTypeLocalizer _transformationTypeLocalizer;
+    private readonly TileShapeLocalizer _tileShapeLocalizer;
+    private readonly System.Text.Json.Nodes.JsonObject _propertiesJson;
     private TransformationTypeItem? _selectedTransformationType;
     private bool _isSaving;
     private bool _isTransformationPickerExpanded;
+    private object? _projectViewModel;
 
-    public EditProjectViewModel(EditProjectUseCase editUseCase, ProjectTypeLocalizer projectTypeLocalizer, TransformationTypeLocalizer transformationTypeLocalizer)
+    public EditProjectViewModel(
+        EditProjectUseCase editUseCase, 
+        ProjectTypeLocalizer projectTypeLocalizer, 
+        TransformationTypeLocalizer transformationTypeLocalizer,
+        TileShapeLocalizer tileShapeLocalizer)
     {
         ArgumentNullException.ThrowIfNull(editUseCase);
         ArgumentNullException.ThrowIfNull(projectTypeLocalizer);
         ArgumentNullException.ThrowIfNull(transformationTypeLocalizer);
+        ArgumentNullException.ThrowIfNull(tileShapeLocalizer);
 
         _editUseCase = editUseCase;
         _projectTypeLocalizer = projectTypeLocalizer;
         _transformationTypeLocalizer = transformationTypeLocalizer;
+        _tileShapeLocalizer = tileShapeLocalizer;
+
+        // Get JSON once and share it with template ViewModels
+        _propertiesJson = _editUseCase.GetPropertiesJson();
 
         SaveCommand = new Command(async () => await SaveAsync(), () => !IsSaving);
         AddTransformationCommand = new Command(async () => await AddTransformationAsync(), CanAddTransformation);
         ToggleTransformationPickerCommand = new Command(ToggleTransformationPicker);
         SelectTransformationTypeCommand = new Command<TransformationTypeItem>(OnTransformationTypeSelected);
 
+        // Create ViewModel wrapper for the project (shares _propertiesJson reference)
+        _projectViewModel = CreateProjectViewModel();
+
         // Load available transformation types
         _ = LoadTransformationTypesAsync();
     }
 
     /// <summary>
-    /// Exposes the project for binding (Shell title, future template selector).
+    /// Concrete type name of the project (for template selection).
     /// </summary>
-    public TileTextureGenerator.Core.Entities.ProjectBase Project => _editUseCase.Project;
+    public string ConcreteTypeName => _editUseCase.ConcreteTypeName;
+
+    /// <summary>
+    /// ViewModel wrapper for the project (for DataTemplateSelector).
+    /// </summary>
+    public object? ProjectViewModel => _projectViewModel;
+
+    /// <summary>
+    /// Tile shape localizer (for template ViewModels).
+    /// </summary>
+    public TileShapeLocalizer TileShapeLocalizer => _tileShapeLocalizer;
 
     /// <summary>
     /// Project name for Shell title.
     /// </summary>
-    public string ProjectName => Project.Name;
+    public string ProjectName => _editUseCase.Project.Name;
 
     /// <summary>
     /// Localized project type for Shell title.
     /// </summary>
-    public string ProjectTypeLocalized => _projectTypeLocalizer.GetLocalizedName(Project.Type);
+    public string ProjectTypeLocalized => _projectTypeLocalizer.GetLocalizedName(_editUseCase.Project.Type);
 
     /// <summary>
     /// Shell title: "ProjectName (Type)".
@@ -143,8 +168,12 @@ public class EditProjectViewModel : INotifyPropertyChanged
         try
         {
             IsSaving = true;
+
+            // Update entity from JSON (shared reference, already modified by template)
+            _editUseCase.UpdatePropertiesFromJson(_propertiesJson);
+
             await _editUseCase.SaveAsync();
-            
+
             // TODO: Show success message (future iteration)
         }
         catch (Exception ex)
@@ -195,6 +224,33 @@ public class EditProjectViewModel : INotifyPropertyChanged
         SelectedTransformationType = item;
         IsTransformationPickerExpanded = false;
         ((Command)AddTransformationCommand).ChangeCanExecute();
+    }
+
+    /// <summary>
+    /// Creates the appropriate ViewModel wrapper based on project type.
+    /// Uses reflection and naming convention to instantiate the correct ViewModel.
+    /// Convention: "FloorTileProject" → "FloorTileProjectViewModel(JsonObject, EditProjectViewModel)"
+    /// </summary>
+    private object? CreateProjectViewModel()
+    {
+        // Get ViewModel type by convention (e.g., "FloorTileProject" → "FloorTileProjectViewModel")
+        var viewModelTypeName = $"TileTextureGenerator.Presentation.UI.ViewModels.{_editUseCase.ConcreteTypeName}ViewModel";
+        var viewModelType = Type.GetType(viewModelTypeName);
+
+        if (viewModelType == null)
+            return null; // No ViewModel found → PlaceholderTemplate will be used
+
+        try
+        {
+            // Instantiate with unified signature: (JsonObject, EditProjectViewModel)
+            var instance = Activator.CreateInstance(viewModelType, _propertiesJson, this);
+            return instance;
+        }
+        catch
+        {
+            // Failed to instantiate → PlaceholderTemplate will be used
+            return null;
+        }
     }
 
     // INotifyPropertyChanged implementation

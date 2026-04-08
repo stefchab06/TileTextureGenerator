@@ -4,6 +4,7 @@ using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Ports.Input;
 using Xunit;
+using AdaptersProjectStatus = TileTextureGenerator.Adapters.UseCases.Enums.ProjectStatus;
 
 namespace TileTextureGenerator.Adapters.UseCases.Tests;
 
@@ -185,7 +186,7 @@ public class ManageProjectListUseCaseTests
         // Verify P1 (New status)
         Assert.Equal("P1", result.Projects[0].Name);
         Assert.Equal("FloorTileProject", result.Projects[0].Type);
-        Assert.Equal(ProjectStatus.New, result.Projects[0].Status);
+        Assert.Equal(AdaptersProjectStatus.New, result.Projects[0].Status);
         Assert.NotNull(result.Projects[0].DisplayImage);
         Assert.True(result.Projects[0].CanLoad, "New projects should have CanLoad=true");
         Assert.False(result.Projects[0].CanGenerate, "New projects should have CanGenerate=false");
@@ -194,7 +195,7 @@ public class ManageProjectListUseCaseTests
 
         // Verify P2 (Archived status)
         Assert.Equal("P2", result.Projects[1].Name);
-        Assert.Equal(ProjectStatus.Archived, result.Projects[1].Status);
+        Assert.Equal(AdaptersProjectStatus.Archived, result.Projects[1].Status);
         Assert.Null(result.Projects[1].DisplayImage);
         Assert.False(result.Projects[1].CanLoad, "Archived projects should have CanLoad=false");
         Assert.False(result.Projects[1].CanGenerate, "Archived projects should have CanGenerate=false");

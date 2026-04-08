@@ -187,6 +187,42 @@ namespace TileTextureGenerator.Presentation.UI.Resources.Strings {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à Select tile shape.
+        /// </summary>
+        internal static string FloorTileProject_SelectTileShape {
+            get {
+                return ResourceManager.GetString("FloorTileProject_SelectTileShape", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Source image.
+        /// </summary>
+        internal static string FloorTileProject_SourceImage {
+            get {
+                return ResourceManager.GetString("FloorTileProject_SourceImage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Click here to load an image.
+        /// </summary>
+        internal static string FloorTileProject_SourceImagePlaceholder {
+            get {
+                return ResourceManager.GetString("FloorTileProject_SourceImagePlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Tile shape.
+        /// </summary>
+        internal static string FloorTileProject_TileShape {
+            get {
+                return ResourceManager.GetString("FloorTileProject_TileShape", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à Create Project.
         /// </summary>
         internal static string ProjectManagement_CreateButton {
@@ -237,6 +273,33 @@ namespace TileTextureGenerator.Presentation.UI.Resources.Strings {
         internal static string ProjectType_WallTileProject {
             get {
                 return ResourceManager.GetString("ProjectType_WallTileProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Full tile.
+        /// </summary>
+        internal static string TileShape_Full {
+            get {
+                return ResourceManager.GetString("TileShape_Full", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Half tile (Horizontal).
+        /// </summary>
+        internal static string TileShape_HalfHorizontal {
+            get {
+                return ResourceManager.GetString("TileShape_HalfHorizontal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Half tile (Vertical).
+        /// </summary>
+        internal static string TileShape_HalfVertical {
+            get {
+                return ResourceManager.GetString("TileShape_HalfVertical", resourceCulture);
             }
         }
     }

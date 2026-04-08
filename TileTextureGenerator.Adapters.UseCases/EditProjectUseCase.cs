@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using TileTextureGenerator.Core.DTOs;
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Ports.Input;
@@ -8,6 +10,7 @@ namespace TileTextureGenerator.Adapters.UseCases;
 /// Use case for editing an individual project.
 /// Wraps ProjectBase to provide a facade for UI operations.
 /// Created by ManageProjectListUseCase after loading/creating a project.
+/// Exposes project properties as JSON to decouple UI from Core entities.
 /// </summary>
 public class EditProjectUseCase
 {
@@ -20,9 +23,84 @@ public class EditProjectUseCase
     }
 
     /// <summary>
-    /// Exposes the project for UI binding and template selection.
+    /// Exposes the project for UI binding (base properties only: Name, Type, Status).
     /// </summary>
     public ProjectBase Project => _project;
+
+    /// <summary>
+    /// Gets the concrete type name of the project (for template selection).
+    /// </summary>
+    public string ConcreteTypeName => _project.GetType().Name;
+
+    /// <summary>
+    /// Gets the concrete project properties as JSON (for UI binding).
+    /// Excludes base properties (Name, Type, Status, etc.).
+    /// Enums are serialized as strings for readability.
+    /// </summary>
+    public JsonObject GetPropertiesJson()
+    {
+        // Serialize the entire project with enums as strings
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = false,
+            PropertyNameCaseInsensitive = false,
+            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+        };
+
+        var json = JsonSerializer.Serialize(_project, _project.GetType(), options);
+
+        // Parse as JsonObject
+        var jsonObject = JsonNode.Parse(json)?.AsObject() ?? new JsonObject();
+
+        // Remove base properties (inherited from ProjectBase)
+        jsonObject.Remove("Name");
+        jsonObject.Remove("Type");
+        jsonObject.Remove("Status");
+        jsonObject.Remove("DisplayImage");
+        jsonObject.Remove("Transformations");
+
+        return jsonObject;
+    }
+
+    /// <summary>
+    /// Updates the concrete project properties from JSON.
+    /// Copies properties individually to avoid deserialization issues with parameterized constructors.
+    /// </summary>
+    /// <param name="propertiesJson">JSON object containing updated properties.</param>
+    public void UpdatePropertiesFromJson(JsonObject propertiesJson)
+    {
+        ArgumentNullException.ThrowIfNull(propertiesJson);
+
+        // Serialize options with enum as string
+        var options = new JsonSerializerOptions
+        {
+            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+        };
+
+        // Update properties individually (avoid full deserialization due to constructor issues)
+        foreach (var (key, value) in propertiesJson)
+        {
+            var property = _project.GetType().GetProperty(key);
+            if (property != null && property.CanWrite)
+            {
+                try
+                {
+                    // Deserialize the value to the correct type
+                    var targetType = property.PropertyType;
+                    var jsonValue = value?.ToJsonString() ?? "null";
+                    var deserializedValue = JsonSerializer.Deserialize(jsonValue, targetType, options);
+
+                    // Set the property
+                    property.SetValue(_project, deserializedValue);
+                }
+                catch
+                {
+                    // Skip properties that fail to deserialize
+                    continue;
+                }
+            }
+        }
+    }
 
     /// <summary>
     /// Gets the project type identifier for UI display.

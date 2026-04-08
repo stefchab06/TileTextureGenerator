@@ -100,7 +100,7 @@ public class ManageProjectListUseCase
             var mapped = projects.Select(p => new ProjectListItemDto(
                 Name: p.Name,
                 Type: p.Type,
-                Status: p.Status,
+                Status: MapProjectStatus(p.Status),
                 DisplayImage: p.DisplayImage is not null ? p.DisplayImage.Value : null,
                 CanLoad: p.AvailableActions.HasFlag(Core.Enums.ProjectActions.Load),
                 CanGenerate: p.AvailableActions.HasFlag(Core.Enums.ProjectActions.Generate),
@@ -217,6 +217,22 @@ public class ManageProjectListUseCase
         {
             return LoadProjectResult.Error($"Unexpected error: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Maps Core.Enums.ProjectStatus to Adapters.UseCases.Enums.ProjectStatus.
+    /// </summary>
+    private static Enums.ProjectStatus MapProjectStatus(Core.Enums.ProjectStatus coreStatus)
+    {
+        return coreStatus switch
+        {
+            Core.Enums.ProjectStatus.Unexisting => Enums.ProjectStatus.Unexisting,
+            Core.Enums.ProjectStatus.New => Enums.ProjectStatus.New,
+            Core.Enums.ProjectStatus.Pending => Enums.ProjectStatus.Pending,
+            Core.Enums.ProjectStatus.Generated => Enums.ProjectStatus.Generated,
+            Core.Enums.ProjectStatus.Archived => Enums.ProjectStatus.Archived,
+            _ => throw new ArgumentOutOfRangeException(nameof(coreStatus), coreStatus, "Unknown ProjectStatus value")
+        };
     }
 }
 

@@ -1,4 +1,4 @@
-using TileTextureGenerator.Core.Enums;
+using TileTextureGenerator.Adapters.UseCases.Enums;
 
 namespace TileTextureGenerator.Adapters.UseCases;
 

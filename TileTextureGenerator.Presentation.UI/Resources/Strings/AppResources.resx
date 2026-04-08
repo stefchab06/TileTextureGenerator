@@ -177,4 +177,25 @@
   <data name="EditProject_SelectTransformationType" xml:space="preserve">
     <value>Select transformation type</value>
   </data>
+  <data name="FloorTileProject_TileShape" xml:space="preserve">
+    <value>Tile shape</value>
+  </data>
+  <data name="TileShape_Full" xml:space="preserve">
+    <value>Full tile</value>
+  </data>
+  <data name="TileShape_HalfHorizontal" xml:space="preserve">
+    <value>Half tile (Horizontal)</value>
+  </data>
+  <data name="TileShape_HalfVertical" xml:space="preserve">
+    <value>Half tile (Vertical)</value>
+  </data>
+  <data name="FloorTileProject_SourceImage" xml:space="preserve">
+    <value>Source image</value>
+  </data>
+  <data name="FloorTileProject_SourceImagePlaceholder" xml:space="preserve">
+    <value>Click here to load an image</value>
+  </data>
+  <data name="FloorTileProject_SelectTileShape" xml:space="preserve">
+    <value>Select tile shape</value>
+  </data>
 </root>
