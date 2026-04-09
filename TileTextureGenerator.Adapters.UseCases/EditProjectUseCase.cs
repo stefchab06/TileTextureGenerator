@@ -123,6 +123,22 @@ public class EditProjectUseCase
     }
 
     /// <summary>
+    /// Gets the list of transformations configured for this project.
+    /// Returns DTOs suitable for UI display (card list).
+    /// </summary>
+    /// <returns>List of transformation DTOs with Id, TypeName, and Icon.</returns>
+    public IReadOnlyList<TransformationListItemDto> GetTransformations()
+    {
+        return _project.Transformations
+            .Select(t => new TransformationListItemDto(
+                Id: t.Id,
+                TypeName: t.Type,
+                Icon: t.Icon?.Bytes ?? Array.Empty<byte>()
+            ))
+            .ToList();
+    }
+
+    /// <summary>
     /// Saves all changes made to the project.
     /// </summary>
     public async Task SaveAsync()

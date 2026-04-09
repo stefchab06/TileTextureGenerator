@@ -1,3 +1,4 @@
+using TileTextureGenerator.Presentation.UI.Constants;
 using TileTextureGenerator.Presentation.UI.ViewModels;
 
 namespace TileTextureGenerator.Presentation.UI.Pages;
@@ -29,6 +30,27 @@ public partial class EditProjectPage : ContentPage
                 BindingContext = value;
                 OnPropertyChanged(nameof(Title));
             }
+        }
+    }
+
+    protected override void OnSizeAllocated(double width, double height)
+    {
+        base.OnSizeAllocated(width, height);
+        UpdateTransformationsGridColumns(width);
+    }
+
+    private void UpdateTransformationsGridColumns(double width)
+    {
+        // Use FindByName to avoid compile-time reference
+        if (this.FindByName("TransformationsCollectionView") is CollectionView collectionView &&
+            collectionView.ItemsLayout is GridItemsLayout gridLayout)
+        {
+            if (ScreenBreakpoints.IsLarge(width))
+                gridLayout.Span = 4;
+            else if (ScreenBreakpoints.IsMedium(width))
+                gridLayout.Span = 3;
+            else
+                gridLayout.Span = 1;
         }
     }
 

@@ -198,4 +198,13 @@
   <data name="FloorTileProject_SelectTileShape" xml:space="preserve">
     <value>Select tile shape</value>
   </data>
+  <data name="EditProject_TransformationsList" xml:space="preserve">
+    <value>Transformations</value>
+  </data>
+  <data name="EditProject_NoTransformations" xml:space="preserve">
+    <value>No transformations configured</value>
+  </data>
+  <data name="EditProject_AddTransformationHint" xml:space="preserve">
+    <value>Add transformations using the picker above</value>
+  </data>
 </root>

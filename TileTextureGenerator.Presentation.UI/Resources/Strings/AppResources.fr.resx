@@ -198,4 +198,13 @@
   <data name="FloorTileProject_SelectTileShape" xml:space="preserve">
     <value>Sélectionnez la forme de tuile</value>
   </data>
+  <data name="EditProject_TransformationsList" xml:space="preserve">
+    <value>Transformations</value>
+  </data>
+  <data name="EditProject_NoTransformations" xml:space="preserve">
+    <value>Aucune transformation configurée</value>
+  </data>
+  <data name="EditProject_AddTransformationHint" xml:space="preserve">
+    <value>Ajoutez des transformations avec le sélecteur ci-dessus</value>
+  </data>
 </root>

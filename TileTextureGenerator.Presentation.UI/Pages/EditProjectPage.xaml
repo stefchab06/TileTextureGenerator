@@ -164,16 +164,55 @@
                 </VerticalStackLayout>
             </Frame>
 
-            <!-- Transformations list (NOT implemented yet - placeholder) -->
-            <Frame BorderColor="{StaticResource Gray300}"
-                   Padding="10"
-                   IsVisible="False">
-                <Label Text="{x:Static res:AppResources.EditProject_TransformationsListPlaceholder}"
-                       HorizontalTextAlignment="Center"
-                       FontSize="Small"
-                       TextColor="{StaticResource Gray600}" />
-            </Frame>
+            <CollectionView x:Name="TransformationsCollectionView"
+                            ItemsSource="{Binding Transformations}"
+                            Margin="0,20,0,0"
+                            SelectionMode="None">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
+                                        Span="1"
+                                        HorizontalItemSpacing="10"
+                                        VerticalItemSpacing="10" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:TransformationCardItem">
 
+                        <Border Stroke="#BDBDBD" StrokeThickness="2" StrokeShape="RoundRectangle 16" Margin="8" Padding="12" BackgroundColor="{AppThemeBinding Light=White, Dark=#222}">
+                            <VerticalStackLayout Spacing="8">
+                                <!-- Transformation type -->
+                                <Label Text="{Binding LocalizedName}" FontSize="18" FontAttributes="Bold" HorizontalOptions="Center" />
+
+                                <!-- Transformation Icon -->
+                                <Frame Padding="0" CornerRadius="8" HeightRequest="128" HorizontalOptions="Center">
+                                    <Image Source="{Binding Icon}" HeightRequest="128" Aspect="AspectFit" />
+                                </Frame>
+
+                                <HorizontalStackLayout Grid.Row="2"
+                                                        Spacing="10"
+                                                        HorizontalOptions="End">
+                                    <Button Text="📂"
+                                            WidthRequest="50"
+                                            HeightRequest="50"
+                                            CornerRadius="25"
+                                            BackgroundColor="{StaticResource Gray400}"
+                                            TextColor="White"
+                                            FontSize="24"
+                                            IsEnabled="False" />
+
+                                    <Button Text="🗑️"
+                                            CommandParameter="{Binding Id}"
+                                            WidthRequest="50"
+                                            HeightRequest="50"
+                                            CornerRadius="25"
+                                            BackgroundColor="{StaticResource Tertiary}"
+                                            TextColor="White"
+                                            FontSize="24" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
         </VerticalStackLayout>
     </ScrollView>
 

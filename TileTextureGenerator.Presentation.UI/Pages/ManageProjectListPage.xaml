@@ -96,10 +96,14 @@
                 Margin="0,20,0,0"
                 SelectionMode="None">
                 <CollectionView.ItemsLayout>
-                    <GridItemsLayout Orientation="Vertical" Span="2" />
+                    <GridItemsLayout Orientation="Vertical"
+                                        Span="1"
+                                        HorizontalItemSpacing="10"
+                                        VerticalItemSpacing="10" />
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
+                        
                         <Border Stroke="#BDBDBD" StrokeThickness="2" StrokeShape="RoundRectangle 16" Margin="8" Padding="12" BackgroundColor="{AppThemeBinding Light=White, Dark=#222}">
                             <VerticalStackLayout Spacing="8">
                                 <!-- Project Name -->

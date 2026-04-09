@@ -46,12 +46,16 @@ public class EditProjectViewModel : INotifyPropertyChanged
         AddTransformationCommand = new Command(async () => await AddTransformationAsync(), CanAddTransformation);
         ToggleTransformationPickerCommand = new Command(ToggleTransformationPicker);
         SelectTransformationTypeCommand = new Command<TransformationTypeItem>(OnTransformationTypeSelected);
+        RemoveTransformationCommand = new Command<Guid>(async (id) => await RemoveTransformationAsync(id));
 
         // Create ViewModel wrapper for the project (shares _propertiesJson reference)
         _projectViewModel = CreateProjectViewModel();
 
         // Load available transformation types
         _ = LoadTransformationTypesAsync();
+
+        // Load existing transformations
+        LoadTransformations();
     }
 
     /// <summary>
@@ -88,6 +92,11 @@ public class EditProjectViewModel : INotifyPropertyChanged
     /// Available transformation types for picker (image + technical name).
     /// </summary>
     public ObservableCollection<TransformationTypeItem> AvailableTransformationTypes { get; } = [];
+
+    /// <summary>
+    /// List of transformations configured for this project (for card display).
+    /// </summary>
+    public ObservableCollection<TransformationCardItem> Transformations { get; } = [];
 
     /// <summary>
     /// Selected transformation type in picker.
@@ -139,6 +148,7 @@ public class EditProjectViewModel : INotifyPropertyChanged
     public ICommand AddTransformationCommand { get; }
     public ICommand ToggleTransformationPickerCommand { get; }
     public ICommand SelectTransformationTypeCommand { get; }
+    public ICommand RemoveTransformationCommand { get; }
 
     private async Task LoadTransformationTypesAsync()
     {
@@ -205,12 +215,49 @@ public class EditProjectViewModel : INotifyPropertyChanged
             SelectedTransformationType = null;
             IsTransformationPickerExpanded = false;
 
-            // TODO: Refresh transformations list (future iteration)
+            // Refresh transformations list
+            LoadTransformations();
         }
         catch (Exception ex)
         {
             // TODO: Error handling (future iteration)
             System.Diagnostics.Debug.WriteLine($"Add transformation failed: {ex.Message}");
+        }
+    }
+
+    private async Task RemoveTransformationAsync(Guid transformationId)
+    {
+        if (transformationId == Guid.Empty)
+            return;
+
+        try
+        {
+            await _editUseCase.RemoveTransformationAsync(transformationId);
+
+            // Refresh transformations list
+            LoadTransformations();
+        }
+        catch (Exception ex)
+        {
+            // TODO: Error handling (future iteration)
+            System.Diagnostics.Debug.WriteLine($"Remove transformation failed: {ex.Message}");
+        }
+    }
+
+    private void LoadTransformations()
+    {
+        Transformations.Clear();
+
+        var transformations = _editUseCase.GetTransformations();
+        foreach (var transformation in transformations)
+        {
+            Transformations.Add(new TransformationCardItem
+            {
+                Id = transformation.Id,
+                TechnicalName = transformation.TypeName,
+                LocalizedName = _transformationTypeLocalizer.GetLocalizedName(transformation.TypeName),
+                Icon = transformation.Icon
+            });
         }
     }
 
