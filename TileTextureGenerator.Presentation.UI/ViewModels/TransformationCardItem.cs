@@ -8,5 +8,9 @@ public class TransformationCardItem
     public Guid Id { get; set; }
     public string TechnicalName { get; set; } = string.Empty;
     public string LocalizedName { get; set; } = string.Empty;
-    public byte[] Icon { get; set; } = Array.Empty<byte>();
+
+    /// <summary>
+    /// Icon as ImageSource (converted from byte[] for XAML binding).
+    /// </summary>
+    public ImageSource? IconSource { get; set; }
 }

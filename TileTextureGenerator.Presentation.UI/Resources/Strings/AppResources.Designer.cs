@@ -133,11 +133,29 @@ namespace TileTextureGenerator.Presentation.UI.Resources.Strings {
         }
         
         /// <summary>
+        ///   Recherche une chaîne localisée semblable à Add transformations using the picker above.
+        /// </summary>
+        internal static string EditProject_AddTransformationHint {
+            get {
+                return ResourceManager.GetString("EditProject_AddTransformationHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Recherche une chaîne localisée semblable à Close.
         /// </summary>
         internal static string EditProject_Close {
             get {
                 return ResourceManager.GetString("EditProject_Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à No transformations configured.
+        /// </summary>
+        internal static string EditProject_NoTransformations {
+            get {
+                return ResourceManager.GetString("EditProject_NoTransformations", resourceCulture);
             }
         }
         
@@ -165,6 +183,15 @@ namespace TileTextureGenerator.Presentation.UI.Resources.Strings {
         internal static string EditProject_TemplatePlaceholder {
             get {
                 return ResourceManager.GetString("EditProject_TemplatePlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à Transformations.
+        /// </summary>
+        internal static string EditProject_TransformationsList {
+            get {
+                return ResourceManager.GetString("EditProject_TransformationsList", resourceCulture);
             }
         }
         
@@ -300,6 +327,24 @@ namespace TileTextureGenerator.Presentation.UI.Resources.Strings {
         internal static string TileShape_HalfVertical {
             get {
                 return ResourceManager.GetString("TileShape_HalfVertical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à In tile horizontal texture.
+        /// </summary>
+        internal static string TransformationType_HorizontalFloorTransformation {
+            get {
+                return ResourceManager.GetString("TransformationType_HorizontalFloorTransformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Recherche une chaîne localisée semblable à In tile vertical wall.
+        /// </summary>
+        internal static string TransformationType_VerticalWallTransformation {
+            get {
+                return ResourceManager.GetString("TransformationType_VerticalWallTransformation", resourceCulture);
             }
         }
     }

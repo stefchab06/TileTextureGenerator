@@ -184,30 +184,42 @@
 
                                 <!-- Transformation Icon -->
                                 <Frame Padding="0" CornerRadius="8" HeightRequest="128" HorizontalOptions="Center">
-                                    <Image Source="{Binding Icon}" HeightRequest="128" Aspect="AspectFit" />
+                                    <Image Source="{Binding IconSource}" HeightRequest="128" Aspect="AspectFit" />
                                 </Frame>
 
-                                <HorizontalStackLayout Grid.Row="2"
-                                                        Spacing="10"
-                                                        HorizontalOptions="End">
-                                    <Button Text="📂"
+                                <!-- Action Buttons (left and right) -->
+                                <Grid Grid.Row="2" ColumnSpacing="0" Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Open button (left) -->
+                                    <Button Grid.Column="0"
+                                            Text="📂"
                                             WidthRequest="50"
                                             HeightRequest="50"
                                             CornerRadius="25"
                                             BackgroundColor="{StaticResource Gray400}"
                                             TextColor="White"
                                             FontSize="24"
+                                            Margin="8,0,0,0"
                                             IsEnabled="False" />
 
-                                    <Button Text="🗑️"
+                                    <!-- Delete button (right) -->
+                                    <Button Grid.Column="2"
+                                            Text="🗑️"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:EditProjectViewModel}}, Path=RemoveTransformationCommand}"
                                             CommandParameter="{Binding Id}"
                                             WidthRequest="50"
                                             HeightRequest="50"
                                             CornerRadius="25"
                                             BackgroundColor="{StaticResource Tertiary}"
                                             TextColor="White"
-                                            FontSize="24" />
-                                </HorizontalStackLayout>
+                                            FontSize="24"
+                                            Margin="0,0,8,0" />
+                                </Grid>
                             </VerticalStackLayout>
                         </Border>
                     </DataTemplate>

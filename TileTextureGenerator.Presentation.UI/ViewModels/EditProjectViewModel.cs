@@ -251,12 +251,19 @@ public class EditProjectViewModel : INotifyPropertyChanged
         var transformations = _editUseCase.GetTransformations();
         foreach (var transformation in transformations)
         {
+            // Convert byte[] to ImageSource
+            ImageSource? iconSource = null;
+            if (transformation.Icon != null && transformation.Icon.Length > 0)
+            {
+                iconSource = ImageSource.FromStream(() => new System.IO.MemoryStream(transformation.Icon));
+            }
+
             Transformations.Add(new TransformationCardItem
             {
                 Id = transformation.Id,
                 TechnicalName = transformation.TypeName,
                 LocalizedName = _transformationTypeLocalizer.GetLocalizedName(transformation.TypeName),
-                Icon = transformation.Icon
+                IconSource = iconSource
             });
         }
     }

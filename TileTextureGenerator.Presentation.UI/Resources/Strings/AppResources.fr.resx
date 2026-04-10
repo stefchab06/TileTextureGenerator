@@ -207,4 +207,10 @@
   <data name="EditProject_AddTransformationHint" xml:space="preserve">
     <value>Ajoutez des transformations avec le sélecteur ci-dessus</value>
   </data>
+  <data name="TransformationType_HorizontalFloorTransformation" xml:space="preserve">
+    <value>Texture dans la tuile horizontale</value>
+  </data>
+  <data name="TransformationType_VerticalWallTransformation" xml:space="preserve">
+    <value>Texture dans la tuile verticale</value>
+  </data>
 </root>

@@ -82,7 +82,7 @@ public class ProjectsManagerTests
                 var project = TextureProjectRegistry.Create(dto.Type, dto.Name);
                 project.Status = dto.Status;
                 project.LastModifiedDate = dto.LastModifiedDate;
-                project.DisplayImage = dto.DisplayImage;
+                // DisplayImage cannot be set directly (read-only) - derived classes use SetDisplayImage()
                 return Task.FromResult<ProjectBase?>(project);
             }
             return Task.FromResult<ProjectBase?>(null);

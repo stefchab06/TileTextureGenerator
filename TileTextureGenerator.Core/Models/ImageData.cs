@@ -1,8 +1,11 @@
+using TileTextureGenerator.Core.Services;
+
 namespace TileTextureGenerator.Core.Models;
 
 /// <summary>
 /// Represents image data in PNG format.
 /// Immutable value type wrapping raw byte array for type safety.
+/// Automatically converts non-PNG images to PNG in constructor (business rule).
 /// </summary>
 public readonly record struct ImageData
 {
@@ -13,18 +16,22 @@ public readonly record struct ImageData
 
     /// <summary>
     /// Creates a new ImageData instance from raw bytes.
+    /// Automatically converts to PNG if not already in PNG format (business rule).
     /// </summary>
-    /// <param name="bytes">PNG image bytes.</param>
+    /// <param name="bytes">Image bytes (any format, will be converted to PNG).</param>
     /// <exception cref="ArgumentNullException">If bytes is null.</exception>
     /// <exception cref="ArgumentException">If bytes is empty.</exception>
     public ImageData(byte[] bytes)
     {
         ArgumentNullException.ThrowIfNull(bytes);
-        
+
         if (bytes.Length == 0)
             throw new ArgumentException("Image data cannot be empty.", nameof(bytes));
-        
-        Bytes = bytes;
+
+        // Business rule: All images in Core MUST be PNG
+        Bytes = ImageProcessor.IsPng(bytes) 
+            ? bytes 
+            : ImageProcessor.ConvertToPng(bytes);
     }
 
     /// <summary>

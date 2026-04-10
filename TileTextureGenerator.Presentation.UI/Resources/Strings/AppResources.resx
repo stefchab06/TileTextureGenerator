@@ -207,4 +207,10 @@
   <data name="EditProject_AddTransformationHint" xml:space="preserve">
     <value>Add transformations using the picker above</value>
   </data>
+  <data name="TransformationType_HorizontalFloorTransformation" xml:space="preserve">
+    <value>In tile horizontal texture</value>
+  </data>
+  <data name="TransformationType_VerticalWallTransformation" xml:space="preserve">
+    <value>In tile vertical wall</value>
+  </data>
 </root>

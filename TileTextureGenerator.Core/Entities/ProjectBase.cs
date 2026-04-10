@@ -46,8 +46,9 @@ public abstract class ProjectBase : IProjectManager
 
     /// <summary>
     /// Display image for UI (PNG, 256x256). Nullable.
+    /// Read-only publicly. Modified only via SetDisplayImage() by derived classes.
     /// </summary>
-    public ImageData? DisplayImage { get; set; }
+    public ImageData? DisplayImage { get; private set; }
 
     /// <summary>
     /// Last modification timestamp (UTC).
@@ -91,16 +92,14 @@ public abstract class ProjectBase : IProjectManager
     }
 
     /// <summary>
-    /// Sets the display image from raw image data.
-    /// Converts to PNG 256x256 for display purposes using the provided image processor.
+    /// Sets the display image from source image data.
+    /// Resizes to 256x256 PNG for display purposes.
+    /// Protected method - only derived classes can update DisplayImage.
     /// </summary>
-    /// <param name="imageData">Raw image data to process.</param>
-    /// <param name="imageProcessor">Service to process the image.</param>
-    protected void SetDisplayImage(ImageData imageData, IImageProcessingService imageProcessor)
+    /// <param name="sourceImage">Source image data (will be resized to 256x256).</param>
+    protected void SetDisplayImage(ImageData sourceImage)
     {
-        ArgumentNullException.ThrowIfNull(imageProcessor);
-
-        DisplayImage = imageProcessor.ConvertToPng(imageData, 256, 256);
+        DisplayImage = Services.ImageProcessor.ResizeImage(sourceImage, 256, 256);
     }
 
     /// <inheritdoc />
@@ -118,11 +117,15 @@ public abstract class ProjectBase : IProjectManager
     {
         ArgumentNullException.ThrowIfNull(transformationType);
 
+        // Get available transformation types to find the icon
+        var availableTypes = await GetAvailableTransformationTypesAsync();
+        var typeInfo = availableTypes.FirstOrDefault(t => t.Name == transformationType);
+
         var transformation = new TransformationDTO
         {
             Id = Guid.NewGuid(),
             Type = transformationType,
-            Icon = null
+            Icon = typeInfo?.Icon // Use icon from type registry
         };
 
         while (Transformations.Any(t => t.Id == transformation.Id))
@@ -131,7 +134,7 @@ public abstract class ProjectBase : IProjectManager
             {
                 Id = Guid.NewGuid(),
                 Type = transformationType,
-                Icon = null
+                Icon = typeInfo?.Icon
             };
         }
 
