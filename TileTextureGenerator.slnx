@@ -29,6 +29,7 @@
   <Project Path="TileTextureGenerator.Core/TileTextureGenerator.Core.csproj" />
   <Project Path="TileTextureGenerator.Infrastructure.FileSystem/TileTextureGenerator.Infrastructure.FileSystem.csproj" />
   <Project Path="TileTextureGenerator.Presentation.UI/TileTextureGenerator.Presentation.UI.csproj" Id="10089402-d519-4806-a61a-5006fec4ebcc" />
+  <Project Path="TileTextureGenerator.Tests.Common/TileTextureGenerator.Tests.Common.csproj" />
   <Project Path="TileTextureGenerator/TileTextureGenerator.csproj">
     <Deploy Solution="Debug|*" />
   </Project>

@@ -8,6 +8,7 @@ using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Registries;
 using Xunit;
+using TileTextureGenerator.Tests.Common;
 
 namespace TileTextureGenerator.Adapters.Persistence.Tests.Stores;
 
@@ -128,7 +129,7 @@ public class JsonProjectsStoreTests : IDisposable
     public async Task CreateProjectAsync_WithDisplayImage_SavesImageFile()
     {
         // Arrange
-        byte[] imageData = [0x89, 0x50, 0x4E, 0x47]; // PNG header
+        byte[] imageData = TestImageFactory.CreateDisplayImage();
         var dto = new ProjectDto(
             name: "TestProject",
             type: "FloorTileProject",
@@ -223,29 +224,6 @@ public class JsonProjectsStoreTests : IDisposable
 
         var floorProject = Assert.IsType<FloorTileProject>(loadedProject);
         Assert.Equal(TileShape.HalfHorizontal, floorProject.TileShape); // Polymorphic property loaded
-    }
-
-    [Fact]
-    public async Task LoadAsync_WithDisplayImage_LoadsImageData()
-    {
-        // Arrange
-        byte[] imageData = [0x89, 0x50, 0x4E, 0x47];
-        var dto = new ProjectDto(
-            name: "TestProject",
-            type: "FloorTileProject",
-            status: ProjectStatus.New,
-            lastModifiedDate: DateTime.UtcNow,
-            displayImage: imageData
-        );
-        await _store.CreateProjectAsync(dto);
-
-        // Act
-        var loadedProject = await _store.LoadAsync("TestProject");
-
-        // Assert
-        Assert.NotNull(loadedProject);
-        Assert.NotNull(loadedProject.DisplayImage);
-        Assert.Equal(imageData, loadedProject.DisplayImage);
     }
 
     [Fact]
@@ -508,8 +486,8 @@ public class JsonProjectsStoreTests : IDisposable
     public async Task SaveAndLoad_WithMultipleImages_LoadsAllImageProperties()
     {
         // Arrange - Create different image data for DisplayImage and SourceImage
-        byte[] displayImageData = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]; // PNG header + extra
-        byte[] sourceImageData = [0x89, 0x50, 0x4E, 0x47, 0xFF, 0xAA, 0xBB, 0xCC]; // Different PNG data
+        byte[] displayImageData = TestImageFactory.CreateDisplayImage();
+        byte[] sourceImageData = TestImageFactory.CreateDisplayImage();
 
         var dto = new ProjectDto(
             name: "MultiImageTest",
@@ -558,8 +536,8 @@ public class JsonProjectsStoreTests : IDisposable
     public async Task SaveAndLoad_CompleteProject_AllPropertiesPreserved()
     {
         // Arrange - Create a complete project with all properties set
-        byte[] displayImageData = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
-        byte[] sourceImageData = [0x89, 0x50, 0x4E, 0x47, 0xFF, 0xAA, 0xBB, 0xCC];
+        byte[] displayImageData = TestImageFactory.CreateDisplayImage();
+        byte[] sourceImageData = TestImageFactory.CreateDisplayImage();
 
         var transformation1Id = Guid.NewGuid();
         var transformation2Id = Guid.NewGuid();

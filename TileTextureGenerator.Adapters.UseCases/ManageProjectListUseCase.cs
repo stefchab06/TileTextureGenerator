@@ -101,7 +101,7 @@ public class ManageProjectListUseCase
                 Name: p.Name,
                 Type: p.Type,
                 Status: MapProjectStatus(p.Status),
-                DisplayImage: p.DisplayImage is not null ? p.DisplayImage.Value : null,
+                DisplayImage: p.DisplayImage is not null ? p.DisplayImage.Value.Bytes : null,
                 CanLoad: p.AvailableActions.HasFlag(Core.Enums.ProjectActions.Load),
                 CanGenerate: p.AvailableActions.HasFlag(Core.Enums.ProjectActions.Generate),
                 CanArchive: p.AvailableActions.HasFlag(Core.Enums.ProjectActions.Archive),

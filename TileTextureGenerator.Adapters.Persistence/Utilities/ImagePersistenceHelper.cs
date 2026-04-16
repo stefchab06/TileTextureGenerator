@@ -339,8 +339,21 @@ public sealed class ImagePersistenceHelper
         byte[]? imageBytes = await LoadImageAsync(jsonPathValue, projectDir, cancellationToken);
 
         if (imageBytes == null || imageBytes.Length == 0)
+        {
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] DeserializeImageDataAsync: No bytes loaded for path '{jsonPathValue}' in dir '{projectDir}'");
             return null;
+        }
 
-        return new ImageData(imageBytes);
+        try
+        {
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] DeserializeImageDataAsync: Loaded {imageBytes.Length} bytes, creating ImageData...");
+            return new ImageData(imageBytes);
+        }
+        catch (Exception ex)
+        {
+            // Image file exists but cannot be converted to PNG (corrupt or unsupported format)
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] DeserializeImageDataAsync: Failed to create ImageData: {ex.Message}");
+            return null;
+        }
     }
 }

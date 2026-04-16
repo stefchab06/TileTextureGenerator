@@ -13,13 +13,14 @@
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\TileTextureGenerator.Core\TileTextureGenerator.Core.csproj" />
+    <ProjectReference Include="..\TileTextureGenerator.Tests.Common\TileTextureGenerator.Tests.Common.csproj" />
   </ItemGroup>
 
 </Project>

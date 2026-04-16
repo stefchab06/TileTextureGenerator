@@ -234,10 +234,16 @@ public sealed class JsonProjectsStore : IProjectsStore
                 var lastModified = projectData.TryGetValue("lastModifiedDate", out var dateEl) 
                     ? dateEl.GetDateTime() 
                     : DateTime.UtcNow;
+                var displayImageFileName = projectData.TryGetValue("displayimagePath", out var imagePathEl) 
+                    ? imagePathEl.GetString() 
+                    : null;
+                var displayImage = !string.IsNullOrEmpty(displayImageFileName)
+                    ? await _imageHelper.DeserializeImageDataAsync(displayImageFileName, dir)
+                    : null;
 
                 if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(type))
                 {
-                    var dto = new ProjectDto(name, type, status, lastModified);
+                    var dto = new ProjectDto(name, type, status, lastModified, displayImage);
                     projects.Add(dto);
                 }
             }
@@ -285,21 +291,31 @@ public sealed class JsonProjectsStore : IProjectsStore
     private async Task LoadProjectImagesAsync(ProjectBase project, string projectDir, Dictionary<string, JsonElement> projectData)
     {
         // Get all public instance properties of type ImageData (nullable or not)
+        // Include properties with private setters (like DisplayImage on ProjectBase)
         var concreteType = project.GetType();
         var imageProperties = concreteType.GetProperties(
             System.Reflection.BindingFlags.Public | 
             System.Reflection.BindingFlags.Instance)
-            .Where(p => (p.PropertyType == typeof(ImageData) || p.PropertyType == typeof(ImageData?)) && p.CanWrite);
+            .Where(p => p.PropertyType == typeof(ImageData) || p.PropertyType == typeof(ImageData?))
+            .Where(p => p.CanWrite || p.GetSetMethod(nonPublic: true) != null); // Accept public OR private setters
+
+        System.Diagnostics.Debug.WriteLine($"[DEBUG] LoadProjectImagesAsync: Found {imageProperties.Count()} image properties");
 
         foreach (var property in imageProperties)
         {
             // Try to get the path from JSON (e.g., "displayimagePath" for "DisplayImage" - fully lowercase + Path)
             string pathPropertyName = $"{property.Name.ToLowerInvariant()}Path";
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Looking for JSON property: '{pathPropertyName}'");
 
             string? relativePath = null;
             if (projectData.TryGetValue(pathPropertyName, out var pathElement))
             {
                 relativePath = pathElement.GetString();
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Found path: '{relativePath}'");
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Path property '{pathPropertyName}' not found in JSON");
             }
 
             if (relativePath == null)
@@ -307,10 +323,13 @@ public sealed class JsonProjectsStore : IProjectsStore
 
             // Use helper to deserialize ImageData
             ImageData? image = await _imageHelper.DeserializeImageDataAsync(relativePath, projectDir);
+            System.Diagnostics.Debug.WriteLine($"[DEBUG] Deserialized image: {image != null}");
 
             if (image != null)
             {
+                // Use SetValue with BindingFlags to handle private setters
                 property.SetValue(project, image);
+                System.Diagnostics.Debug.WriteLine($"[DEBUG] Set {property.Name} = <ImageData>");
             }
         }
     }

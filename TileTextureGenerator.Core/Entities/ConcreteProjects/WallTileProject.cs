@@ -15,8 +15,7 @@ public sealed class WallTileProject : ProjectBase
 {
     private static readonly string[] AvailableTransformationTypes =
     {
-        nameof(ConcreteTransformations.VerticalWallTransformation),
-        nameof(ConcreteTransformations.HorizontalFloorTransformation)
+        nameof(ConcreteTransformations.VerticalWallTransformation)
     };
 
     static WallTileProject()

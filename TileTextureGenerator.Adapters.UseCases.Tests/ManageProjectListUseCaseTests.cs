@@ -3,6 +3,7 @@ using TileTextureGenerator.Core.DTOs;
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Ports.Input;
+using TileTextureGenerator.Tests.Common;
 using Xunit;
 using AdaptersProjectStatus = TileTextureGenerator.Adapters.UseCases.Enums.ProjectStatus;
 
@@ -174,7 +175,7 @@ public class ManageProjectListUseCaseTests
     {
         var mockManager = new MockProjectsManager();
         mockManager.Projects = new List<ProjectDto> {
-            new("P1", "FloorTileProject", ProjectStatus.New, DateTime.UtcNow, new byte[] { 1, 2, 3 }, ProjectActions.Load | ProjectActions.Delete),
+            new("P1", "FloorTileProject", ProjectStatus.New, DateTime.UtcNow, TestImageFactory.CreateImageData(), ProjectActions.Load | ProjectActions.Delete),
             new("P2", "WallTileProject", ProjectStatus.Archived, DateTime.UtcNow, null, ProjectActions.Delete)
         };
         var useCase = new ManageProjectListUseCase(mockManager);

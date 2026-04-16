@@ -1,4 +1,5 @@
 using System.Text.Json;
+using SkiaSharp;
 using TileTextureGenerator.Adapters.Persistence.Stores;
 using TileTextureGenerator.Adapters.Persistence.Tests.Mocks;
 using TileTextureGenerator.Core.Entities;
@@ -8,6 +9,7 @@ using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Registries;
+using TileTextureGenerator.Tests.Common;
 using Xunit;
 
 namespace TileTextureGenerator.Adapters.Persistence.Tests.Stores;
@@ -103,7 +105,7 @@ public class JSonTransformationStoreTests
         var transformationId = Guid.NewGuid();
         transformation.Initialize(project, transformationId);
 
-        var imageData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 1, 2, 3 }; // PNG header + data
+        var imageData = TestImageFactory.CreateImageData(); // PNG header + data
         transformation.BaseTexture = new ImageData(imageData);
 
         // Act
@@ -162,13 +164,13 @@ public class JSonTransformationStoreTests
 
         // Create existing image file
         var projectDir = _fileStorage.GetProjectPath("TestProject");
-        var oldImageData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 9, 9, 9 };
+        var oldImageData = TestImageFactory.CreateDisplayImage();
         await _fileStorage.WriteAllBytesAsync(Path.Combine(projectDir, existingImagePath), oldImageData);
 
         var transformation = new HorizontalFloorTransformation(_transformationStore);
         transformation.Initialize(project, transformationId);
 
-        var newImageData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 1, 2, 3 }; // Different data
+        var newImageData = new ImageData(TestImageFactory.CreatePng(1, 1, SKColor.Parse("#00000000"))); // Different data
         transformation.BaseTexture = new ImageData(newImageData);
 
         // Act
@@ -359,7 +361,7 @@ public class JSonTransformationStoreTests
         var transformationId = Guid.NewGuid();
         transformation.Initialize(project, transformationId);
 
-        var generatedImageData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 5, 6, 7, 8 }; // PNG header + data
+        var generatedImageData = TestImageFactory.CreateImageData(); // PNG header + data
         // Use reflection to set GeneratedTexture (it's private setter)
         var generatedTextureProperty = typeof(TransformationBase).GetProperty(nameof(TransformationBase.GeneratedTexture));
         generatedTextureProperty!.SetValue(transformation, new ImageData(generatedImageData));
@@ -422,13 +424,13 @@ public class JSonTransformationStoreTests
 
         // Create existing image file in Outputs
         var projectDir = _fileStorage.GetProjectPath("TestProject");
-        var oldImageData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 1, 1, 1 };
+        var oldImageData = TestImageFactory.CreateDisplayImage();
         await _fileStorage.WriteAllBytesAsync(Path.Combine(projectDir, existingImagePath), oldImageData);
 
         var transformation = new HorizontalFloorTransformation(_transformationStore);
         transformation.Initialize(project, transformationId);
 
-        var newImageData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 9, 9, 9 }; // Different data
+        var newImageData = new ImageData(TestImageFactory.CreatePng(1, 1, SKColor.Parse("#00000000"))); // Different data
         var generatedTextureProperty = typeof(TransformationBase).GetProperty(nameof(TransformationBase.GeneratedTexture));
         generatedTextureProperty!.SetValue(transformation, new ImageData(newImageData));
 

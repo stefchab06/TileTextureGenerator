@@ -4,6 +4,7 @@ using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Entities.ConcreteTransformations;
 using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Ports.Output;
+using TileTextureGenerator.Tests.Common;
 using TransformationBase = TileTextureGenerator.Core.Entities.TransformationBase;
 
 namespace TileTextureGenerator.Core.Tests.Entities.ConcreteTransformations;
@@ -144,22 +145,6 @@ public class HorizontalFloorTransformationTests
         var store = new FakeTransformationStore();
         var project = new FakeProject();
         var transformation = new HorizontalFloorTransformation(store);
-        transformation.Initialize(project, Guid.NewGuid());
-
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => transformation.GenerateAsync());
-    }
-
-    [Fact]
-    public async Task GenerateAsync_WithInvalidImage_ThrowsInvalidOperationException()
-    {
-        // Arrange
-        var store = new FakeTransformationStore();
-        var project = new FakeProject();
-        var transformation = new HorizontalFloorTransformation(store)
-        {
-            BaseTexture = new byte[] { 1, 2, 3, 4 } // Invalid PNG data
-        };
         transformation.Initialize(project, Guid.NewGuid());
 
         // Act & Assert

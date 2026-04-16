@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE,chrome=1" />
+<link href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAn1BMVEUAAADCAAAAAAA3yDfUAAA3yDfUAAA8PDzr6+sAAAD4+Pg3yDeQkJDTAADt7e3V1dU3yDdCQkIAAADbMTHUAABBykHUAAA2yDY3yDfr6+vTAAB3diDR0dGYcHDUAAAjhiPSAAA3yDeuAADUAAA3yDf////OCALg9+BLzktBuzRelimzKgv87+/dNTVflSn1/PWz6rO126g5yDlYniy0KgwjJ0TyAAAAI3RSTlMABAj0WD6rJcsN7X1HzMqUJyYW+/X08+bltqSeaVRBOy0cE+citBEAAADBSURBVDjLlczXEoIwFIThJPYGiL0XiL3r+z+bBOJs9JDMuLffP8v+Gxfc6aIyDQVjQcnqnvRDEQwLJYtXpZT+YhDHKIjLbS+OUeT4TjkKi6OwOArq+yeKXD9uDqQQbcOjyCy0e6bTojZSftX+U6zUQ7OuittDu1k0WHqRFfdXQijgjKfF6ZwAikvmKD6OQjmKWUcDigkztm5FZN05nMON9ZcoinlBmTNnAUdBnRbUUbgdBZwWbkcBpwXcVsBtxfjb31j1QB5qeebOAAAAAElFTkSuQmCC" rel="icon" type="image/x-icon" />
+<title>Mono.Cecil.MetadataReader - Coverage Report</title>
+<link rel="stylesheet" type="text/css" href="report.css" />
+</head><body><div class="container"><div class="containerleft">
+<h1><a href="index.html" class="back">&lt;</a> Summary</h1>
+<div class="card-group">
+<div class="card">
+<div class="card-header">Information</div>
+<div class="card-body">
+<div class="table">
+<table>
+<tr>
+<th>Class:</th>
+<td class="limit-width " title="Mono.Cecil.MetadataReader">Mono.Cecil.MetadataReader</td>
+</tr>
+<tr>
+<th>Assembly:</th>
+<td class="limit-width " title="Xamarin.MacDev.Tasks">Xamarin.MacDev.Tasks</td>
+</tr>
+<tr>
+<th>File(s):</th>
+<td class="overflow-wrap"><a href="#CsrccecilMonoCecilAssemblyReadercs" class="navigatetohash">C:\src\cecil\Mono.Cecil\AssemblyReader.cs</a></td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="card-group">
+<div class="card">
+<div class="card-header">Line coverage</div>
+<div class="card-body">
+<div class="large cardpercentagebar cardpercentagebar100">0%</div>
+<div class="table">
+<table>
+<tr>
+<th>Covered lines:</th>
+<td class="limit-width right" title="0">0</td>
+</tr>
+<tr>
+<th>Uncovered lines:</th>
+<td class="limit-width right" title="1436">1436</td>
+</tr>
+<tr>
+<th>Coverable lines:</th>
+<td class="limit-width right" title="1436">1436</td>
+</tr>
+<tr>
+<th>Total lines:</th>
+<td class="limit-width right" title="3247">3247</td>
+</tr>
+<tr>
+<th>Line coverage:</th>
+<td class="limit-width right" title="0 of 1436">0%</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="card-header">Branch coverage</div>
+<div class="card-body">
+<div class="large cardpercentagebar cardpercentagebar100">0%</div>
+<div class="table">
+<table>
+<tr>
+<th>Covered branches:</th>
+<td class="limit-width right" title="0">0</td>
+</tr>
+<tr>
+<th>Total branches:</th>
+<td class="limit-width right" title="681">681</td>
+</tr>
+<tr>
+<th>Branch coverage:</th>
+<td class="limit-width right" title="0 of 681">0%</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="card-header">Method coverage</div>
+<div class="card-body">
+<div class="center">
+<p>Feature is only available for sponsors</p>
+<a class="pro-button" href="https://reportgenerator.io/pro" target="_blank">Upgrade to PRO version</a>
+</div>
+</div>
+</div>
+</div>
+<h1>Metrics</h1>
+<div class="table-responsive">
+<table class="overview table-fixed">
+<colgroup>
+<col class="column-min-200" />
+<col class="column105" />
+<col class="column105" />
+<col class="column105" />
+<col class="column105" />
+</colgroup>
+<thead><tr><th>Method</th><th>Branch coverage <a href="https://en.wikipedia.org/wiki/Code_coverage" target="_blank"><i class="icon-info-circled"></i></a></th><th>Crap Score <a href="https://googletesting.blogspot.de/2011/02/this-code-is-crap.html" target="_blank"><i class="icon-info-circled"></i></a></th><th>Cyclomatic complexity <a href="https://en.wikipedia.org/wiki/Cyclomatic_complexity" target="_blank"><i class="icon-info-circled"></i></a></th><th>Line coverage <a href="https://en.wikipedia.org/wiki/Code_coverage" target="_blank"><i class="icon-info-circled"></i></a></th></tr></thead>
+<tbody>
+<tr><td title=".ctor(Mono.Cecil.ModuleDefinition)"><a href="#file0_line457" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title=".ctor(Mono.Cecil.PE.Image, Mono.Cecil.ModuleDefinition, Mono.Cecil.MetadataReader)"><a href="#file0_line466" class="navigatetohash">.ctor(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="GetCodedIndexSize(Mono.Cecil.Metadata.CodedIndex)"><a href="#file0_line476" class="navigatetohash">GetCodedIndexSize(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadByIndexSize(int)"><a href="#file0_line481" class="navigatetohash">ReadByIndexSize(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadBlob()"><a href="#file0_line489" class="navigatetohash">ReadBlob()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadBlob(uint)"><a href="#file0_line500" class="navigatetohash">ReadBlob(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadBlobIndex()"><a href="#file0_line509" class="navigatetohash">ReadBlobIndex()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="GetBlobView(uint, out byte[], out int, out int)"><a href="#file0_line515" class="navigatetohash">GetBlobView(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadString()"><a href="#file0_line527" class="navigatetohash">ReadString()</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadStringIndex()"><a href="#file0_line532" class="navigatetohash">ReadStringIndex()</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadGuid()"><a href="#file0_line537" class="navigatetohash">ReadGuid()</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadTableIndex(Mono.Cecil.Metadata.Table)"><a href="#file0_line542" class="navigatetohash">ReadTableIndex(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadMetadataToken(Mono.Cecil.Metadata.CodedIndex)"><a href="#file0_line547" class="navigatetohash">ReadMetadataToken(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="MoveTo(Mono.Cecil.Metadata.Table)"><a href="#file0_line552" class="navigatetohash">MoveTo(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="MoveTo(Mono.Cecil.Metadata.Table, uint)"><a href="#file0_line561" class="navigatetohash">MoveTo(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadAssemblyNameDefinition()"><a href="#file0_line572" class="navigatetohash">ReadAssemblyNameDefinition()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="Populate(Mono.Cecil.ModuleDefinition)"><a href="#file0_line590" class="navigatetohash">Populate(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="InitializeAssemblyReferences()"><a href="#file0_line603" class="navigatetohash">InitializeAssemblyReferences()</a></td><td>0%</td><td>42</td><td>6</td><td>0%</td></tr>
+<tr><td title="ReadAssemblyReferences()"><a href="#file0_line632" class="navigatetohash">ReadAssemblyReferences()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadEntryPoint()"><a href="#file0_line643" class="navigatetohash">ReadEntryPoint()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadModules()"><a href="#file0_line652" class="navigatetohash">ReadModules()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="GetModuleFileName(string)"><a href="#file0_line681" class="navigatetohash">GetModuleFileName(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="InitializeModuleReferences()"><a href="#file0_line690" class="navigatetohash">InitializeModuleReferences()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadModuleReferences()"><a href="#file0_line706" class="navigatetohash">ReadModuleReferences()</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="HasFileResource()"><a href="#file0_line713" class="navigatetohash">HasFileResource()</a></td><td>0%</td><td>42</td><td>6</td><td>0%</td></tr>
+<tr><td title="ReadResources()"><a href="#file0_line726" class="navigatetohash">ReadResources()</a></td><td>0%</td><td>72</td><td>8</td><td>0%</td></tr>
+<tr><td title="ReadFileRecord(uint)"><a href="#file0_line761" class="navigatetohash">ReadFileRecord(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="GetManagedResource(uint)"><a href="#file0_line778" class="navigatetohash">GetManagedResource(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="PopulateVersionAndFlags(Mono.Cecil.AssemblyNameReference)"><a href="#file0_line786" class="navigatetohash">PopulateVersionAndFlags(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="PopulateNameAndCulture(Mono.Cecil.AssemblyNameReference)"><a href="#file0_line797" class="navigatetohash">PopulateNameAndCulture(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadTypes()"><a href="#file0_line803" class="navigatetohash">ReadTypes()</a></td><td>0%</td><td>72</td><td>8</td><td>0%</td></tr>
+<tr><td title="CompleteTypes()"><a href="#file0_line824" class="navigatetohash">CompleteTypes()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="InitializeTypeDefinitions()"><a href="#file0_line836" class="navigatetohash">InitializeTypeDefinitions()</a></td><td>0%</td><td>110</td><td>10</td><td>0%</td></tr>
+<tr><td title="IsNested(Mono.Cecil.TypeAttributes)"><a href="#file0_line862" class="navigatetohash">IsNested(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="HasNestedTypes(Mono.Cecil.TypeDefinition)"><a href="#file0_line878" class="navigatetohash">HasNestedTypes(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadNestedTypes(Mono.Cecil.TypeDefinition)"><a href="#file0_line888" class="navigatetohash">ReadNestedTypes(...)</a></td><td>0%</td><td>42</td><td>6</td><td>0%</td></tr>
+<tr><td title="InitializeNestedTypes()"><a href="#file0_line907" class="navigatetohash">InitializeNestedTypes()</a></td><td>0%</td><td>42</td><td>6</td><td>0%</td></tr>
+<tr><td title="AddNestedMapping(uint, uint)"><a href="#file0_line928" class="navigatetohash">AddNestedMapping(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="AddMapping&lt;TKey, TValue&gt;(System.Collections.Generic.Dictionary&lt;TKey, Mono.Collections.Generic.Collection&lt;TValue&gt;&gt;, TKey, TValue)"><a href="#file0_line935" class="navigatetohash">AddMapping&lt;TKey, TValue&gt;(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadType(uint)"><a href="#file0_line944" class="navigatetohash">ReadType(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="GetNestedTypeDeclaringType(Mono.Cecil.TypeDefinition)"><a href="#file0_line973" class="navigatetohash">GetNestedTypeDeclaringType(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadListRange(uint, Mono.Cecil.Metadata.Table, Mono.Cecil.Metadata.Table)"><a href="#file0_line981" class="navigatetohash">ReadListRange(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadTypeLayout(Mono.Cecil.TypeDefinition)"><a href="#file0_line1007" class="navigatetohash">ReadTypeLayout(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="InitializeTypeLayouts()"><a href="#file0_line1023" class="navigatetohash">InitializeTypeLayouts()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="GetTypeDefOrRef(Mono.Cecil.MetadataToken)"><a href="#file0_line1042" class="navigatetohash">GetTypeDefOrRef(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="GetTypeDefinition(uint)"><a href="#file0_line1047" class="navigatetohash">GetTypeDefinition(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadTypeDefinition(uint)"><a href="#file0_line1063" class="navigatetohash">ReadTypeDefinition(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="InitializeTypeReferences()"><a href="#file0_line1071" class="navigatetohash">InitializeTypeReferences()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="GetTypeReference(string, string)"><a href="#file0_line1079" class="navigatetohash">GetTypeReference(...)</a></td><td>0%</td><td>72</td><td>8</td><td>0%</td></tr>
+<tr><td title="GetTypeReference(uint)"><a href="#file0_line1101" class="navigatetohash">GetTypeReference(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadTypeReference(uint)"><a href="#file0_line1112" class="navigatetohash">ReadTypeReference(...)</a></td><td>0%</td><td>110</td><td>10</td><td>0%</td></tr>
+<tr><td title="GetTypeReferenceScope(Mono.Cecil.MetadataToken)"><a href="#file0_line1158" class="navigatetohash">GetTypeReferenceScope(...)</a></td><td>0%</td><td>110</td><td>10</td><td>0%</td></tr>
+<tr><td title="GetTypeReferences()"><a href="#file0_line1185" class="navigatetohash">GetTypeReferences()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="GetTypeSpecification(uint)"><a href="#file0_line1199" class="navigatetohash">GetTypeSpecification(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadSignature(uint)"><a href="#file0_line1212" class="navigatetohash">ReadSignature(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="HasInterfaces(Mono.Cecil.TypeDefinition)"><a href="#file0_line1217" class="navigatetohash">HasInterfaces(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadInterfaces(Mono.Cecil.TypeDefinition)"><a href="#file0_line1225" class="navigatetohash">ReadInterfaces(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="InitializeInterfaces()"><a href="#file0_line1247" class="navigatetohash">InitializeInterfaces()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="AddInterfaceMapping(uint, Mono.Cecil.Metadata.Row&lt;uint, Mono.Cecil.MetadataToken&gt;)"><a href="#file0_line1264" class="navigatetohash">AddInterfaceMapping(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadFields(Mono.Cecil.TypeDefinition)"><a href="#file0_line1269" class="navigatetohash">ReadFields(...)</a></td><td>0%</td><td>72</td><td>8</td><td>0%</td></tr>
+<tr><td title="ReadField(uint, Mono.Collections.Generic.Collection&lt;Mono.Cecil.FieldDefinition&gt;)"><a href="#file0_line1290" class="navigatetohash">ReadField(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="InitializeFields()"><a href="#file0_line1309" class="navigatetohash">InitializeFields()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadFieldType(uint)"><a href="#file0_line1317" class="navigatetohash">ReadFieldType(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadFieldRVA(Mono.Cecil.FieldDefinition)"><a href="#file0_line1329" class="navigatetohash">ReadFieldRVA(...)</a></td><td>0%</td><td>42</td><td>6</td><td>0%</td></tr>
+<tr><td title="GetFieldInitializeValue(int, uint)"><a href="#file0_line1350" class="navigatetohash">GetFieldInitializeValue(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="GetFieldTypeSize(Mono.Cecil.TypeReference)"><a href="#file0_line1355" class="navigatetohash">GetFieldTypeSize(...)</a></td><td>0%</td><td>1332</td><td>36</td><td>0%</td></tr>
+<tr><td title="InitializeFieldRVAs()"><a href="#file0_line1398" class="navigatetohash">InitializeFieldRVAs()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadFieldLayout(Mono.Cecil.FieldDefinition)"><a href="#file0_line1415" class="navigatetohash">ReadFieldLayout(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="InitializeFieldLayouts()"><a href="#file0_line1428" class="navigatetohash">InitializeFieldLayouts()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="HasEvents(Mono.Cecil.TypeDefinition)"><a href="#file0_line1445" class="navigatetohash">HasEvents(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadEvents(Mono.Cecil.TypeDefinition)"><a href="#file0_line1456" class="navigatetohash">ReadEvents(...)</a></td><td>0%</td><td>110</td><td>10</td><td>0%</td></tr>
+<tr><td title="ReadEvent(uint, Mono.Collections.Generic.Collection&lt;Mono.Cecil.EventDefinition&gt;)"><a href="#file0_line1483" class="navigatetohash">ReadEvent(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="InitializeEvents()"><a href="#file0_line1498" class="navigatetohash">InitializeEvents()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="HasProperties(Mono.Cecil.TypeDefinition)"><a href="#file0_line1514" class="navigatetohash">HasProperties(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadProperties(Mono.Cecil.TypeDefinition)"><a href="#file0_line1525" class="navigatetohash">ReadProperties(...)</a></td><td>0%</td><td>110</td><td>10</td><td>0%</td></tr>
+<tr><td title="ReadProperty(uint, Mono.Collections.Generic.Collection&lt;Mono.Cecil.PropertyDefinition&gt;)"><a href="#file0_line1552" class="navigatetohash">ReadProperty(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="InitializeProperties()"><a href="#file0_line1580" class="navigatetohash">InitializeProperties()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadMethodSemantics(Mono.Cecil.MethodDefinition)"><a href="#file0_line1596" class="navigatetohash">ReadMethodSemantics(...)</a></td><td>0%</td><td>552</td><td>23</td><td>0%</td></tr>
+<tr><td title="GetEvent(Mono.Cecil.TypeDefinition, Mono.Cecil.MetadataToken)"><a href="#file0_line1653" class="navigatetohash">GetEvent(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="GetProperty(Mono.Cecil.TypeDefinition, Mono.Cecil.MetadataToken)"><a href="#file0_line1661" class="navigatetohash">GetProperty(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="GetMember&lt;TMember&gt;(Mono.Collections.Generic.Collection&lt;TMember&gt;, Mono.Cecil.MetadataToken)"><a href="#file0_line1669" class="navigatetohash">GetMember&lt;TMember&gt;(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="InitializeMethodSemantics()"><a href="#file0_line1680" class="navigatetohash">InitializeMethodSemantics()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadMethods(Mono.Cecil.PropertyDefinition)"><a href="#file0_line1698" class="navigatetohash">ReadMethods(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadMethods(Mono.Cecil.EventDefinition)"><a href="#file0_line1703" class="navigatetohash">ReadMethods(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadAllSemantics(Mono.Cecil.MethodDefinition)"><a href="#file0_line1708" class="navigatetohash">ReadAllSemantics(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadAllSemantics(Mono.Cecil.TypeDefinition)"><a href="#file0_line1713" class="navigatetohash">ReadAllSemantics(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadMethods(Mono.Cecil.TypeDefinition)"><a href="#file0_line1726" class="navigatetohash">ReadMethods(...)</a></td><td>0%</td><td>72</td><td>8</td><td>0%</td></tr>
+<tr><td title="ReadPointers&lt;TMember&gt;(Mono.Cecil.Metadata.Table, Mono.Cecil.Metadata.Table, Mono.Cecil.Range, Mono.Collections.Generic.Collection&lt;TMember&gt;, System.Action&lt;uint, Mono.Collections.Generic.Collection&lt;TMember&gt;&gt;)"><a href="#file0_line1746" class="navigatetohash">ReadPointers&lt;TMember&gt;(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="IsDeleted(Mono.Cecil.IMemberDefinition)"><a href="#file0_line1758" class="navigatetohash">IsDeleted(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="InitializeMethods()"><a href="#file0_line1763" class="navigatetohash">InitializeMethods()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadMethod(uint, Mono.Collections.Generic.Collection&lt;Mono.Cecil.MethodDefinition&gt;)"><a href="#file0_line1771" class="navigatetohash">ReadMethod(...)</a></td><td>0%</td><td>42</td><td>6</td><td>0%</td></tr>
+<tr><td title="ReadParameters(Mono.Cecil.MethodDefinition, Mono.Cecil.Range)"><a href="#file0_line1803" class="navigatetohash">ReadParameters(...)</a></td><td>0%</td><td>42</td><td>6</td><td>0%</td></tr>
+<tr><td title="ReadParameterPointers(Mono.Cecil.MethodDefinition, Mono.Cecil.Range)"><a href="#file0_line1815" class="navigatetohash">ReadParameterPointers(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadParameter(uint, Mono.Cecil.MethodDefinition)"><a href="#file0_line1828" class="navigatetohash">ReadParameter(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadMethodSignature(uint, Mono.Cecil.IMethodSignature)"><a href="#file0_line1843" class="navigatetohash">ReadMethodSignature(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadPInvokeInfo(Mono.Cecil.MethodDefinition)"><a href="#file0_line1849" class="navigatetohash">ReadPInvokeInfo(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="InitializePInvokes()"><a href="#file0_line1867" class="navigatetohash">InitializePInvokes()</a></td><td>0%</td><td>42</td><td>6</td><td>0%</td></tr>
+<tr><td title="HasGenericParameters(Mono.Cecil.IGenericParameterProvider)"><a href="#file0_line1889" class="navigatetohash">HasGenericParameters(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadGenericParameters(Mono.Cecil.IGenericParameterProvider)"><a href="#file0_line1900" class="navigatetohash">ReadGenericParameters(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadGenericParametersRange(Mono.Cecil.Range, Mono.Cecil.IGenericParameterProvider, Mono.Cecil.GenericParameterCollection)"><a href="#file0_line1916" class="navigatetohash">ReadGenericParametersRange(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="InitializeGenericParameters()"><a href="#file0_line1935" class="navigatetohash">InitializeGenericParameters()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="InitializeRanges(Mono.Cecil.Metadata.Table, System.Func&lt;Mono.Cecil.MetadataToken&gt;)"><a href="#file0_line1949" class="navigatetohash">InitializeRanges(...)</a></td><td>0%</td><td>72</td><td>8</td><td>0%</td></tr>
+<tr><td title="AddRange(System.Collections.Generic.Dictionary&lt;Mono.Cecil.MetadataToken, Mono.Cecil.Range[]&gt;, Mono.Cecil.MetadataToken, Mono.Cecil.Range)"><a href="#file0_line1979" class="navigatetohash">AddRange(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="HasGenericConstraints(Mono.Cecil.GenericParameter)"><a href="#file0_line1993" class="navigatetohash">HasGenericConstraints(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadGenericConstraints(Mono.Cecil.GenericParameter)"><a href="#file0_line2004" class="navigatetohash">ReadGenericConstraints(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="InitializeGenericConstraints()"><a href="#file0_line2026" class="navigatetohash">InitializeGenericConstraints()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="AddGenericConstraintMapping(uint, Mono.Cecil.Metadata.Row&lt;uint, Mono.Cecil.MetadataToken&gt;)"><a href="#file0_line2042" class="navigatetohash">AddGenericConstraintMapping(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="HasOverrides(Mono.Cecil.MethodDefinition)"><a href="#file0_line2049" class="navigatetohash">HasOverrides(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadOverrides(Mono.Cecil.MethodDefinition)"><a href="#file0_line2060" class="navigatetohash">ReadOverrides(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="InitializeOverrides()"><a href="#file0_line2078" class="navigatetohash">InitializeOverrides()</a></td><td>0%</td><td>42</td><td>6</td><td>0%</td></tr>
+<tr><td title="AddOverrideMapping(uint, Mono.Cecil.MetadataToken)"><a href="#file0_line2100" class="navigatetohash">AddOverrideMapping(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadMethodBody(Mono.Cecil.MethodDefinition)"><a href="#file0_line2107" class="navigatetohash">ReadMethodBody(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadCodeSize(Mono.Cecil.MethodDefinition)"><a href="#file0_line2112" class="navigatetohash">ReadCodeSize(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadCallSite(Mono.Cecil.MetadataToken)"><a href="#file0_line2117" class="navigatetohash">ReadCallSite(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadVariables(Mono.Cecil.MetadataToken, Mono.Cecil.MethodDefinition)"><a href="#file0_line2133" class="navigatetohash">ReadVariables(...)</a></td><td>0%</td><td>72</td><td>8</td><td>0%</td></tr>
+<tr><td title="LookupToken(Mono.Cecil.MetadataToken)"><a href="#file0_line2156" class="navigatetohash">LookupToken(...)</a></td><td>0%</td><td>506</td><td>22</td><td>0%</td></tr>
+<tr><td title="GetFieldDefinition(uint)"><a href="#file0_line2202" class="navigatetohash">GetFieldDefinition(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="LookupField(uint)"><a href="#file0_line2213" class="navigatetohash">LookupField(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="GetMethodDefinition(uint)"><a href="#file0_line2224" class="navigatetohash">GetMethodDefinition(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="LookupMethod(uint)"><a href="#file0_line2235" class="navigatetohash">LookupMethod(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="GetMethodSpecification(uint)"><a href="#file0_line2246" class="navigatetohash">GetMethodSpecification(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadMethodSpecSignature(uint, Mono.Cecil.MethodReference)"><a href="#file0_line2260" class="navigatetohash">ReadMethodSpecSignature(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="GetMemberReference(uint)"><a href="#file0_line2279" class="navigatetohash">GetMemberReference(...)</a></td><td>0%</td><td>42</td><td>6</td><td>0%</td></tr>
+<tr><td title="ReadMemberReference(uint)"><a href="#file0_line2293" class="navigatetohash">ReadMemberReference(...)</a></td><td>0%</td><td>156</td><td>12</td><td>0%</td></tr>
+<tr><td title="ReadTypeMemberReference(Mono.Cecil.MetadataToken, string, uint)"><a href="#file0_line2321" class="navigatetohash">ReadTypeMemberReference(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadMemberReferenceSignature(uint, Mono.Cecil.TypeReference)"><a href="#file0_line2334" class="navigatetohash">ReadMemberReferenceSignature(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadMethodMemberReference(Mono.Cecil.MetadataToken, string, uint)"><a href="#file0_line2353" class="navigatetohash">ReadMethodMemberReference(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="InitializeMemberReferences()"><a href="#file0_line2365" class="navigatetohash">InitializeMemberReferences()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="GetMemberReferences()"><a href="#file0_line2373" class="navigatetohash">GetMemberReferences()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="InitializeConstants()"><a href="#file0_line2394" class="navigatetohash">InitializeConstants()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadConstantSignature(Mono.Cecil.MetadataToken)"><a href="#file0_line2412" class="navigatetohash">ReadConstantSignature(...)</a></td><td>0%</td><td>42</td><td>6</td><td>0%</td></tr>
+<tr><td title="ReadConstant(Mono.Cecil.IConstantProvider)"><a href="#file0_line2426" class="navigatetohash">ReadConstant(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadConstantValue(Mono.Cecil.Metadata.ElementType, uint)"><a href="#file0_line2442" class="navigatetohash">ReadConstantValue(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadConstantString(uint)"><a href="#file0_line2455" class="navigatetohash">ReadConstantString(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadConstantPrimitive(Mono.Cecil.Metadata.ElementType, uint)"><a href="#file0_line2467" class="navigatetohash">ReadConstantPrimitive(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="InitializeCustomAttributes()"><a href="#file0_line2473" class="navigatetohash">InitializeCustomAttributes()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="HasCustomAttributes(Mono.Cecil.ICustomAttributeProvider)"><a href="#file0_line2487" class="navigatetohash">HasCustomAttributes(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadCustomAttributes(Mono.Cecil.ICustomAttributeProvider)"><a href="#file0_line2498" class="navigatetohash">ReadCustomAttributes(...)</a></td><td>0%</td><td>72</td><td>8</td><td>0%</td></tr>
+<tr><td title="ReadCustomAttributeRange(Mono.Cecil.Range, Mono.Collections.Generic.Collection&lt;Mono.Cecil.CustomAttribute&gt;)"><a href="#file0_line2518" class="navigatetohash">ReadCustomAttributeRange(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="RangesSize(Mono.Cecil.Range[])"><a href="#file0_line2535" class="navigatetohash">RangesSize(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="GetCustomAttributes()"><a href="#file0_line2544" class="navigatetohash">GetCustomAttributes()</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadCustomAttributeBlob(uint)"><a href="#file0_line2555" class="navigatetohash">ReadCustomAttributeBlob(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadCustomAttributeSignature(Mono.Cecil.CustomAttribute)"><a href="#file0_line2560" class="navigatetohash">ReadCustomAttributeSignature(...)</a></td><td>0%</td><td>110</td><td>10</td><td>0%</td></tr>
+<tr><td title="InitializeMarshalInfos()"><a href="#file0_line2585" class="navigatetohash">InitializeMarshalInfos()</a></td><td>0%</td><td>42</td><td>6</td><td>0%</td></tr>
+<tr><td title="HasMarshalInfo(Mono.Cecil.IMarshalInfoProvider)"><a href="#file0_line2604" class="navigatetohash">HasMarshalInfo(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadMarshalInfo(Mono.Cecil.IMarshalInfoProvider)"><a href="#file0_line2611" class="navigatetohash">ReadMarshalInfo(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="InitializeSecurityDeclarations()"><a href="#file0_line2626" class="navigatetohash">InitializeSecurityDeclarations()</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="HasSecurityDeclarations(Mono.Cecil.ISecurityDeclarationProvider)"><a href="#file0_line2640" class="navigatetohash">HasSecurityDeclarations(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadSecurityDeclarations(Mono.Cecil.ISecurityDeclarationProvider)"><a href="#file0_line2651" class="navigatetohash">ReadSecurityDeclarations(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadSecurityDeclarationRange(Mono.Cecil.Range, Mono.Collections.Generic.Collection&lt;Mono.Cecil.SecurityDeclaration&gt;)"><a href="#file0_line2667" class="navigatetohash">ReadSecurityDeclarationRange(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadSecurityDeclarationBlob(uint)"><a href="#file0_line2681" class="navigatetohash">ReadSecurityDeclarationBlob(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadSecurityDeclarationSignature(Mono.Cecil.SecurityDeclaration)"><a href="#file0_line2686" class="navigatetohash">ReadSecurityDeclarationSignature(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadXmlSecurityDeclaration(uint, Mono.Cecil.SecurityDeclaration)"><a href="#file0_line2706" class="navigatetohash">ReadXmlSecurityDeclaration(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadExportedTypes()"><a href="#file0_line2726" class="navigatetohash">ReadExportedTypes()</a></td><td>0%</td><td>110</td><td>10</td><td>0%</td></tr>
+<tr><td title="GetExportedTypeScope(Mono.Cecil.MetadataToken)"><a href="#file0_line2768" class="navigatetohash">GetExportedTypeScope(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="GetModuleReferenceFromFile(Mono.Cecil.MetadataToken)"><a href="#file0_line2790" class="navigatetohash">GetModuleReferenceFromFile(...)</a></td><td>0%</td><td>42</td><td>6</td><td>0%</td></tr>
+<tr><td title="InitializeDocuments()"><a href="#file0_line2811" class="navigatetohash">InitializeDocuments()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadSequencePoints(Mono.Cecil.MethodDefinition)"><a href="#file0_line2838" class="navigatetohash">ReadSequencePoints(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="GetDocument(uint)"><a href="#file0_line2856" class="navigatetohash">GetDocument(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="InitializeLocalScopes()"><a href="#file0_line2866" class="navigatetohash">InitializeLocalScopes()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadScope(Mono.Cecil.MethodDefinition)"><a href="#file0_line2889" class="navigatetohash">ReadScope(...)</a></td><td>0%</td><td>72</td><td>8</td><td>0%</td></tr>
+<tr><td title="AddScope(Mono.Collections.Generic.Collection&lt;Mono.Cecil.Cil.ScopeDebugInformation&gt;, Mono.Cecil.Cil.ScopeDebugInformation)"><a href="#file0_line2915" class="navigatetohash">AddScope(...)</a></td><td>0%</td><td>156</td><td>12</td><td>0%</td></tr>
+<tr><td title="ReadLocalScope(Mono.Cecil.Metadata.Row&lt;uint, Mono.Cecil.Range, Mono.Cecil.Range, uint, uint, uint&gt;)"><a href="#file0_line2933" class="navigatetohash">ReadLocalScope(...)</a></td><td>0%</td><td>210</td><td>14</td><td>0%</td></tr>
+<tr><td title="ReadLocalVariable(uint)"><a href="#file0_line2966" class="navigatetohash">ReadLocalVariable(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadLocalConstant(uint)"><a href="#file0_line2980" class="navigatetohash">ReadLocalConstant(...)</a></td><td>0%</td><td>506</td><td>22</td><td>0%</td></tr>
+<tr><td title="InitializeImportScopes()"><a href="#file0_line3013" class="navigatetohash">InitializeImportScopes()</a></td><td>0%</td><td>110</td><td>10</td><td>0%</td></tr>
+<tr><td title="ReadUTF8StringBlob(uint)"><a href="#file0_line3047" class="navigatetohash">ReadUTF8StringBlob(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadUnicodeStringBlob(uint)"><a href="#file0_line3052" class="navigatetohash">ReadUnicodeStringBlob(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadStringBlob(uint, System.Text.Encoding)"><a href="#file0_line3060" class="navigatetohash">ReadStringBlob(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="ReadImportTarget(Mono.Cecil.SignatureReader)"><a href="#file0_line3069" class="navigatetohash">ReadImportTarget(...)</a></td><td>0%</td><td>110</td><td>10</td><td>0%</td></tr>
+<tr><td title="InitializeStateMachineMethods()"><a href="#file0_line3122" class="navigatetohash">InitializeStateMachineMethods()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="ReadStateMachineKickoffMethod(Mono.Cecil.MethodDefinition)"><a href="#file0_line3135" class="navigatetohash">ReadStateMachineKickoffMethod(...)</a></td><td>0%</td><td>6</td><td>2</td><td>0%</td></tr>
+<tr><td title="InitializeCustomDebugInformations()"><a href="#file0_line3146" class="navigatetohash">InitializeCustomDebugInformations()</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+<tr><td title="GetCustomDebugInformation(Mono.Cecil.Cil.ICustomDebugInformationProvider)"><a href="#file0_line3165" class="navigatetohash">GetCustomDebugInformation(...)</a></td><td>0%</td><td>272</td><td>16</td><td>0%</td></tr>
+<tr><td title="ReadRawEmbeddedSourceDebugInformation(uint)"><a href="#file0_line3224" class="navigatetohash">ReadRawEmbeddedSourceDebugInformation(...)</a></td><td>100%</td><td>2</td><td>1</td><td>0%</td></tr>
+<tr><td title="ReadEmbeddedSourceDebugInformation(uint)"><a href="#file0_line3230" class="navigatetohash">ReadEmbeddedSourceDebugInformation(...)</a></td><td>0%</td><td>20</td><td>4</td><td>0%</td></tr>
+</tbody>
+</table>
+</div>
+<h1>File(s)</h1>
+<h2 id="CsrccecilMonoCecilAssemblyReadercs">C:\src\cecil\Mono.Cecil\AssemblyReader.cs</h2>
+<p>File &#39;C:\src\cecil\Mono.Cecil\AssemblyReader.cs&#39; does not exist (any more).</p>
+<div class="footer">Generated by: ReportGenerator 5.5.5.0<br />16/04/2026 - 22:21:12<br /><a href="https://github.com/danielpalme/ReportGenerator">GitHub</a> | <a href="https://reportgenerator.io">reportgenerator.io</a></div></div>
+<div class="containerright">
+<div class="containerrightfixed">
+<h1>Methods/Properties</h1>
+<a href="#file0_line457" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - .ctor(Mono.Cecil.ModuleDefinition)"><i class="icon-cube"></i>.ctor(Mono.Cecil.ModuleDefinition)</a><br />
+<a href="#file0_line466" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - .ctor(Mono.Cecil.PE.Image, Mono.Cecil.ModuleDefinition, Mono.Cecil.MetadataReader)"><i class="icon-cube"></i>.ctor(Mono.Cecil.PE.Image, Mono.Cecil.ModuleDefinition, Mono.Cecil.MetadataReader)</a><br />
+<a href="#file0_line476" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetCodedIndexSize(Mono.Cecil.Metadata.CodedIndex)"><i class="icon-cube"></i>GetCodedIndexSize(Mono.Cecil.Metadata.CodedIndex)</a><br />
+<a href="#file0_line481" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadByIndexSize(int)"><i class="icon-cube"></i>ReadByIndexSize(int)</a><br />
+<a href="#file0_line489" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadBlob()"><i class="icon-cube"></i>ReadBlob()</a><br />
+<a href="#file0_line500" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadBlob(uint)"><i class="icon-cube"></i>ReadBlob(uint)</a><br />
+<a href="#file0_line509" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadBlobIndex()"><i class="icon-cube"></i>ReadBlobIndex()</a><br />
+<a href="#file0_line515" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetBlobView(uint, out byte[], out int, out int)"><i class="icon-cube"></i>GetBlobView(uint, out byte[], out int, out int)</a><br />
+<a href="#file0_line527" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadString()"><i class="icon-cube"></i>ReadString()</a><br />
+<a href="#file0_line532" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadStringIndex()"><i class="icon-cube"></i>ReadStringIndex()</a><br />
+<a href="#file0_line537" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadGuid()"><i class="icon-cube"></i>ReadGuid()</a><br />
+<a href="#file0_line542" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadTableIndex(Mono.Cecil.Metadata.Table)"><i class="icon-cube"></i>ReadTableIndex(Mono.Cecil.Metadata.Table)</a><br />
+<a href="#file0_line547" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadMetadataToken(Mono.Cecil.Metadata.CodedIndex)"><i class="icon-cube"></i>ReadMetadataToken(Mono.Cecil.Metadata.CodedIndex)</a><br />
+<a href="#file0_line552" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - MoveTo(Mono.Cecil.Metadata.Table)"><i class="icon-cube"></i>MoveTo(Mono.Cecil.Metadata.Table)</a><br />
+<a href="#file0_line561" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - MoveTo(Mono.Cecil.Metadata.Table, uint)"><i class="icon-cube"></i>MoveTo(Mono.Cecil.Metadata.Table, uint)</a><br />
+<a href="#file0_line572" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadAssemblyNameDefinition()"><i class="icon-cube"></i>ReadAssemblyNameDefinition()</a><br />
+<a href="#file0_line590" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - Populate(Mono.Cecil.ModuleDefinition)"><i class="icon-cube"></i>Populate(Mono.Cecil.ModuleDefinition)</a><br />
+<a href="#file0_line603" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeAssemblyReferences()"><i class="icon-cube"></i>InitializeAssemblyReferences()</a><br />
+<a href="#file0_line632" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadAssemblyReferences()"><i class="icon-cube"></i>ReadAssemblyReferences()</a><br />
+<a href="#file0_line643" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadEntryPoint()"><i class="icon-cube"></i>ReadEntryPoint()</a><br />
+<a href="#file0_line652" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadModules()"><i class="icon-cube"></i>ReadModules()</a><br />
+<a href="#file0_line681" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetModuleFileName(string)"><i class="icon-cube"></i>GetModuleFileName(string)</a><br />
+<a href="#file0_line690" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeModuleReferences()"><i class="icon-cube"></i>InitializeModuleReferences()</a><br />
+<a href="#file0_line706" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadModuleReferences()"><i class="icon-cube"></i>ReadModuleReferences()</a><br />
+<a href="#file0_line713" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - HasFileResource()"><i class="icon-cube"></i>HasFileResource()</a><br />
+<a href="#file0_line726" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadResources()"><i class="icon-cube"></i>ReadResources()</a><br />
+<a href="#file0_line761" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadFileRecord(uint)"><i class="icon-cube"></i>ReadFileRecord(uint)</a><br />
+<a href="#file0_line778" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetManagedResource(uint)"><i class="icon-cube"></i>GetManagedResource(uint)</a><br />
+<a href="#file0_line786" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - PopulateVersionAndFlags(Mono.Cecil.AssemblyNameReference)"><i class="icon-cube"></i>PopulateVersionAndFlags(Mono.Cecil.AssemblyNameReference)</a><br />
+<a href="#file0_line797" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - PopulateNameAndCulture(Mono.Cecil.AssemblyNameReference)"><i class="icon-cube"></i>PopulateNameAndCulture(Mono.Cecil.AssemblyNameReference)</a><br />
+<a href="#file0_line803" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadTypes()"><i class="icon-cube"></i>ReadTypes()</a><br />
+<a href="#file0_line824" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - CompleteTypes()"><i class="icon-cube"></i>CompleteTypes()</a><br />
+<a href="#file0_line836" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeTypeDefinitions()"><i class="icon-cube"></i>InitializeTypeDefinitions()</a><br />
+<a href="#file0_line862" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - IsNested(Mono.Cecil.TypeAttributes)"><i class="icon-cube"></i>IsNested(Mono.Cecil.TypeAttributes)</a><br />
+<a href="#file0_line878" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - HasNestedTypes(Mono.Cecil.TypeDefinition)"><i class="icon-cube"></i>HasNestedTypes(Mono.Cecil.TypeDefinition)</a><br />
+<a href="#file0_line888" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadNestedTypes(Mono.Cecil.TypeDefinition)"><i class="icon-cube"></i>ReadNestedTypes(Mono.Cecil.TypeDefinition)</a><br />
+<a href="#file0_line907" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeNestedTypes()"><i class="icon-cube"></i>InitializeNestedTypes()</a><br />
+<a href="#file0_line928" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - AddNestedMapping(uint, uint)"><i class="icon-cube"></i>AddNestedMapping(uint, uint)</a><br />
+<a href="#file0_line935" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - AddMapping&lt;TKey, TValue&gt;(System.Collections.Generic.Dictionary&lt;TKey, Mono.Collections.Generic.Collection&lt;TValue&gt;&gt;, TKey, TValue)"><i class="icon-cube"></i>AddMapping&lt;TKey, TValue&gt;(System.Collections.Generic.Dictionary&lt;TKey, Mono.Collections.Generic.Collection&lt;TValue&gt;&gt;, TKey, TValue)</a><br />
+<a href="#file0_line944" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadType(uint)"><i class="icon-cube"></i>ReadType(uint)</a><br />
+<a href="#file0_line973" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetNestedTypeDeclaringType(Mono.Cecil.TypeDefinition)"><i class="icon-cube"></i>GetNestedTypeDeclaringType(Mono.Cecil.TypeDefinition)</a><br />
+<a href="#file0_line981" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadListRange(uint, Mono.Cecil.Metadata.Table, Mono.Cecil.Metadata.Table)"><i class="icon-cube"></i>ReadListRange(uint, Mono.Cecil.Metadata.Table, Mono.Cecil.Metadata.Table)</a><br />
+<a href="#file0_line1007" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadTypeLayout(Mono.Cecil.TypeDefinition)"><i class="icon-cube"></i>ReadTypeLayout(Mono.Cecil.TypeDefinition)</a><br />
+<a href="#file0_line1023" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeTypeLayouts()"><i class="icon-cube"></i>InitializeTypeLayouts()</a><br />
+<a href="#file0_line1042" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetTypeDefOrRef(Mono.Cecil.MetadataToken)"><i class="icon-cube"></i>GetTypeDefOrRef(Mono.Cecil.MetadataToken)</a><br />
+<a href="#file0_line1047" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetTypeDefinition(uint)"><i class="icon-cube"></i>GetTypeDefinition(uint)</a><br />
+<a href="#file0_line1063" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadTypeDefinition(uint)"><i class="icon-cube"></i>ReadTypeDefinition(uint)</a><br />
+<a href="#file0_line1071" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeTypeReferences()"><i class="icon-cube"></i>InitializeTypeReferences()</a><br />
+<a href="#file0_line1079" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetTypeReference(string, string)"><i class="icon-cube"></i>GetTypeReference(string, string)</a><br />
+<a href="#file0_line1101" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetTypeReference(uint)"><i class="icon-cube"></i>GetTypeReference(uint)</a><br />
+<a href="#file0_line1112" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadTypeReference(uint)"><i class="icon-cube"></i>ReadTypeReference(uint)</a><br />
+<a href="#file0_line1158" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetTypeReferenceScope(Mono.Cecil.MetadataToken)"><i class="icon-cube"></i>GetTypeReferenceScope(Mono.Cecil.MetadataToken)</a><br />
+<a href="#file0_line1185" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetTypeReferences()"><i class="icon-cube"></i>GetTypeReferences()</a><br />
+<a href="#file0_line1199" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetTypeSpecification(uint)"><i class="icon-cube"></i>GetTypeSpecification(uint)</a><br />
+<a href="#file0_line1212" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadSignature(uint)"><i class="icon-cube"></i>ReadSignature(uint)</a><br />
+<a href="#file0_line1217" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - HasInterfaces(Mono.Cecil.TypeDefinition)"><i class="icon-cube"></i>HasInterfaces(Mono.Cecil.TypeDefinition)</a><br />
+<a href="#file0_line1225" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadInterfaces(Mono.Cecil.TypeDefinition)"><i class="icon-cube"></i>ReadInterfaces(Mono.Cecil.TypeDefinition)</a><br />
+<a href="#file0_line1247" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeInterfaces()"><i class="icon-cube"></i>InitializeInterfaces()</a><br />
+<a href="#file0_line1264" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - AddInterfaceMapping(uint, Mono.Cecil.Metadata.Row&lt;uint, Mono.Cecil.MetadataToken&gt;)"><i class="icon-cube"></i>AddInterfaceMapping(uint, Mono.Cecil.Metadata.Row&lt;uint, Mono.Cecil.MetadataToken&gt;)</a><br />
+<a href="#file0_line1269" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadFields(Mono.Cecil.TypeDefinition)"><i class="icon-cube"></i>ReadFields(Mono.Cecil.TypeDefinition)</a><br />
+<a href="#file0_line1290" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadField(uint, Mono.Collections.Generic.Collection&lt;Mono.Cecil.FieldDefinition&gt;)"><i class="icon-cube"></i>ReadField(uint, Mono.Collections.Generic.Collection&lt;Mono.Cecil.FieldDefinition&gt;)</a><br />
+<a href="#file0_line1309" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeFields()"><i class="icon-cube"></i>InitializeFields()</a><br />
+<a href="#file0_line1317" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadFieldType(uint)"><i class="icon-cube"></i>ReadFieldType(uint)</a><br />
+<a href="#file0_line1329" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadFieldRVA(Mono.Cecil.FieldDefinition)"><i class="icon-cube"></i>ReadFieldRVA(Mono.Cecil.FieldDefinition)</a><br />
+<a href="#file0_line1350" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetFieldInitializeValue(int, uint)"><i class="icon-cube"></i>GetFieldInitializeValue(int, uint)</a><br />
+<a href="#file0_line1355" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetFieldTypeSize(Mono.Cecil.TypeReference)"><i class="icon-cube"></i>GetFieldTypeSize(Mono.Cecil.TypeReference)</a><br />
+<a href="#file0_line1398" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeFieldRVAs()"><i class="icon-cube"></i>InitializeFieldRVAs()</a><br />
+<a href="#file0_line1415" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadFieldLayout(Mono.Cecil.FieldDefinition)"><i class="icon-cube"></i>ReadFieldLayout(Mono.Cecil.FieldDefinition)</a><br />
+<a href="#file0_line1428" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeFieldLayouts()"><i class="icon-cube"></i>InitializeFieldLayouts()</a><br />
+<a href="#file0_line1445" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - HasEvents(Mono.Cecil.TypeDefinition)"><i class="icon-cube"></i>HasEvents(Mono.Cecil.TypeDefinition)</a><br />
+<a href="#file0_line1456" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadEvents(Mono.Cecil.TypeDefinition)"><i class="icon-cube"></i>ReadEvents(Mono.Cecil.TypeDefinition)</a><br />
+<a href="#file0_line1483" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadEvent(uint, Mono.Collections.Generic.Collection&lt;Mono.Cecil.EventDefinition&gt;)"><i class="icon-cube"></i>ReadEvent(uint, Mono.Collections.Generic.Collection&lt;Mono.Cecil.EventDefinition&gt;)</a><br />
+<a href="#file0_line1498" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeEvents()"><i class="icon-cube"></i>InitializeEvents()</a><br />
+<a href="#file0_line1514" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - HasProperties(Mono.Cecil.TypeDefinition)"><i class="icon-cube"></i>HasProperties(Mono.Cecil.TypeDefinition)</a><br />
+<a href="#file0_line1525" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadProperties(Mono.Cecil.TypeDefinition)"><i class="icon-cube"></i>ReadProperties(Mono.Cecil.TypeDefinition)</a><br />
+<a href="#file0_line1552" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadProperty(uint, Mono.Collections.Generic.Collection&lt;Mono.Cecil.PropertyDefinition&gt;)"><i class="icon-cube"></i>ReadProperty(uint, Mono.Collections.Generic.Collection&lt;Mono.Cecil.PropertyDefinition&gt;)</a><br />
+<a href="#file0_line1580" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeProperties()"><i class="icon-cube"></i>InitializeProperties()</a><br />
+<a href="#file0_line1596" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadMethodSemantics(Mono.Cecil.MethodDefinition)"><i class="icon-cube"></i>ReadMethodSemantics(Mono.Cecil.MethodDefinition)</a><br />
+<a href="#file0_line1653" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetEvent(Mono.Cecil.TypeDefinition, Mono.Cecil.MetadataToken)"><i class="icon-cube"></i>GetEvent(Mono.Cecil.TypeDefinition, Mono.Cecil.MetadataToken)</a><br />
+<a href="#file0_line1661" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetProperty(Mono.Cecil.TypeDefinition, Mono.Cecil.MetadataToken)"><i class="icon-cube"></i>GetProperty(Mono.Cecil.TypeDefinition, Mono.Cecil.MetadataToken)</a><br />
+<a href="#file0_line1669" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetMember&lt;TMember&gt;(Mono.Collections.Generic.Collection&lt;TMember&gt;, Mono.Cecil.MetadataToken)"><i class="icon-cube"></i>GetMember&lt;TMember&gt;(Mono.Collections.Generic.Collection&lt;TMember&gt;, Mono.Cecil.MetadataToken)</a><br />
+<a href="#file0_line1680" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeMethodSemantics()"><i class="icon-cube"></i>InitializeMethodSemantics()</a><br />
+<a href="#file0_line1698" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadMethods(Mono.Cecil.PropertyDefinition)"><i class="icon-cube"></i>ReadMethods(Mono.Cecil.PropertyDefinition)</a><br />
+<a href="#file0_line1703" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadMethods(Mono.Cecil.EventDefinition)"><i class="icon-cube"></i>ReadMethods(Mono.Cecil.EventDefinition)</a><br />
+<a href="#file0_line1708" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadAllSemantics(Mono.Cecil.MethodDefinition)"><i class="icon-cube"></i>ReadAllSemantics(Mono.Cecil.MethodDefinition)</a><br />
+<a href="#file0_line1713" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadAllSemantics(Mono.Cecil.TypeDefinition)"><i class="icon-cube"></i>ReadAllSemantics(Mono.Cecil.TypeDefinition)</a><br />
+<a href="#file0_line1726" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadMethods(Mono.Cecil.TypeDefinition)"><i class="icon-cube"></i>ReadMethods(Mono.Cecil.TypeDefinition)</a><br />
+<a href="#file0_line1746" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadPointers&lt;TMember&gt;(Mono.Cecil.Metadata.Table, Mono.Cecil.Metadata.Table, Mono.Cecil.Range, Mono.Collections.Generic.Collection&lt;TMember&gt;, System.Action&lt;uint, Mono.Collections.Generic.Collection&lt;TMember&gt;&gt;)"><i class="icon-cube"></i>ReadPointers&lt;TMember&gt;(Mono.Cecil.Metadata.Table, Mono.Cecil.Metadata.Table, Mono.Cecil.Range, Mono.Collections.Generic.Collection&lt;TMember&gt;, System.Action&lt;uint, Mono.Collections.Generic.Collection&lt;TMember&gt;&gt;)</a><br />
+<a href="#file0_line1758" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - IsDeleted(Mono.Cecil.IMemberDefinition)"><i class="icon-cube"></i>IsDeleted(Mono.Cecil.IMemberDefinition)</a><br />
+<a href="#file0_line1763" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeMethods()"><i class="icon-cube"></i>InitializeMethods()</a><br />
+<a href="#file0_line1771" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadMethod(uint, Mono.Collections.Generic.Collection&lt;Mono.Cecil.MethodDefinition&gt;)"><i class="icon-cube"></i>ReadMethod(uint, Mono.Collections.Generic.Collection&lt;Mono.Cecil.MethodDefinition&gt;)</a><br />
+<a href="#file0_line1803" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadParameters(Mono.Cecil.MethodDefinition, Mono.Cecil.Range)"><i class="icon-cube"></i>ReadParameters(Mono.Cecil.MethodDefinition, Mono.Cecil.Range)</a><br />
+<a href="#file0_line1815" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadParameterPointers(Mono.Cecil.MethodDefinition, Mono.Cecil.Range)"><i class="icon-cube"></i>ReadParameterPointers(Mono.Cecil.MethodDefinition, Mono.Cecil.Range)</a><br />
+<a href="#file0_line1828" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadParameter(uint, Mono.Cecil.MethodDefinition)"><i class="icon-cube"></i>ReadParameter(uint, Mono.Cecil.MethodDefinition)</a><br />
+<a href="#file0_line1843" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadMethodSignature(uint, Mono.Cecil.IMethodSignature)"><i class="icon-cube"></i>ReadMethodSignature(uint, Mono.Cecil.IMethodSignature)</a><br />
+<a href="#file0_line1849" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadPInvokeInfo(Mono.Cecil.MethodDefinition)"><i class="icon-cube"></i>ReadPInvokeInfo(Mono.Cecil.MethodDefinition)</a><br />
+<a href="#file0_line1867" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializePInvokes()"><i class="icon-cube"></i>InitializePInvokes()</a><br />
+<a href="#file0_line1889" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - HasGenericParameters(Mono.Cecil.IGenericParameterProvider)"><i class="icon-cube"></i>HasGenericParameters(Mono.Cecil.IGenericParameterProvider)</a><br />
+<a href="#file0_line1900" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadGenericParameters(Mono.Cecil.IGenericParameterProvider)"><i class="icon-cube"></i>ReadGenericParameters(Mono.Cecil.IGenericParameterProvider)</a><br />
+<a href="#file0_line1916" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadGenericParametersRange(Mono.Cecil.Range, Mono.Cecil.IGenericParameterProvider, Mono.Cecil.GenericParameterCollection)"><i class="icon-cube"></i>ReadGenericParametersRange(Mono.Cecil.Range, Mono.Cecil.IGenericParameterProvider, Mono.Cecil.GenericParameterCollection)</a><br />
+<a href="#file0_line1935" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeGenericParameters()"><i class="icon-cube"></i>InitializeGenericParameters()</a><br />
+<a href="#file0_line1949" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeRanges(Mono.Cecil.Metadata.Table, System.Func&lt;Mono.Cecil.MetadataToken&gt;)"><i class="icon-cube"></i>InitializeRanges(Mono.Cecil.Metadata.Table, System.Func&lt;Mono.Cecil.MetadataToken&gt;)</a><br />
+<a href="#file0_line1979" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - AddRange(System.Collections.Generic.Dictionary&lt;Mono.Cecil.MetadataToken, Mono.Cecil.Range[]&gt;, Mono.Cecil.MetadataToken, Mono.Cecil.Range)"><i class="icon-cube"></i>AddRange(System.Collections.Generic.Dictionary&lt;Mono.Cecil.MetadataToken, Mono.Cecil.Range[]&gt;, Mono.Cecil.MetadataToken, Mono.Cecil.Range)</a><br />
+<a href="#file0_line1993" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - HasGenericConstraints(Mono.Cecil.GenericParameter)"><i class="icon-cube"></i>HasGenericConstraints(Mono.Cecil.GenericParameter)</a><br />
+<a href="#file0_line2004" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadGenericConstraints(Mono.Cecil.GenericParameter)"><i class="icon-cube"></i>ReadGenericConstraints(Mono.Cecil.GenericParameter)</a><br />
+<a href="#file0_line2026" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeGenericConstraints()"><i class="icon-cube"></i>InitializeGenericConstraints()</a><br />
+<a href="#file0_line2042" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - AddGenericConstraintMapping(uint, Mono.Cecil.Metadata.Row&lt;uint, Mono.Cecil.MetadataToken&gt;)"><i class="icon-cube"></i>AddGenericConstraintMapping(uint, Mono.Cecil.Metadata.Row&lt;uint, Mono.Cecil.MetadataToken&gt;)</a><br />
+<a href="#file0_line2049" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - HasOverrides(Mono.Cecil.MethodDefinition)"><i class="icon-cube"></i>HasOverrides(Mono.Cecil.MethodDefinition)</a><br />
+<a href="#file0_line2060" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadOverrides(Mono.Cecil.MethodDefinition)"><i class="icon-cube"></i>ReadOverrides(Mono.Cecil.MethodDefinition)</a><br />
+<a href="#file0_line2078" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeOverrides()"><i class="icon-cube"></i>InitializeOverrides()</a><br />
+<a href="#file0_line2100" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - AddOverrideMapping(uint, Mono.Cecil.MetadataToken)"><i class="icon-cube"></i>AddOverrideMapping(uint, Mono.Cecil.MetadataToken)</a><br />
+<a href="#file0_line2107" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadMethodBody(Mono.Cecil.MethodDefinition)"><i class="icon-cube"></i>ReadMethodBody(Mono.Cecil.MethodDefinition)</a><br />
+<a href="#file0_line2112" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadCodeSize(Mono.Cecil.MethodDefinition)"><i class="icon-cube"></i>ReadCodeSize(Mono.Cecil.MethodDefinition)</a><br />
+<a href="#file0_line2117" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadCallSite(Mono.Cecil.MetadataToken)"><i class="icon-cube"></i>ReadCallSite(Mono.Cecil.MetadataToken)</a><br />
+<a href="#file0_line2133" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadVariables(Mono.Cecil.MetadataToken, Mono.Cecil.MethodDefinition)"><i class="icon-cube"></i>ReadVariables(Mono.Cecil.MetadataToken, Mono.Cecil.MethodDefinition)</a><br />
+<a href="#file0_line2156" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - LookupToken(Mono.Cecil.MetadataToken)"><i class="icon-cube"></i>LookupToken(Mono.Cecil.MetadataToken)</a><br />
+<a href="#file0_line2202" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetFieldDefinition(uint)"><i class="icon-cube"></i>GetFieldDefinition(uint)</a><br />
+<a href="#file0_line2213" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - LookupField(uint)"><i class="icon-cube"></i>LookupField(uint)</a><br />
+<a href="#file0_line2224" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetMethodDefinition(uint)"><i class="icon-cube"></i>GetMethodDefinition(uint)</a><br />
+<a href="#file0_line2235" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - LookupMethod(uint)"><i class="icon-cube"></i>LookupMethod(uint)</a><br />
+<a href="#file0_line2246" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetMethodSpecification(uint)"><i class="icon-cube"></i>GetMethodSpecification(uint)</a><br />
+<a href="#file0_line2260" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadMethodSpecSignature(uint, Mono.Cecil.MethodReference)"><i class="icon-cube"></i>ReadMethodSpecSignature(uint, Mono.Cecil.MethodReference)</a><br />
+<a href="#file0_line2279" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetMemberReference(uint)"><i class="icon-cube"></i>GetMemberReference(uint)</a><br />
+<a href="#file0_line2293" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadMemberReference(uint)"><i class="icon-cube"></i>ReadMemberReference(uint)</a><br />
+<a href="#file0_line2321" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadTypeMemberReference(Mono.Cecil.MetadataToken, string, uint)"><i class="icon-cube"></i>ReadTypeMemberReference(Mono.Cecil.MetadataToken, string, uint)</a><br />
+<a href="#file0_line2334" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadMemberReferenceSignature(uint, Mono.Cecil.TypeReference)"><i class="icon-cube"></i>ReadMemberReferenceSignature(uint, Mono.Cecil.TypeReference)</a><br />
+<a href="#file0_line2353" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadMethodMemberReference(Mono.Cecil.MetadataToken, string, uint)"><i class="icon-cube"></i>ReadMethodMemberReference(Mono.Cecil.MetadataToken, string, uint)</a><br />
+<a href="#file0_line2365" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeMemberReferences()"><i class="icon-cube"></i>InitializeMemberReferences()</a><br />
+<a href="#file0_line2373" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetMemberReferences()"><i class="icon-cube"></i>GetMemberReferences()</a><br />
+<a href="#file0_line2394" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeConstants()"><i class="icon-cube"></i>InitializeConstants()</a><br />
+<a href="#file0_line2412" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadConstantSignature(Mono.Cecil.MetadataToken)"><i class="icon-cube"></i>ReadConstantSignature(Mono.Cecil.MetadataToken)</a><br />
+<a href="#file0_line2426" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadConstant(Mono.Cecil.IConstantProvider)"><i class="icon-cube"></i>ReadConstant(Mono.Cecil.IConstantProvider)</a><br />
+<a href="#file0_line2442" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadConstantValue(Mono.Cecil.Metadata.ElementType, uint)"><i class="icon-cube"></i>ReadConstantValue(Mono.Cecil.Metadata.ElementType, uint)</a><br />
+<a href="#file0_line2455" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadConstantString(uint)"><i class="icon-cube"></i>ReadConstantString(uint)</a><br />
+<a href="#file0_line2467" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadConstantPrimitive(Mono.Cecil.Metadata.ElementType, uint)"><i class="icon-cube"></i>ReadConstantPrimitive(Mono.Cecil.Metadata.ElementType, uint)</a><br />
+<a href="#file0_line2473" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeCustomAttributes()"><i class="icon-cube"></i>InitializeCustomAttributes()</a><br />
+<a href="#file0_line2487" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - HasCustomAttributes(Mono.Cecil.ICustomAttributeProvider)"><i class="icon-cube"></i>HasCustomAttributes(Mono.Cecil.ICustomAttributeProvider)</a><br />
+<a href="#file0_line2498" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadCustomAttributes(Mono.Cecil.ICustomAttributeProvider)"><i class="icon-cube"></i>ReadCustomAttributes(Mono.Cecil.ICustomAttributeProvider)</a><br />
+<a href="#file0_line2518" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadCustomAttributeRange(Mono.Cecil.Range, Mono.Collections.Generic.Collection&lt;Mono.Cecil.CustomAttribute&gt;)"><i class="icon-cube"></i>ReadCustomAttributeRange(Mono.Cecil.Range, Mono.Collections.Generic.Collection&lt;Mono.Cecil.CustomAttribute&gt;)</a><br />
+<a href="#file0_line2535" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - RangesSize(Mono.Cecil.Range[])"><i class="icon-cube"></i>RangesSize(Mono.Cecil.Range[])</a><br />
+<a href="#file0_line2544" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetCustomAttributes()"><i class="icon-cube"></i>GetCustomAttributes()</a><br />
+<a href="#file0_line2555" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadCustomAttributeBlob(uint)"><i class="icon-cube"></i>ReadCustomAttributeBlob(uint)</a><br />
+<a href="#file0_line2560" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadCustomAttributeSignature(Mono.Cecil.CustomAttribute)"><i class="icon-cube"></i>ReadCustomAttributeSignature(Mono.Cecil.CustomAttribute)</a><br />
+<a href="#file0_line2585" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeMarshalInfos()"><i class="icon-cube"></i>InitializeMarshalInfos()</a><br />
+<a href="#file0_line2604" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - HasMarshalInfo(Mono.Cecil.IMarshalInfoProvider)"><i class="icon-cube"></i>HasMarshalInfo(Mono.Cecil.IMarshalInfoProvider)</a><br />
+<a href="#file0_line2611" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadMarshalInfo(Mono.Cecil.IMarshalInfoProvider)"><i class="icon-cube"></i>ReadMarshalInfo(Mono.Cecil.IMarshalInfoProvider)</a><br />
+<a href="#file0_line2626" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeSecurityDeclarations()"><i class="icon-cube"></i>InitializeSecurityDeclarations()</a><br />
+<a href="#file0_line2640" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - HasSecurityDeclarations(Mono.Cecil.ISecurityDeclarationProvider)"><i class="icon-cube"></i>HasSecurityDeclarations(Mono.Cecil.ISecurityDeclarationProvider)</a><br />
+<a href="#file0_line2651" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadSecurityDeclarations(Mono.Cecil.ISecurityDeclarationProvider)"><i class="icon-cube"></i>ReadSecurityDeclarations(Mono.Cecil.ISecurityDeclarationProvider)</a><br />
+<a href="#file0_line2667" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadSecurityDeclarationRange(Mono.Cecil.Range, Mono.Collections.Generic.Collection&lt;Mono.Cecil.SecurityDeclaration&gt;)"><i class="icon-cube"></i>ReadSecurityDeclarationRange(Mono.Cecil.Range, Mono.Collections.Generic.Collection&lt;Mono.Cecil.SecurityDeclaration&gt;)</a><br />
+<a href="#file0_line2681" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadSecurityDeclarationBlob(uint)"><i class="icon-cube"></i>ReadSecurityDeclarationBlob(uint)</a><br />
+<a href="#file0_line2686" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadSecurityDeclarationSignature(Mono.Cecil.SecurityDeclaration)"><i class="icon-cube"></i>ReadSecurityDeclarationSignature(Mono.Cecil.SecurityDeclaration)</a><br />
+<a href="#file0_line2706" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadXmlSecurityDeclaration(uint, Mono.Cecil.SecurityDeclaration)"><i class="icon-cube"></i>ReadXmlSecurityDeclaration(uint, Mono.Cecil.SecurityDeclaration)</a><br />
+<a href="#file0_line2726" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadExportedTypes()"><i class="icon-cube"></i>ReadExportedTypes()</a><br />
+<a href="#file0_line2768" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetExportedTypeScope(Mono.Cecil.MetadataToken)"><i class="icon-cube"></i>GetExportedTypeScope(Mono.Cecil.MetadataToken)</a><br />
+<a href="#file0_line2790" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetModuleReferenceFromFile(Mono.Cecil.MetadataToken)"><i class="icon-cube"></i>GetModuleReferenceFromFile(Mono.Cecil.MetadataToken)</a><br />
+<a href="#file0_line2811" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeDocuments()"><i class="icon-cube"></i>InitializeDocuments()</a><br />
+<a href="#file0_line2838" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadSequencePoints(Mono.Cecil.MethodDefinition)"><i class="icon-cube"></i>ReadSequencePoints(Mono.Cecil.MethodDefinition)</a><br />
+<a href="#file0_line2856" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetDocument(uint)"><i class="icon-cube"></i>GetDocument(uint)</a><br />
+<a href="#file0_line2866" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeLocalScopes()"><i class="icon-cube"></i>InitializeLocalScopes()</a><br />
+<a href="#file0_line2889" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadScope(Mono.Cecil.MethodDefinition)"><i class="icon-cube"></i>ReadScope(Mono.Cecil.MethodDefinition)</a><br />
+<a href="#file0_line2915" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - AddScope(Mono.Collections.Generic.Collection&lt;Mono.Cecil.Cil.ScopeDebugInformation&gt;, Mono.Cecil.Cil.ScopeDebugInformation)"><i class="icon-cube"></i>AddScope(Mono.Collections.Generic.Collection&lt;Mono.Cecil.Cil.ScopeDebugInformation&gt;, Mono.Cecil.Cil.ScopeDebugInformation)</a><br />
+<a href="#file0_line2933" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadLocalScope(Mono.Cecil.Metadata.Row&lt;uint, Mono.Cecil.Range, Mono.Cecil.Range, uint, uint, uint&gt;)"><i class="icon-cube"></i>ReadLocalScope(Mono.Cecil.Metadata.Row&lt;uint, Mono.Cecil.Range, Mono.Cecil.Range, uint, uint, uint&gt;)</a><br />
+<a href="#file0_line2966" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadLocalVariable(uint)"><i class="icon-cube"></i>ReadLocalVariable(uint)</a><br />
+<a href="#file0_line2980" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadLocalConstant(uint)"><i class="icon-cube"></i>ReadLocalConstant(uint)</a><br />
+<a href="#file0_line3013" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeImportScopes()"><i class="icon-cube"></i>InitializeImportScopes()</a><br />
+<a href="#file0_line3047" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadUTF8StringBlob(uint)"><i class="icon-cube"></i>ReadUTF8StringBlob(uint)</a><br />
+<a href="#file0_line3052" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadUnicodeStringBlob(uint)"><i class="icon-cube"></i>ReadUnicodeStringBlob(uint)</a><br />
+<a href="#file0_line3060" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadStringBlob(uint, System.Text.Encoding)"><i class="icon-cube"></i>ReadStringBlob(uint, System.Text.Encoding)</a><br />
+<a href="#file0_line3069" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadImportTarget(Mono.Cecil.SignatureReader)"><i class="icon-cube"></i>ReadImportTarget(Mono.Cecil.SignatureReader)</a><br />
+<a href="#file0_line3122" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeStateMachineMethods()"><i class="icon-cube"></i>InitializeStateMachineMethods()</a><br />
+<a href="#file0_line3135" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadStateMachineKickoffMethod(Mono.Cecil.MethodDefinition)"><i class="icon-cube"></i>ReadStateMachineKickoffMethod(Mono.Cecil.MethodDefinition)</a><br />
+<a href="#file0_line3146" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - InitializeCustomDebugInformations()"><i class="icon-cube"></i>InitializeCustomDebugInformations()</a><br />
+<a href="#file0_line3165" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - GetCustomDebugInformation(Mono.Cecil.Cil.ICustomDebugInformationProvider)"><i class="icon-cube"></i>GetCustomDebugInformation(Mono.Cecil.Cil.ICustomDebugInformationProvider)</a><br />
+<a href="#file0_line3224" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadRawEmbeddedSourceDebugInformation(uint)"><i class="icon-cube"></i>ReadRawEmbeddedSourceDebugInformation(uint)</a><br />
+<a href="#file0_line3230" class="navigatetohash percentagebar percentagebar0" title="Line coverage: 0% - ReadEmbeddedSourceDebugInformation(uint)"><i class="icon-cube"></i>ReadEmbeddedSourceDebugInformation(uint)</a><br />
+<br/></div>
+</div></div>
+<script type="text/javascript">
+/* <![CDATA[ */
+(function() {
+    var url = window.location.href;
+    var startOfQueryString = url.indexOf('?');
+    var queryString = startOfQueryString > -1 ? url.substr(startOfQueryString) : '';
+
+    if (startOfQueryString > -1) {
+        var i = 0, href= null;
+        var css = document.getElementsByTagName('link');
+
+        for (i = 0; i < css.length; i++) {
+            if (css[i].getAttribute('rel') !== 'stylesheet') {
+            continue;
+            }
+
+            href = css[i].getAttribute('href');
+
+            if (href) {
+            css[i].setAttribute('href', href + queryString);
+            }
+        }
+
+        var links = document.getElementsByTagName('a');
+
+        for (i = 0; i < links.length; i++) {
+            href = links[i].getAttribute('href');
+
+            if (href
+                && !href.startsWith('http://')
+                && !href.startsWith('https://')
+                && !href.startsWith('#')
+                && href.indexOf('?') === -1) {
+            links[i].setAttribute('href', href + queryString);
+            }
+        }
+    }
+
+    var newScript = document.createElement('script');
+    newScript.src = 'class.js' + queryString;
+    document.getElementsByTagName('body')[0].appendChild(newScript);
+})();
+/* ]]> */ 
+</script></body></html>

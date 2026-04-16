@@ -1,8 +1,9 @@
+using TileTextureGenerator.Core.DTOs;
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
-using TileTextureGenerator.Core.DTOs;
+using TileTextureGenerator.Tests.Common;
 using TransformationBase = TileTextureGenerator.Core.Entities.TransformationBase;
 
 namespace TileTextureGenerator.Core.Tests.Entities;
@@ -20,7 +21,7 @@ public class TransformationBaseTests
         public TestTransformation(ITransformationStore store, byte[]? resultImage = null) 
             : base(store)
         {
-            _resultImage = new ImageData(resultImage ?? new byte[] { 0x89, 0x50, 0x4E, 0x47 }); // PNG header
+            _resultImage = new ImageData(resultImage ?? TestImageFactory.CreateImageData());
         }
 
         public static string IconResourceName => "Test.png";
@@ -146,7 +147,7 @@ public class TransformationBaseTests
         // Arrange
         var store = new FakeTransformationStore();
         var project = new FakeProject();
-        var expectedImage = new byte[] { 1, 2, 3, 4, 5 };
+        var expectedImage = TestImageFactory.CreateImageData();
         var transformation = new TestTransformation(store, expectedImage);
         transformation.Initialize(project, Guid.NewGuid());
 
@@ -221,13 +222,14 @@ public class TransformationBaseTests
 
         // Act
         transformation.EdgeFlap[ImageSide.Top] = new EdgeFlapConfiguration { Mode = EdgeFlapMode.Color, Color = "#FF0000" };
-        transformation.EdgeFlap[ImageSide.Right] = new EdgeFlapConfiguration { Mode = EdgeFlapMode.Texture, Texture = new ImageData(new byte[] { 0, 1, 2 }) };
+        var img = TestImageFactory.CreateImageData();
+        transformation.EdgeFlap[ImageSide.Right] = new EdgeFlapConfiguration { Mode = EdgeFlapMode.Texture, Texture = img };
 
         // Assert
         Assert.Equal(EdgeFlapMode.Color, transformation.EdgeFlap[ImageSide.Top].Mode);
         Assert.Equal("#FF0000", transformation.EdgeFlap[ImageSide.Top].Color);
         Assert.Equal(EdgeFlapMode.Texture, transformation.EdgeFlap[ImageSide.Right].Mode);
-        Assert.Equal(new byte[] { 0, 1, 2 }, transformation.EdgeFlap[ImageSide.Right].Texture!.Value.Bytes);
+        Assert.Equal(img, transformation.EdgeFlap[ImageSide.Right].Texture!.Value.Bytes);
     }
 
     [Fact]

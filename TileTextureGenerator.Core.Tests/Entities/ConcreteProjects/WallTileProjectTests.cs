@@ -6,6 +6,7 @@ using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Registries;
+using TileTextureGenerator.Tests.Common;
 
 namespace TileTextureGenerator.Core.Tests.Entities.ConcreteProjects;
 
@@ -103,7 +104,7 @@ public class WallTileProjectTests
         var store = new FakeWallTileProjectStore();
         var project = new WallTileProject(store);
         project.Initialize("WallProject");
-        var imageData = new byte[] { 1, 2, 3, 4, 5 };
+        var imageData = TestImageFactory.CreateImageData();
 
         // Act
         project.SourceImage = imageData;
@@ -157,7 +158,7 @@ public class WallTileProjectTests
         var project = new WallTileProject(store);
         project.Initialize("WallProject");
         project.TileShape = TileShape.HalfVertical;
-        project.SourceImage = new ImageData(new byte[] { 1, 2, 3 });
+        project.SourceImage = TestImageFactory.CreateImageData();
 
         var transformationId = Guid.NewGuid();
         var transformation = new VerticalWallTransformation(new FakeTransformationStore());

@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\TileTextureGenerator.Adapters.Persistence\TileTextureGenerator.Adapters.Persistence.csproj" />
     <ProjectReference Include="..\TileTextureGenerator.Core\TileTextureGenerator.Core.csproj" />
+    <ProjectReference Include="..\TileTextureGenerator.Tests.Common\TileTextureGenerator.Tests.Common.csproj" />
   </ItemGroup>
 
 </Project>

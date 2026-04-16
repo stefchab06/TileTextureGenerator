@@ -1,9 +1,11 @@
+using SkiaSharp;
 using TileTextureGenerator.Adapters.UseCases;
 using TileTextureGenerator.Core.DTOs;
 using TileTextureGenerator.Core.Entities;
 using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
+using TileTextureGenerator.Tests.Common;
 using Xunit;
 
 namespace TileTextureGenerator.Adapters.UseCases.Tests;
@@ -271,7 +273,7 @@ public class EditProjectUseCaseTests
         {
             var types = new List<TransformationTypeDTO>
             {
-                new() { Name = "HorizontalFloor", Icon = new ImageData([1, 2, 3]) },
+                new() { Name = "HorizontalFloor", Icon = TestImageFactory.CreateImageData() },
                 new() { Name = "VerticalWall", Icon = null }
             };
             return Task.FromResult<IReadOnlyList<TransformationTypeDTO>>(types);

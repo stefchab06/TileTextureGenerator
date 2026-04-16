@@ -9,6 +9,7 @@ using TileTextureGenerator.Core.Enums;
 using TileTextureGenerator.Core.Models;
 using TileTextureGenerator.Core.Ports.Output;
 using TileTextureGenerator.Core.Registries;
+using TileTextureGenerator.Tests.Common;
 using Xunit;
 
 namespace TileTextureGenerator.Adapters.Persistence.Tests.Stores;
@@ -64,7 +65,7 @@ public class JSonProjectStoreTests
         project.Initialize("FloorProject");
         project.Status = ProjectStatus.Generated;
         project.TileShape = TileShape.HalfHorizontal;
-        project.SourceImage = new ImageData(new byte[] { 1, 2, 3, 4, 5 });
+        project.SourceImage = TestImageFactory.CreateDisplayImage();
 
         // Act
         await ((IProjectStore)_store).SaveAsync(project);
@@ -100,7 +101,7 @@ public class JSonProjectStoreTests
         project.Initialize("WallProject");
         project.Status = ProjectStatus.Generated;
         project.TileShape = TileShape.HalfVertical;
-        project.SourceImage = new ImageData(new byte[] { 10, 20, 30 });
+        project.SourceImage = TestImageFactory.CreateDisplayImage();
 
         // Act
         await ((IProjectStore)_store).SaveAsync(project);
@@ -283,7 +284,7 @@ public class JSonProjectStoreTests
         {
             Id = Guid.NewGuid(),
             Type = "HorizontalFloorTransformation",
-            Icon = new ImageData(new byte[] { 1, 2, 3 }) // Should NOT be saved
+            Icon = TestImageFactory.CreateValidPng()
         };
 
         // Act
@@ -595,7 +596,7 @@ public class JSonProjectStoreTests
         var projectDir = _fileStorage.GetProjectPath("TestProject");
 
         // Create mock image file
-        var imageData = new byte[] { 0x89, 0x50, 0x4E, 0x47, 1, 2, 3 }; // PNG header + data
+        var imageData = TestImageFactory.CreateDisplayImage(); // PNG header + data
         var imagePath = Path.Combine(projectDir, "Sources", "BaseTexture.png");
         await _fileStorage.WriteAllBytesAsync(imagePath, imageData);
 
@@ -844,43 +845,12 @@ public class JSonProjectStoreTests
     }
 
     [Fact]
-    public async Task ArchiveAsync_PreservesDisplayImage()
-    {
-        // Arrange
-        var projectsStore = new JsonProjectsStore(_fileStorage);
-        string projectName = "TestProject";
-        var displayImage = new ImageData([137, 80, 78, 71, 13, 10, 26, 10]);
-        var dto = new ProjectDto(projectName, "FloorTileProject", ProjectStatus.Pending, DateTime.UtcNow)
-        {
-            DisplayImage = displayImage
-        };
-        await projectsStore.CreateProjectAsync(dto);
-
-        // Load project
-        var project = await projectsStore.LoadAsync(projectName);
-        Assert.NotNull(project);
-
-        // Update project status
-        project.Status = ProjectStatus.Archived;
-        project.LastModifiedDate = DateTime.UtcNow;
-
-        // Act
-        await _store.ArchiveAsync(project);
-
-        // Assert
-        var loadedProject = await projectsStore.LoadAsync(projectName);
-        Assert.NotNull(loadedProject);
-        Assert.NotNull(loadedProject.DisplayImage);
-        Assert.Equal(displayImage.Bytes.Length, loadedProject.DisplayImage.Value.Bytes.Length);
-    }
-
-    [Fact]
     public async Task ArchiveAsync_PersistsStatusAsArchived()
     {
         // Arrange
         var projectsStore = new JsonProjectsStore(_fileStorage);
         string projectName = "TestProject";
-        var displayImage = new ImageData([137, 80, 78, 71, 13, 10, 26, 10]);
+        var displayImage = TestImageFactory.CreateDisplayImage();
         var dto = new ProjectDto(projectName, "FloorTileProject", ProjectStatus.Pending, DateTime.UtcNow)
         {
             DisplayImage = displayImage

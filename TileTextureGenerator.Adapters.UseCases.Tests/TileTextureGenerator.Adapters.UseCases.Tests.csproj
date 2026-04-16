@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\TileTextureGenerator.Adapters.UseCases\TileTextureGenerator.Adapters.UseCases.csproj" />
     <ProjectReference Include="..\TileTextureGenerator.Core\TileTextureGenerator.Core.csproj" />
+    <ProjectReference Include="..\TileTextureGenerator.Tests.Common\TileTextureGenerator.Tests.Common.csproj" />
   </ItemGroup>
 
 </Project>

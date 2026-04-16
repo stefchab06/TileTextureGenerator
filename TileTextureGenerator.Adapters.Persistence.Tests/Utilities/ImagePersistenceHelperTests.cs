@@ -1,5 +1,8 @@
+using SkiaSharp;
 using TileTextureGenerator.Adapters.Persistence.Tests.Mocks;
 using TileTextureGenerator.Adapters.Persistence.Utilities;
+using TileTextureGenerator.Core.Models;
+using TileTextureGenerator.Tests.Common;
 using Xunit;
 
 namespace TileTextureGenerator.Adapters.Persistence.Tests.Utilities;
@@ -121,7 +124,7 @@ public class ImagePersistenceHelperTests
     public async Task SerializeProjectImageDataAsync_WithEmptyPropertyName_ThrowsArgumentException()
     {
         // Arrange
-        var imageData = new Core.Models.ImageData([0x89, 0x50]);
+        var imageData = TestImageFactory.CreateDisplayImage();
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() => 
@@ -132,7 +135,7 @@ public class ImagePersistenceHelperTests
     public async Task DeleteImageAsync_RemovesFile()
     {
         // Arrange
-        byte[] imageData = [0x89, 0x50, 0x4E, 0x47];
+        byte[] imageData = TestImageFactory.CreateDisplayImage();
         string jsonPath = await _helper.SaveImageAsync(imageData, _baseDirectory, "Sources", "test.png");
         string fullPath = Path.Combine(_baseDirectory, PathHelper.ToPlatformPath(jsonPath));
         Assert.True(await _fileStorage.FileExistsAsync(fullPath));
@@ -162,7 +165,7 @@ public class ImagePersistenceHelperTests
     public async Task ImageExistsAsync_WithExistingImage_ReturnsTrue()
     {
         // Arrange
-        byte[] imageData = [0x89, 0x50, 0x4E, 0x47];
+        byte[] imageData = TestImageFactory.CreateDisplayImage();
         string jsonPath = await _helper.SaveImageAsync(imageData, _baseDirectory, "Sources", "test.png");
 
         // Act
@@ -196,7 +199,7 @@ public class ImagePersistenceHelperTests
     public async Task SaveImageAsync_MultipleCalls_GeneratesDifferentGuids()
     {
         // Arrange
-        byte[] imageData = [0x89, 0x50, 0x4E, 0x47];
+        byte[] imageData = TestImageFactory.CreateDisplayImage();
 
         // Act
         string path1 = await _helper.SaveImageAsync(imageData, _baseDirectory, "Workspace");
@@ -213,8 +216,7 @@ public class ImagePersistenceHelperTests
     public async Task SerializeProjectImageDataAsync_ValidImageData_ReturnsCorrectJsonProperty()
     {
         // Arrange
-        byte[] imageBytes = [0x89, 0x50, 0x4E, 0x47, 1, 2, 3];
-        var imageData = new Core.Models.ImageData(imageBytes);
+        var imageData = TestImageFactory.CreateDisplayImage();
         string propertyName = "DisplayImage";
 
         // Act
@@ -229,15 +231,14 @@ public class ImagePersistenceHelperTests
         string fullPath = Path.Combine(_baseDirectory, "Sources", "DisplayImage.png");
         Assert.True(await _fileStorage.FileExistsAsync(fullPath));
         byte[] savedBytes = await _fileStorage.ReadAllBytesAsync(fullPath);
-        Assert.Equal(imageBytes, savedBytes);
+        Assert.Equal(imageData.Bytes, savedBytes);
     }
 
     [Fact]
     public async Task SerializeProjectImageDataAsync_MixedCasePropertyName_FullyLowercase()
     {
         // Arrange
-        byte[] imageBytes = [0x89, 0x50, 0x4E, 0x47];
-        var imageData = new Core.Models.ImageData(imageBytes);
+        var imageData = TestImageFactory.CreateDisplayImage();
         string propertyName = "SourceImageData";
 
         // Act
@@ -252,7 +253,7 @@ public class ImagePersistenceHelperTests
     public async Task SerializeProjectImageDataAsync_NullPropertyName_ThrowsArgumentNullException()
     {
         // Arrange
-        var imageData = new Core.Models.ImageData([0x89, 0x50]);
+        var imageData = TestImageFactory.CreateDisplayImage();
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
@@ -267,7 +268,7 @@ public class ImagePersistenceHelperTests
     public async Task SerializeTransformationImageDataAsync_NewImage_GeneratesGuidFilename()
     {
         // Arrange
-        byte[] imageBytes = [0x89, 0x50, 0x4E, 0x47, 1, 2, 3];
+        byte[] imageBytes = TestImageFactory.CreateImageData();
         var imageData = new Core.Models.ImageData(imageBytes);
         string propertyName = "BaseTexture";
         var emptyNode = new System.Text.Json.Nodes.JsonObject();
@@ -295,8 +296,8 @@ public class ImagePersistenceHelperTests
     public async Task SerializeTransformationImageDataAsync_ExistingPath_ReusesGuid()
     {
         // Arrange
-        byte[] oldImageBytes = [0x89, 0x50, 0x4E, 0x47, 9, 9, 9];
-        byte[] newImageBytes = [0x89, 0x50, 0x4E, 0x47, 1, 2, 3];
+        byte[] oldImageBytes = TestImageFactory.CreateImageData();
+        byte[] newImageBytes = new ImageData(TestImageFactory.CreatePng(1, 1, SKColor.Parse("#00000000")));
         var newImageData = new Core.Models.ImageData(newImageBytes);
         string propertyName = "BaseTexture";
 
@@ -329,8 +330,8 @@ public class ImagePersistenceHelperTests
     public async Task SerializeTransformationImageDataAsync_MultipleProperties_DifferentGuids()
     {
         // Arrange
-        var imageData1 = new Core.Models.ImageData([0x89, 0x50, 0x4E, 0x47, 1]);
-        var imageData2 = new Core.Models.ImageData([0x89, 0x50, 0x4E, 0x47, 2]);
+        byte[] imageData1 = TestImageFactory.CreateImageData();
+        byte[] imageData2 = new ImageData(TestImageFactory.CreatePng(1, 1, SKColor.Parse("#00000000")));
         var emptyNode = new System.Text.Json.Nodes.JsonObject();
 
         // Act
@@ -355,7 +356,7 @@ public class ImagePersistenceHelperTests
     public async Task DeserializeImageDataAsync_ValidPath_ReturnsImageData()
     {
         // Arrange
-        byte[] imageBytes = [0x89, 0x50, 0x4E, 0x47, 1, 2, 3];
+        byte[] imageBytes = TestImageFactory.CreateDisplayImage();
         string relativePath = "Sources/TestImage.png";
         string fullPath = Path.Combine(_baseDirectory, "Sources", "TestImage.png");
         await _fileStorage.WriteAllBytesAsync(fullPath, imageBytes);
