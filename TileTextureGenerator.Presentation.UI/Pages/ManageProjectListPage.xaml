@@ -13,6 +13,7 @@
             <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
             <converters:BoolToButtonColorConverter x:Key="BoolToButtonColorConverter" />
             <converters:BoolToButtonTextColorConverter x:Key="BoolToButtonTextColorConverter" />
+            <converters:ByteArrayToImageSourceConverter x:Key="ByteArrayToImageSourceConverter" />
             <services:ProjectTypeLocalizer x:Key="ProjectTypeLocalizer" />
             <converters:ProjectTypeToLocalizedNameConverter x:Key="ProjectTypeToLocalizedNameConverter" Localizer="{StaticResource ProjectTypeLocalizer}" />
             <converters:ProjectStatusToLocalizedStringConverter x:Key="ProjectStatusToLocalizedStringConverter" Localizer="{StaticResource ProjectTypeLocalizer}" />
@@ -119,7 +120,7 @@
                                 </Grid>
                                 <!-- Project Image -->
                                 <Frame Padding="0" CornerRadius="8" HeightRequest="128" HorizontalOptions="Center">
-                                    <Image Source="{Binding DisplayImage}" HeightRequest="128" Aspect="AspectFit" />
+                                    <Image Source="{Binding DisplayImage, Converter={StaticResource ByteArrayToImageSourceConverter}}" HeightRequest="128" Aspect="AspectFit" />
                                 </Frame>
                                 <!-- Action Buttons (Grid for margins + FlexLayout for centering) -->
                                 <Grid ColumnSpacing="0" Padding="0,8,0,0">
