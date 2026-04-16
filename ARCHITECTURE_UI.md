@@ -140,13 +140,10 @@ TileTextureGenerator.Presentation.UI/
              x:DataType="vm:EditProjectViewModel">
 
     <ContentPage.Resources>
-        <selectors:ProjectTemplateSelector x:Key="ProjectTemplateSelector">
-            <selectors:ProjectTemplateSelector.FloorTileTemplate>
-                <DataTemplate>
-                    <templates:FloorTileTemplate />
-                </DataTemplate>
-            </selectors:ProjectTemplateSelector.FloorTileTemplate>
-        </selectors:ProjectTemplateSelector>
+        <ResourceDictionary>
+            <!-- Template selector (templates registered in C# constructor) -->
+            <selectors:ProjectTemplateSelector x:Key="ProjectTemplateSelector" />
+        </ResourceDictionary>
     </ContentPage.Resources>
 
     <Frame>
@@ -203,52 +200,65 @@ public class TemplatedContentView : ContentView
 
 ---
 
-### 4. ProjectTemplateSelector (Convention-based)
+### 4. ProjectTemplateSelector (Centralized Registration)
 
-**Responsibility**: Map `ConcreteTypeName` (string) to `DataTemplate` using reflection.
+**Responsibility**: Map `ConcreteTypeName` (string) to `DataTemplate` and `ViewModel Type` using explicit registration.
 
 **Code**:
 ```csharp
+/// <summary>
+/// Holds template and ViewModel type information for a concrete project type.
+/// </summary>
+public record ProjectTemplateInfo(DataTemplate Template, Type ViewModelType);
+
 public class ProjectTemplateSelector : DataTemplateSelector
 {
-    public DataTemplate? FloorTileTemplate { get; set; }
-    // WallTileTemplate will be added later
+    private readonly Dictionary<string, ProjectTemplateInfo> _projectTemplates = new();
 
-    public IReadOnlyDictionary<string, DataTemplate?> GetTemplateMappings()
+    /// <summary>
+    /// Constructor: Register all project templates here.
+    /// </summary>
+    public ProjectTemplateSelector()
     {
-        var mappings = new Dictionary<string, DataTemplate?>();
+        // Register FloorTileProject
+        RegisterTemplate("FloorTileProject", typeof(FloorTileTemplate), typeof(FloorTileProjectViewModel));
 
-        // Scan all DataTemplate properties
-        var properties = GetType().GetProperties()
-            .Where(p => p.PropertyType == typeof(DataTemplate) && p.CanRead);
-
-        foreach (var prop in properties)
-        {
-            // Convention: "FloorTileTemplate" → "FloorTileProject"
-            if (prop.Name.EndsWith("Template"))
-            {
-                var typeName = prop.Name[..^"Template".Length] + "Project";
-                var template = (DataTemplate?)prop.GetValue(this);
-                mappings[typeName] = template;
-            }
-        }
-
-        return mappings;
+        // To add WallTileProject, uncomment:
+        // RegisterTemplate("WallTileProject", typeof(WallTileTemplate), typeof(WallTileProjectViewModel));
     }
+
+    /// <summary>
+    /// Registers a project template with its associated ViewModel type.
+    /// </summary>
+    private void RegisterTemplate(string projectTypeName, Type templateType, Type viewModelType)
+    {
+        var dataTemplate = new DataTemplate(templateType);
+        _projectTemplates[projectTypeName] = new ProjectTemplateInfo(dataTemplate, viewModelType);
+    }
+
+    /// <summary>
+    /// Gets the list of registered project type names.
+    /// Useful for testing to verify all concrete project types are registered.
+    /// </summary>
+    public IReadOnlyCollection<string> RegisteredProjectTypes => _projectTemplates.Keys;
 
     public DataTemplate? SelectTemplateByTypeName(string concreteTypeName)
     {
-        var mappings = GetTemplateMappings();
-        return mappings.TryGetValue(concreteTypeName, out var template) 
-            ? template 
-            : null;
+        return _projectTemplates.TryGetValue(concreteTypeName, out var info) ? info.Template : null;
+    }
+
+    public Type? GetViewModelType(string concreteTypeName)
+    {
+        return _projectTemplates.TryGetValue(concreteTypeName, out var info) ? info.ViewModelType : null;
     }
 }
 ```
 
-**Convention**:
-- Property name `XxxTemplate` → maps to type `XxxProject`
-- Example: `FloorTileTemplate` → `FloorTileProject`
+**Benefits**:
+- ✅ **Single file to modify**: Add one line in constructor for new project types
+- ✅ **No XAML changes**: Templates registered in C# only
+- ✅ **Atomic storage**: Template + ViewModel stored together
+- ✅ **Testable**: `RegisteredProjectTypes` property for integrity tests
 
 ---
 
@@ -434,50 +444,28 @@ public class WallTileProjectViewModel : INotifyPropertyChanged
 }
 ```
 
-### 4. Register Template in EditProjectPage.xaml
-
-**File**: `TileTextureGenerator.Presentation.UI/Pages/EditProjectPage.xaml`
-
-Add in `<ContentPage.Resources>`:
-```xaml
-<selectors:ProjectTemplateSelector x:Key="ProjectTemplateSelector">
-    <selectors:ProjectTemplateSelector.FloorTileTemplate>
-        <DataTemplate>
-            <templates:FloorTileTemplate />
-        </DataTemplate>
-    </selectors:ProjectTemplateSelector.FloorTileTemplate>
-
-    <!-- ADD THIS -->
-    <selectors:ProjectTemplateSelector.WallTileTemplate>
-        <DataTemplate>
-            <templates:WallTileTemplate />
-        </DataTemplate>
-    </selectors:ProjectTemplateSelector.WallTileTemplate>
-</selectors:ProjectTemplateSelector>
-```
-
-### 5. Add Property in ProjectTemplateSelector
+### 4. Register in ProjectTemplateSelector
 
 **File**: `TileTextureGenerator.Presentation.UI/Selectors/ProjectTemplateSelector.cs`
 
-Add property:
+**Add ONE line in the constructor**:
 ```csharp
-public class ProjectTemplateSelector : DataTemplateSelector
+public ProjectTemplateSelector()
 {
-    public DataTemplate? FloorTileTemplate { get; set; }
-    public DataTemplate? WallTileTemplate { get; set; } // ADD THIS
+    RegisterTemplate("FloorTileProject", typeof(FloorTileTemplate), typeof(FloorTileProjectViewModel));
 
-    // GetTemplateMappings() auto-scans properties (no code change needed!)
+    // ADD THIS LINE:
+    RegisterTemplate("WallTileProject", typeof(WallTileTemplate), typeof(WallTileProjectViewModel));
 }
 ```
 
-### 6. DONE! 🎉
+### 5. DONE! 🎉
 
-**That's it!** The system is 100% convention-based:
-- ✅ `WallTileTemplate` property → maps to `WallTileProject`
-- ✅ `WallTileProjectViewModel` auto-discovered by naming convention
+**That's it!** No XAML modification needed:
+- ✅ `WallTileTemplate` registered with `WallTileProject` type name
+- ✅ `WallTileProjectViewModel` associated automatically
 - ✅ JSON contract auto-handled
-- ✅ No code changes in `EditProjectViewModel` or `TemplatedContentView`
+- ✅ **Only 1 file modified** (`ProjectTemplateSelector.cs`)
 
 ---
 
@@ -485,8 +473,8 @@ public class ProjectTemplateSelector : DataTemplateSelector
 
 | Convention | Example | Result |
 |------------|---------|--------|
-| **Template Property Name** | `FloorTileTemplate` | Maps to `FloorTileProject` |
-| **ViewModel Class Name** | `FloorTileProjectViewModel` | Auto-discovered by reflection |
+| **Registration in Constructor** | `RegisterTemplate("FloorTileProject", ...)` | Maps type name to template + ViewModel |
+| **ViewModel Class Name** | `FloorTileProjectViewModel` | Passed to `RegisterTemplate()` |
 | **ViewModel Constructor** | `(JsonObject, EditProjectViewModel)` | **MANDATORY** signature |
 | **Enum Serialization** | `TileShape.Full` | Stored as `"Full"` (string in JSON) |
 | **Image Serialization** | `byte[]` | Stored as base64 string |
@@ -525,12 +513,13 @@ public void WhenAllRegisteredProjects_ThenEachHasTemplate()
 
 ✅ **Hexagonal Compliance**: Presentation.UI does NOT reference Core  
 ✅ **JSON Contract**: Stable interface between layers  
-✅ **Convention-based**: Minimal boilerplate for new types  
+✅ **Centralized Registration**: ONE file to modify for new types (`ProjectTemplateSelector.cs`)  
 ✅ **Memory Efficient**: Templates instantiated only when needed  
-✅ **Testable**: Template mappings verifiable via tests  
-✅ **Maintainable**: Adding new project types = ~5 files, zero logic changes  
+✅ **Testable**: `RegisteredProjectTypes` property for integrity tests  
+✅ **Maintainable**: Adding new project types = **3 files + 1 line**, zero XAML changes  
 ✅ **Enum Readability**: JSON contains `"Full"` not `0`  
 ✅ **Shared Reference**: UI modifications auto-reflected on Save  
+✅ **No Reflection at Runtime**: Template selection uses pre-built dictionary
 
 ---
 
@@ -976,40 +965,28 @@ Quand vous créez un nouveau type de projet (ex: `PillarTileProject`) :
 - [ ] Ajouter propriétés spécifiques
 - [ ] Enregistrer dans constructeur statique : `TextureProjectRegistry.RegisterType<PillarTileProject>()`
 
-### 2️⃣ Presentation.UI (Views)
-- [ ] Créer `Views/ProjectDetails/PillarTileProjectDetailsView.xaml`
-- [ ] Créer `Views/ProjectDetails/PillarTileProjectDetailsView.xaml.cs`
-- [ ] Créer `Views/ProjectDetails/PillarTileProjectDetailsViewModel.cs`
+### 2️⃣ Presentation.UI (Templates)
+- [ ] Créer `Templates/PillarTileTemplate.xaml`
+- [ ] Créer `Templates/PillarTileTemplate.xaml.cs`
+- [ ] Créer `ViewModels/PillarTileProjectViewModel.cs`
 
-### 3️⃣ Selector
-- [ ] Ajouter propriété dans `ProjectTypeTemplateSelector.cs` :
+### 3️⃣ ProjectTemplateSelector (ONE LINE!)
+- [ ] Ajouter dans le constructeur :
   ```csharp
-  public DataTemplate PillarTileTemplate { get; set; } = null!;
-  ```
-- [ ] Ajouter case dans `OnSelectTemplate` :
-  ```csharp
-  PillarTileProject => PillarTileTemplate ?? throw ...,
+  RegisterTemplate("PillarTileProject", typeof(PillarTileTemplate), typeof(PillarTileProjectViewModel));
   ```
 
-### 4️⃣ Page principale
-- [ ] Référencer template dans `EditProjectPage.xaml` :
-  ```xaml
-  <local:ProjectTypeTemplateSelector.PillarTileTemplate>
-      <DataTemplate><views:PillarTileProjectDetailsView /></DataTemplate>
-  </local:ProjectTypeTemplateSelector.PillarTileTemplate>
-  ```
-
-### 5️⃣ Ressources (Localisation)
+### 4️⃣ Ressources (Localisation)
 - [ ] Ajouter clés dans fichier `.resx` :
   - `ProjectProperty_PillarTileProject_Height`
   - `ProjectProperty_PillarTileProject_Width`
   - etc.
 
-### 6️⃣ Tests
+### 5️⃣ Tests
 - [ ] **Exécuter** `dotnet test` pour valider l'intégrité
 - [ ] Le test `AllRegisteredProjectTypes_HaveCorrespondingDataTemplate` **doit passer** ✅
 
-**Si le test échoue** → Vérifier les étapes 2-4.
+**Si le test échoue** → Vérifier l'étape 3 (registration manquante).
 
 ---
 
@@ -1023,9 +1000,29 @@ Quand vous créez un nouveau type de projet (ex: `PillarTileProject`) :
 
 **Stratégie** :
 1. Lire `TextureProjectRegistry.GetAllRegisteredTypes()`
-2. Pour chaque type, créer instance temporaire via factory
-3. Appeler `selector.OnSelectTemplate(instance, null)`
-4. Vérifier retour non-null (pas d'exception)
+2. Comparer avec `ProjectTemplateSelector.RegisteredProjectTypes`
+3. Vérifier qu'ils sont identiques
+
+**Code** :
+```csharp
+[Fact]
+public void AllRegisteredProjectTypes_HaveCorrespondingDataTemplate()
+{
+    // Arrange
+    var selector = new ProjectTemplateSelector();
+    var registeredInCore = TextureProjectRegistry.GetAllRegisteredTypes()
+        .Select(t => t.Name)
+        .OrderBy(n => n)
+        .ToList();
+
+    var registeredInUI = selector.RegisteredProjectTypes
+        .OrderBy(n => n)
+        .ToList();
+
+    // Assert
+    Assert.Equal(registeredInCore, registeredInUI);
+}
+```
 
 **Détection** :
 - ✅ Lors de `dotnet test` (avant commit)
@@ -1033,8 +1030,9 @@ Quand vous créez un nouveau type de projet (ex: `PillarTileProject`) :
 
 **Message d'erreur** :
 ```
-System.NotSupportedException: No DataTemplate defined for project type: PillarTileProject.
-Add a new template property and case in OnSelectTemplate.
+Expected: [FloorTileProject, WallTileProject]
+Actual:   [FloorTileProject]
+Missing template for: WallTileProject
 ```
 
 ---

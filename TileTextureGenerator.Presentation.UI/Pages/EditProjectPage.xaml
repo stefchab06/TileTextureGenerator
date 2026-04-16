@@ -19,14 +19,8 @@
             <converters:IsNotNullConverter x:Key="IsNotNullConverter" />
             <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
 
-            <!-- Project Template Selector -->
-            <selectors:ProjectTemplateSelector x:Key="ProjectTemplateSelector">
-                <selectors:ProjectTemplateSelector.FloorTileTemplate>
-                    <DataTemplate>
-                        <templates:FloorTileTemplate />
-                    </DataTemplate>
-                </selectors:ProjectTemplateSelector.FloorTileTemplate>
-            </selectors:ProjectTemplateSelector>
+            <!-- Project Template Selector (templates registered in C# constructor) -->
+            <selectors:ProjectTemplateSelector x:Key="ProjectTemplateSelector" />
         </ResourceDictionary>
     </ContentPage.Resources>
 

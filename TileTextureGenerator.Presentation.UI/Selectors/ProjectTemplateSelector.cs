@@ -1,66 +1,71 @@
+using TileTextureGenerator.Presentation.UI.Templates;
 using TileTextureGenerator.Presentation.UI.ViewModels;
 
 namespace TileTextureGenerator.Presentation.UI.Selectors;
 
 /// <summary>
-/// Selects the appropriate DataTemplate based on the concrete project type name.
-/// Exposes template mappings for testing purposes.
-/// Automatically scans DataTemplate properties to build mappings (convention-based).
-/// Also maps TypeName to ViewModel Type for generic instantiation.
+/// Holds template and ViewModel type information for a concrete project type.
+/// </summary>
+/// <param name="Template">The DataTemplate for rendering the project UI.</param>
+/// <param name="ViewModelType">The ViewModel type associated with this project template.</param>
+public record ProjectTemplateInfo(DataTemplate Template, Type ViewModelType);
+
+/// <summary>
+/// Selects the appropriate DataTemplate and ViewModel based on the concrete project type name.
+/// Centralized registration: all project templates are registered in the constructor.
+/// 
+/// To add a new project type:
+/// 1. Create the Template class (e.g., WallTileTemplate.xaml + code-behind)
+/// 2. Create the ViewModel class (e.g., WallTileProjectViewModel.cs)
+/// 3. Add one line in the constructor:
+///    RegisterTemplate("WallTileProject", typeof(WallTileTemplate), typeof(WallTileProjectViewModel));
+/// That's it! No XAML modification needed.
 /// </summary>
 public class ProjectTemplateSelector : DataTemplateSelector
 {
-    /// <summary>
-    /// Template for FloorTileProject.
-    /// Convention: Property name "FloorTileTemplate" maps to type "FloorTileProject" and ViewModel "FloorTileProjectViewModel".
-    /// </summary>
-    public DataTemplate? FloorTileTemplate { get; set; }
-
-    // To add a new project type:
-    // 1. Add a property: public DataTemplate? WallTileTemplate { get; set; }
-    // 2. Configure it in XAML Resources
-    // That's it! Mapping is automatic via reflection and naming convention.
+    private readonly Dictionary<string, ProjectTemplateInfo> _projectTemplates = new();
 
     /// <summary>
-    /// Gets the template mappings for testing purposes.
-    /// Automatically scans all DataTemplate properties and builds mappings.
-    /// Convention: "XxxTemplate" property name → "XxxProject" type name.
+    /// Constructor: Register all project templates here.
     /// </summary>
-    public IReadOnlyDictionary<string, DataTemplate?> GetTemplateMappings()
+    public ProjectTemplateSelector()
     {
-        var mappings = new Dictionary<string, DataTemplate?>();
+        // Register FloorTileProject
+        RegisterTemplate("FloorTileProject", typeof(FloorTileTemplate), typeof(FloorTileProjectViewModel));
 
-        // Scan all properties that are DataTemplate
-        var properties = GetType()
-            .GetProperties()
-            .Where(p => p.PropertyType == typeof(DataTemplate) && p.CanRead);
-
-        foreach (var prop in properties)
-        {
-            // Extract type name from property name (e.g., "FloorTileTemplate" -> "FloorTileProject")
-            var propName = prop.Name;
-            if (propName.EndsWith("Template"))
-            {
-                var typeName = propName.Substring(0, propName.Length - "Template".Length) + "Project";
-                var template = (DataTemplate?)prop.GetValue(this);
-                mappings[typeName] = template;
-            }
-        }
-
-        return mappings;
+        // To add WallTileProject, uncomment:
+        // RegisterTemplate("WallTileProject", typeof(WallTileTemplate), typeof(WallTileProjectViewModel));
     }
 
     /// <summary>
-    /// Gets ViewModel type for a given project type name.
-    /// Convention: "FloorTileProject" → "FloorTileProjectViewModel"
+    /// Registers a project template with its associated ViewModel type.
     /// </summary>
-    public Type? GetViewModelType(string concreteTypeName)
+    /// <param name="projectTypeName">The concrete project type name (e.g., "FloorTileProject").</param>
+    /// <param name="templateType">The template type (e.g., typeof(FloorTileTemplate)).</param>
+    /// <param name="viewModelType">The ViewModel type (e.g., typeof(FloorTileProjectViewModel)).</param>
+    private void RegisterTemplate(string projectTypeName, Type templateType, Type viewModelType)
     {
-        if (string.IsNullOrEmpty(concreteTypeName))
+        var dataTemplate = new DataTemplate(templateType);
+        _projectTemplates[projectTypeName] = new ProjectTemplateInfo(dataTemplate, viewModelType);
+    }
+
+    /// <summary>
+    /// Gets the list of registered project type names.
+    /// Useful for testing to verify all concrete project types are registered.
+    /// </summary>
+    public IReadOnlyCollection<string> RegisteredProjectTypes => _projectTemplates.Keys;
+
+    /// <summary>
+    /// Gets the complete template information (DataTemplate + ViewModel type) for a project type.
+    /// </summary>
+    /// <param name="projectTypeName">The concrete project type name.</param>
+    /// <returns>Template info if found, null otherwise.</returns>
+    public ProjectTemplateInfo? GetTemplateInfo(string projectTypeName)
+    {
+        if (string.IsNullOrEmpty(projectTypeName))
             return null;
 
-        var viewModelTypeName = $"TileTextureGenerator.Presentation.UI.ViewModels.{concreteTypeName}ViewModel";
-        return Type.GetType(viewModelTypeName);
+        return _projectTemplates.TryGetValue(projectTypeName, out var info) ? info : null;
     }
 
     /// <summary>
@@ -68,11 +73,26 @@ public class ProjectTemplateSelector : DataTemplateSelector
     /// </summary>
     public DataTemplate? SelectTemplateByTypeName(string concreteTypeName)
     {
-        if (string.IsNullOrEmpty(concreteTypeName))
-            return null;
+        return GetTemplateInfo(concreteTypeName)?.Template;
+    }
 
-        var mappings = GetTemplateMappings();
-        return mappings.TryGetValue(concreteTypeName, out var template) ? template : null;
+    /// <summary>
+    /// Gets ViewModel type for a given project type name.
+    /// </summary>
+    public Type? GetViewModelType(string concreteTypeName)
+    {
+        return GetTemplateInfo(concreteTypeName)?.ViewModelType;
+    }
+
+    /// <summary>
+    /// Gets the template mappings for testing purposes (legacy compatibility).
+    /// </summary>
+    public IReadOnlyDictionary<string, DataTemplate?> GetTemplateMappings()
+    {
+        return _projectTemplates.ToDictionary(
+            kvp => kvp.Key,
+            kvp => (DataTemplate?)kvp.Value.Template
+        );
     }
 
     /// <summary>
