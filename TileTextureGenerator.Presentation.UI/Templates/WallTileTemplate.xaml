@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TileTextureGenerator.Presentation.UI.ViewModels"
+             xmlns:res="clr-namespace:TileTextureGenerator.Presentation.UI.Resources.Strings"
+             xmlns:converters="clr-namespace:TileTextureGenerator.Presentation.UI.Converters"
+             x:Class="TileTextureGenerator.Presentation.UI.Templates.WallTileTemplate">
+
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <converters:ByteArrayToImageSourceConverter x:Key="ByteArrayToImageSourceConverter" />
+            <converters:IsNotNullConverter x:Key="IsNotNullConverter" />
+            <converters:BoolToTextConverter x:Key="BoolToTextConverter" />
+            <converters:CountToHeightConverter x:Key="CountToHeightConverter" />
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <VerticalStackLayout Spacing="20">
+        
+        <!-- Tile Shape Picker (collapsible like transformation picker) -->
+        <VerticalStackLayout Spacing="0">
+            <Grid ColumnSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <VerticalStackLayout Grid.Column="0" Spacing="8">
+                    <Label Text="{x:Static res:AppResources.FloorTileProject_TileShape}" 
+                           FontSize="14" 
+                           FontAttributes="Bold" />
+                    <Frame BorderColor="{StaticResource Gray300}"
+                           Padding="10"
+                           CornerRadius="8"
+                           HasShadow="False"
+                           BackgroundColor="{StaticResource Secondary}">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ToggleTileShapePickerCommand}" />
+                        </Frame.GestureRecognizers>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0"
+                                   Text="{Binding SelectedTileShape.LocalizedName, FallbackValue={x:Static res:AppResources.FloorTileProject_SelectTileShape}}"
+                                   VerticalOptions="Center"
+                                   FontSize="Body" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding IsTileShapePickerExpanded, Converter={StaticResource BoolToTextConverter}, ConverterParameter='▲|▼'}"
+                                   VerticalOptions="Center"
+                                   FontSize="Large"
+                                   Margin="10,0,0,0" />
+                        </Grid>
+                    </Frame>
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- Dropdown list -->
+            <CollectionView ItemsSource="{Binding AvailableTileShapes}"
+                            SelectionMode="None"
+                            IsVisible="{Binding IsTileShapePickerExpanded}"
+                            HeightRequest="{Binding AvailableTileShapes.Count, Converter={StaticResource CountToHeightConverter}}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame BorderColor="{StaticResource Gray200}"
+                               Padding="10"
+                               Margin="0,2"
+                               CornerRadius="4"
+                               HasShadow="False"
+                               BackgroundColor="White">
+                            <Label Text="{Binding LocalizedName}"
+                                   VerticalOptions="Center"
+                                   FontSize="Body">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnTileShapeItemTapped" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+
+        <!-- Source Image -->
+        <VerticalStackLayout Spacing="8">
+            <Label Text="{x:Static res:AppResources.FloorTileProject_SourceImage}" 
+                   FontSize="14" 
+                   FontAttributes="Bold" />
+            
+            <Frame BorderColor="{StaticResource Gray300}"
+                   Padding="0"
+                   CornerRadius="8"
+                   HasShadow="False"
+                   HeightRequest="300"
+                   WidthRequest="300"
+                   HorizontalOptions="Center">
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding SelectSourceImageCommand}" />
+                </Frame.GestureRecognizers>
+
+                <!-- Image or Placeholder -->
+                <Grid>
+                    <!-- Placeholder (visible when no image) -->
+                    <Label Text="{x:Static res:AppResources.FloorTileProject_SourceImagePlaceholder}"
+                           IsVisible="{Binding HasSourceImage, Converter={StaticResource InvertedBoolConverter}}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           FontSize="Small"
+                           TextColor="{StaticResource Gray600}"
+                           HorizontalTextAlignment="Center" 
+                           xmlns:converters2="clr-namespace:TileTextureGenerator.Presentation.UI.Converters">
+                        <Label.Resources>
+                            <ResourceDictionary>
+                                <converters2:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+                            </ResourceDictionary>
+                        </Label.Resources>
+                    </Label>
+
+                    <!-- Image (visible when loaded) -->
+                    <Image Source="{Binding SourceImageBytes, Converter={StaticResource ByteArrayToImageSourceConverter}}"
+                           IsVisible="{Binding HasSourceImage}"
+                           Aspect="AspectFit" />
+                </Grid>
+            </Frame>
+        </VerticalStackLayout>
+
+    </VerticalStackLayout>
+</ContentView>

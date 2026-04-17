@@ -30,11 +30,8 @@ public class ProjectTemplateSelector : DataTemplateSelector
     /// </summary>
     public ProjectTemplateSelector()
     {
-        // Register FloorTileProject
         RegisterTemplate("FloorTileProject", typeof(FloorTileTemplate), typeof(FloorTileProjectViewModel));
-
-        // To add WallTileProject, uncomment:
-        // RegisterTemplate("WallTileProject", typeof(WallTileTemplate), typeof(WallTileProjectViewModel));
+        RegisterTemplate("WallTileProject", typeof(WallTileTemplate), typeof(WallTileProjectViewModel));
     }
 
     /// <summary>

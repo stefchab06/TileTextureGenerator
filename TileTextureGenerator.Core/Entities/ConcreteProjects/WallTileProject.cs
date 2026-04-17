@@ -23,10 +23,32 @@ public sealed class WallTileProject : ProjectBase
         TextureProjectRegistry.RegisterType<WallTileProject>();
     }
 
+    private ImageData? _sourceImage;
+
     /// <summary>
     /// Source image data (PNG format, full resolution).
     /// </summary>
-    public ImageData? SourceImage { get; set; }
+    public ImageData? SourceImage
+    {
+        get => _sourceImage;
+        set
+        {
+            if (value.HasValue)
+            {
+                // ImageData constructor already ensures PNG format (business rule)
+                _sourceImage = new ImageData(value.Value.Bytes);
+
+                // Update DisplayImage via protected method (256x256 thumbnail)
+                SetDisplayImage(_sourceImage.Value);
+            }
+            else
+            {
+                _sourceImage = null;
+                // Cannot set DisplayImage to null directly (private setter)
+                // Will be handled by ProjectBase if needed
+            }
+        }
+    }
 
     /// <summary>
     /// Shape of the tile (Full, HalfHorizontal, HalfVertical).
