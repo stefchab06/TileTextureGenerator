@@ -71,4 +71,9 @@
 	  </MauiXaml>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Templates\Projects\ViewModels\" />
+	  <Folder Include="Templates\Projects\Views\" />
+	</ItemGroup>
+
 </Project>

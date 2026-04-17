@@ -1,14 +1,14 @@
 using TileTextureGenerator.Presentation.UI.Services;
-using TileTextureGenerator.Presentation.UI.ViewModels;
+using TileTextureGenerator.Presentation.UI.Templates.Projects.ViewModels;
 
-namespace TileTextureGenerator.Presentation.UI.Templates;
+namespace TileTextureGenerator.Presentation.UI.Templates.Projects.Views;
 
 /// <summary>
-/// Template for displaying FloorTileProject properties.
+/// Template for displaying WallTileProject properties.
 /// </summary>
-public partial class FloorTileTemplate : ContentView
+public partial class WallTileTemplate : ContentView
 {
-    public FloorTileTemplate()
+    public WallTileTemplate()
     {
         InitializeComponent();
     }
@@ -20,7 +20,7 @@ public partial class FloorTileTemplate : ContentView
     {
         if (sender is Label label && 
             label.BindingContext is TileShapeItem item &&
-            BindingContext is FloorTileProjectViewModel viewModel)
+            BindingContext is WallTileProjectViewModel viewModel)
         {
             viewModel.SelectTileShapeCommand.Execute(item);
         }

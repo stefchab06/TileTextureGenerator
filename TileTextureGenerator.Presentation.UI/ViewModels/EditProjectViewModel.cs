@@ -288,7 +288,7 @@ public class EditProjectViewModel : INotifyPropertyChanged
     private object? CreateProjectViewModel()
     {
         // Get ViewModel type by convention (e.g., "FloorTileProject" → "FloorTileProjectViewModel")
-        var viewModelTypeName = $"TileTextureGenerator.Presentation.UI.ViewModels.{_editUseCase.ConcreteTypeName}ViewModel";
+        var viewModelTypeName = $"TileTextureGenerator.Presentation.UI.Templates.Projects.ViewModels.{_editUseCase.ConcreteTypeName}ViewModel";
         var viewModelType = Type.GetType(viewModelTypeName);
 
         if (viewModelType == null)

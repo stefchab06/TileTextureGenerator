@@ -1,5 +1,5 @@
-using TileTextureGenerator.Presentation.UI.Templates;
-using TileTextureGenerator.Presentation.UI.ViewModels;
+using TileTextureGenerator.Presentation.UI.Templates.Projects.Views;
+using TileTextureGenerator.Presentation.UI.Templates.Projects.ViewModels;
 
 namespace TileTextureGenerator.Presentation.UI.Selectors;
 

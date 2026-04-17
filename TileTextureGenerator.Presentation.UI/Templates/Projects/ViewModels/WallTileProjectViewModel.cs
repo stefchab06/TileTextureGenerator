@@ -4,15 +4,16 @@ using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using System.Windows.Input;
 using TileTextureGenerator.Presentation.UI.Services;
+using TileTextureGenerator.Presentation.UI.ViewModels;
 
-namespace TileTextureGenerator.Presentation.UI.ViewModels;
+namespace TileTextureGenerator.Presentation.UI.Templates.Projects.ViewModels;
 
 /// <summary>
-/// ViewModel wrapper for FloorTileProject.
+/// ViewModel wrapper for WallTileProject.
 /// Provides observable properties and UI commands.
 /// Works with JSON properties instead of direct entity reference.
 /// </summary>
-public class FloorTileProjectViewModel : INotifyPropertyChanged
+public class WallTileProjectViewModel : INotifyPropertyChanged
 {
     private readonly JsonObject _propertiesJson;
     private readonly TileShapeLocalizer _tileShapeLocalizer;
@@ -25,7 +26,7 @@ public class FloorTileProjectViewModel : INotifyPropertyChanged
     /// </summary>
     /// <param name="propertiesJson">Shared JSON object (modifications reflected in parent)</param>
     /// <param name="parentViewModel">Parent EditProjectViewModel (provides services)</param>
-    public FloorTileProjectViewModel(JsonObject propertiesJson, EditProjectViewModel parentViewModel)
+    public WallTileProjectViewModel(JsonObject propertiesJson, EditProjectViewModel parentViewModel)
     {
         ArgumentNullException.ThrowIfNull(propertiesJson);
         ArgumentNullException.ThrowIfNull(parentViewModel);
