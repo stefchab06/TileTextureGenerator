@@ -84,7 +84,7 @@ public class ManageProjectListViewModel : INotifyPropertyChanged
             {
                 // Navigate to EditProjectPage with the EditProjectUseCase
                 var editViewModel = new EditProjectViewModel(result.EditUseCase, _projectTypeLocalizer, _transformationTypeLocalizer, _tileShapeLocalizer, _imageCroppingService);
-                await Shell.Current.GoToAsync("//EditProjectPage",
+                await Shell.Current.GoToAsync("EditProjectPage",
                     new Dictionary<string, object> { ["ViewModel"] = editViewModel });
             }
             else
@@ -463,7 +463,7 @@ public class ManageProjectListViewModel : INotifyPropertyChanged
                 if (result.EditUseCase != null)
                 {
                     var editViewModel = new EditProjectViewModel(result.EditUseCase, _projectTypeLocalizer, _transformationTypeLocalizer, _tileShapeLocalizer, _imageCroppingService);
-                    await Shell.Current.GoToAsync("//EditProjectPage",
+                    await Shell.Current.GoToAsync("EditProjectPage",
                         new Dictionary<string, object> { ["ViewModel"] = editViewModel });
                 }
             }

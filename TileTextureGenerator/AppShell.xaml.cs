@@ -8,7 +8,8 @@ public partial class AppShell : Shell
 	{
 		InitializeComponent();
 
-		// Register routes for navigation
+		// Register custom routes for navigation (non-Shell elements)
+		Routing.RegisterRoute("EditProjectPage", typeof(EditProjectPage));
 		Routing.RegisterRoute("ImageCroppingPage", typeof(ImageCroppingPage));
 	}
 }

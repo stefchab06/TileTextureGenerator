@@ -6,13 +6,11 @@
     xmlns:pages="clr-namespace:TileTextureGenerator.Presentation.UI.Pages;assembly=TileTextureGenerator.Presentation.UI"
     Shell.NavBarIsVisible="False">
 
+    <!-- Main/startup page -->
     <ShellContent
         ContentTemplate="{DataTemplate pages:ManageProjectListPage}"
         Route="ManageProjectListPage" />
 
-    <!-- EditProjectPage route (navigated via code) -->
-    <ShellContent
-        ContentTemplate="{DataTemplate pages:EditProjectPage}"
-        Route="EditProjectPage" />
+    <!-- Note: EditProjectPage is now registered as a custom route in AppShell.xaml.cs -->
 
 </Shell>

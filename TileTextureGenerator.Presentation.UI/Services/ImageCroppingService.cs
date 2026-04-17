@@ -71,23 +71,31 @@ public class ImageCroppingService
 
     /// <summary>
     /// Called by ImageCroppingPage when user validates the cropped image.
+    /// Safe to call multiple times (idempotent).
     /// </summary>
     internal void CompleteWithResult(byte[] croppedImage)
     {
-        _resultCompletionSource?.SetResult(croppedImage);
-        _resultCompletionSource = null;
-        _currentCroppingPolygon = null;
-        _currentInitialImage = null;
+        if (_resultCompletionSource != null)
+        {
+            _resultCompletionSource.TrySetResult(croppedImage);
+            _resultCompletionSource = null;
+            _currentCroppingPolygon = null;
+            _currentInitialImage = null;
+        }
     }
 
     /// <summary>
     /// Called by ImageCroppingPage when user cancels.
+    /// Safe to call multiple times (idempotent).
     /// </summary>
     internal void CompleteWithCancellation()
     {
-        _resultCompletionSource?.SetResult(null);
-        _resultCompletionSource = null;
-        _currentCroppingPolygon = null;
-        _currentInitialImage = null;
+        if (_resultCompletionSource != null)
+        {
+            _resultCompletionSource.TrySetResult(null);
+            _resultCompletionSource = null;
+            _currentCroppingPolygon = null;
+            _currentInitialImage = null;
+        }
     }
 }

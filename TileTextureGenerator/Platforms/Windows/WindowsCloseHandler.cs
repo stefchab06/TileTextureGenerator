@@ -5,7 +5,9 @@ using Microsoft.UI.Xaml;
 namespace TileTextureGenerator.Platforms.Windows;
 
 /// <summary>
-/// Handles Windows close button (X) to prevent app closing when on EditProjectPage.
+/// Handles Windows close button (X) behavior.
+/// - On ManageProjectListPage: Closes the application.
+/// - On any other page: Navigates back to previous page.
 /// </summary>
 public static class WindowsCloseHandler
 {
@@ -36,18 +38,24 @@ public static class WindowsCloseHandler
 
     /// <summary>
     /// Called when Windows close button (X) is clicked.
+    /// Default behavior: Navigate back to previous page.
+    /// Exception: On ManageProjectListPage, close the application.
     /// </summary>
     private static async void OnAppWindowClosing(AppWindow sender, AppWindowClosingEventArgs args)
     {
-        // Check if we're on EditProjectPage
-        if (Shell.Current?.CurrentPage?.GetType().Name == "EditProjectPage")
-        {
-            // Cancel the close operation
-            args.Cancel = true;
+        var currentPageType = Shell.Current?.CurrentPage?.GetType().Name;
 
-            // Navigate back to ManageProjectListPage
-            await Shell.Current.GoToAsync("//ManageProjectListPage");
+        // Only allow closing if we're on the main page (ManageProjectListPage)
+        if (currentPageType == "ManageProjectListPage")
+        {
+            // Allow closing the application
+            return;
         }
-        // If we're on ManageProjectListPage or any other page, allow closing
+
+        // For all other pages, cancel the close operation and navigate back
+        args.Cancel = true;
+
+        // Navigate back to previous page
+        await Shell.Current.GoToAsync("..");
     }
 }

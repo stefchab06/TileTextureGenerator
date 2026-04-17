@@ -45,6 +45,10 @@ public partial class ImageCroppingPage : ContentPage
     {
         base.OnDisappearing();
 
+        // If page is closed/navigated away without explicit validation/cancellation,
+        // complete with cancellation to unblock the calling code
+        _service.CompleteWithCancellation();
+
         // Unsubscribe
         if (_viewModel != null)
         {
@@ -70,6 +74,10 @@ public partial class ImageCroppingPage : ContentPage
         // Find the canvas controls
         var portraitCanvas = this.FindByName<Controls.ImageCropping.CroppingCanvasControl>("PortraitCanvas");
         var landscapeCanvas = this.FindByName<Controls.ImageCropping.CroppingCanvasControl>("LandscapeCanvas");
+
+        // Store reference to active canvas in ViewModel
+        var activeCanvas = portraitCanvas?.IsVisible == true ? portraitCanvas : landscapeCanvas;
+        _viewModel.SetActiveCanvas(activeCanvas);
 
         // Update both canvases (only one is visible at a time)
         if (portraitCanvas != null)
@@ -109,5 +117,20 @@ public partial class ImageCroppingPage : ContentPage
 
         if (landscapeLayout != null)
             landscapeLayout.IsVisible = !isPortrait;
+    }
+
+    /// <summary>
+    /// Called when user presses hardware/system back button.
+    /// Cancels the cropping operation and navigates back.
+    /// </summary>
+    protected override bool OnBackButtonPressed()
+    {
+        // Cancel the operation (will be handled by OnDisappearing)
+        _service.CompleteWithCancellation();
+
+        // Navigate back
+        Task.Run(async () => await Shell.Current.GoToAsync(".."));
+
+        return true; // Prevent default back navigation
     }
 }

@@ -8,7 +8,6 @@ public partial class App : Application
 	{
 		InitializeComponent();
 	}
-
 	protected override Window CreateWindow(IActivationState? activationState)
 	{
 		var window = new Window(new AppShell());
@@ -20,7 +19,7 @@ public partial class App : Application
 			Platforms.Windows.WindowsCloseHandler.Initialize(window);
 		};
 #endif
-
 		return window;
 	}
+
 }

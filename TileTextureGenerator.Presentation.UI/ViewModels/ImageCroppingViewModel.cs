@@ -30,6 +30,7 @@ public class ImageCroppingViewModel : INotifyPropertyChanged
     private CroppingMode _currentMode = CroppingMode.Pan;
     private bool _hasImage;
     private bool _isLoadingFile; // Prevent multiple simultaneous file pickers
+    private Controls.ImageCropping.CroppingCanvasControl? _activeCanvas; // Reference to active canvas
 
     public ImageCroppingViewModel(
         ImageCroppingService service,
@@ -121,6 +122,14 @@ public class ImageCroppingViewModel : INotifyPropertyChanged
     public ICommand CancelCommand { get; }
     public ICommand SetModeCommand { get; }
 
+    /// <summary>
+    /// Sets the active canvas control (called by the Page).
+    /// </summary>
+    public void SetActiveCanvas(Controls.ImageCropping.CroppingCanvasControl? canvas)
+    {
+        _activeCanvas = canvas;
+    }
+
     private void SetMode(CroppingMode mode)
     {
         CurrentMode = mode;
@@ -176,12 +185,21 @@ public class ImageCroppingViewModel : INotifyPropertyChanged
 
     private void Validate()
     {
-        if (!HasImage || _currentImage == null)
+        if (!HasImage || _activeCanvas == null)
             return;
 
-        // TODO: Apply cropping with polygon mask (future implementation)
-        // For now, just return the current image
-        _service.CompleteWithResult(_currentImage);
+        // Get the cropped image from the active canvas
+        var croppedImage = _activeCanvas.GetCroppedImage();
+
+        if (croppedImage != null)
+        {
+            _service.CompleteWithResult(croppedImage);
+        }
+        else
+        {
+            // Fallback: return original image if cropping fails
+            _service.CompleteWithResult(_currentImage ?? Array.Empty<byte>());
+        }
 
         // Navigate back
         Shell.Current.GoToAsync("..");
