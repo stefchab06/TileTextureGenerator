@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TileTextureGenerator.Presentation.UI.ViewModels"
+             xmlns:skia="clr-namespace:SkiaSharp.Views.Maui.Controls;assembly=SkiaSharp.Views.Maui.Controls"
+             xmlns:controls="clr-namespace:TileTextureGenerator.Presentation.UI.Controls.ImageCropping"
+             x:Class="TileTextureGenerator.Presentation.UI.Pages.ImageCroppingPage"
+             x:DataType="vm:ImageCroppingViewModel"
+             Title="Crop Image"
+             Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <!-- Style for active mode button -->
+            <Style x:Key="ModeButtonActive" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                <Setter Property="TextColor" Value="White" />
+                <Setter Property="FontAttributes" Value="Bold" />
+            </Style>
+
+            <!-- Style for inactive mode button -->
+            <Style x:Key="ModeButtonInactive" TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource Gray200}" />
+                <Setter Property="TextColor" Value="{StaticResource Gray600}" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <!-- Adaptive layout based on orientation -->
+    <Grid x:Name="RootGrid" SizeChanged="OnRootSizeChanged">
+
+        <!-- Portrait layout (toolbar at top, horizontal) -->
+        <Grid x:Name="PortraitLayout" IsVisible="True">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" /> <!-- Toolbar -->
+                <RowDefinition Height="*" />    <!-- Canvas -->
+            </Grid.RowDefinitions>
+
+            <!-- Toolbar (horizontal) -->
+            <HorizontalStackLayout Grid.Row="0" 
+                                   Padding="10" 
+                                   Spacing="8" 
+                                   BackgroundColor="{StaticResource Gray200}">
+
+                <!-- File Picker -->
+                <Button Text="📁" 
+                        Command="{Binding SelectFileCommand}"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
+                        FontSize="24" />
+
+                <!-- Paste from Clipboard -->
+                <Button Text="📋" 
+                        Command="{Binding PasteFromClipboardCommand}"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
+                        FontSize="24" />
+
+                <!-- Separator -->
+                <BoxView WidthRequest="2" 
+                         BackgroundColor="{StaticResource Gray400}" 
+                         Margin="5,0" />
+
+                <!-- Mode buttons -->
+                <Button Text="P" 
+                        Command="{Binding SetModeCommand}"
+                        CommandParameter="Pan"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        FontSize="20"
+                        Style="{StaticResource ModeButtonActive}">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding IsPanMode}" Value="False">
+                            <Setter Property="Style" Value="{StaticResource ModeButtonInactive}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+
+                <Button Text="Z" 
+                        Command="{Binding SetModeCommand}"
+                        CommandParameter="Zoom"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        FontSize="20"
+                        Style="{StaticResource ModeButtonInactive}">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding IsZoomMode}" Value="True">
+                            <Setter Property="Style" Value="{StaticResource ModeButtonActive}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+
+                <Button Text="R" 
+                        Command="{Binding SetModeCommand}"
+                        CommandParameter="Rotate"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        FontSize="20"
+                        Style="{StaticResource ModeButtonInactive}">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding IsRotateMode}" Value="True">
+                            <Setter Property="Style" Value="{StaticResource ModeButtonActive}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+
+                <!-- Spacer -->
+                <BoxView WidthRequest="2" 
+                         BackgroundColor="{StaticResource Gray400}" 
+                         Margin="5,0" 
+                         HorizontalOptions="FillAndExpand" />
+
+                <!-- Validate -->
+                <Button Text="✓" 
+                        Command="{Binding ValidateCommand}"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        BackgroundColor="{StaticResource Success}"
+                        TextColor="White"
+                        FontSize="24" />
+
+                <!-- Cancel -->
+                <Button Text="✗" 
+                        Command="{Binding CancelCommand}"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        BackgroundColor="{StaticResource Tertiary}"
+                        TextColor="White"
+                        FontSize="24" />
+            </HorizontalStackLayout>
+
+            <!-- Canvas area -->
+            <Grid Grid.Row="1" BackgroundColor="{StaticResource Gray100}">
+                <!-- CroppingCanvasControl (SkiaSharp) -->
+                <controls:CroppingCanvasControl x:Name="PortraitCanvas" />
+            </Grid>
+        </Grid>
+
+        <!-- Landscape layout (toolbar at left, vertical) -->
+        <Grid x:Name="LandscapeLayout" IsVisible="False">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" /> <!-- Toolbar -->
+                <ColumnDefinition Width="*" />    <!-- Canvas -->
+            </Grid.ColumnDefinitions>
+
+            <!-- Toolbar (vertical) -->
+            <VerticalStackLayout Grid.Column="0" 
+                                 Padding="10" 
+                                 Spacing="8" 
+                                 BackgroundColor="{StaticResource Gray200}">
+
+                <!-- File Picker -->
+                <Button Text="📁" 
+                        Command="{Binding SelectFileCommand}"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
+                        FontSize="24" />
+
+                <!-- Paste -->
+                <Button Text="📋" 
+                        Command="{Binding PasteFromClipboardCommand}"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        BackgroundColor="{StaticResource Primary}"
+                        TextColor="White"
+                        FontSize="24" />
+
+                <!-- Separator -->
+                <BoxView HeightRequest="2" 
+                         BackgroundColor="{StaticResource Gray400}" 
+                         Margin="0,5" />
+
+                <!-- Mode buttons -->
+                <Button Text="P" 
+                        Command="{Binding SetModeCommand}"
+                        CommandParameter="Pan"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        FontSize="20"
+                        Style="{StaticResource ModeButtonActive}">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding IsPanMode}" Value="False">
+                            <Setter Property="Style" Value="{StaticResource ModeButtonInactive}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+
+                <Button Text="Z" 
+                        Command="{Binding SetModeCommand}"
+                        CommandParameter="Zoom"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        FontSize="20"
+                        Style="{StaticResource ModeButtonInactive}">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding IsZoomMode}" Value="True">
+                            <Setter Property="Style" Value="{StaticResource ModeButtonActive}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+
+                <Button Text="R" 
+                        Command="{Binding SetModeCommand}"
+                        CommandParameter="Rotate"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        FontSize="20"
+                        Style="{StaticResource ModeButtonInactive}">
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button" Binding="{Binding IsRotateMode}" Value="True">
+                            <Setter Property="Style" Value="{StaticResource ModeButtonActive}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+
+                <!-- Separator -->
+                <BoxView HeightRequest="2" 
+                         BackgroundColor="{StaticResource Gray400}" 
+                         Margin="0,5"
+                         VerticalOptions="FillAndExpand" />
+
+                <!-- Validate -->
+                <Button Text="✓" 
+                        Command="{Binding ValidateCommand}"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        BackgroundColor="{StaticResource Success}"
+                        TextColor="White"
+                        FontSize="24" />
+
+                <!-- Cancel -->
+                <Button Text="✗" 
+                        Command="{Binding CancelCommand}"
+                        WidthRequest="50"
+                        HeightRequest="50"
+                        BackgroundColor="{StaticResource Tertiary}"
+                        TextColor="White"
+                        FontSize="24" />
+            </VerticalStackLayout>
+
+            <!-- Canvas area -->
+            <Grid Grid.Column="1" BackgroundColor="{StaticResource Gray100}">
+                <!-- CroppingCanvasControl (SkiaSharp) -->
+                <controls:CroppingCanvasControl x:Name="LandscapeCanvas" />
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentPage>

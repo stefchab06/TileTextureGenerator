@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 using System.Windows.Input;
+using TileTextureGenerator.Core.Enums;
+using TileTextureGenerator.Presentation.UI.Helpers;
 using TileTextureGenerator.Presentation.UI.Services;
 using TileTextureGenerator.Presentation.UI.ViewModels;
 
@@ -17,6 +19,7 @@ public class FloorTileProjectViewModel : INotifyPropertyChanged
 {
     private readonly JsonObject _propertiesJson;
     private readonly TileShapeLocalizer _tileShapeLocalizer;
+    private readonly ImageCroppingService _imageCroppingService;
     private TileShapeItem? _selectedTileShape;
     private bool _isTileShapePickerExpanded;
     private bool _isSelectingImage;
@@ -33,6 +36,7 @@ public class FloorTileProjectViewModel : INotifyPropertyChanged
 
         _propertiesJson = propertiesJson;
         _tileShapeLocalizer = parentViewModel.TileShapeLocalizer;
+        _imageCroppingService = parentViewModel.ImageCroppingService;
 
         // Initialize available tile shapes
         AvailableTileShapes = new ObservableCollection<TileShapeItem>(
@@ -139,7 +143,7 @@ public class FloorTileProjectViewModel : INotifyPropertyChanged
 
     private async Task SelectSourceImageAsync()
     {
-        // Prevent multiple simultaneous file pickers
+        // Prevent multiple simultaneous editors
         if (_isSelectingImage)
             return;
 
@@ -147,25 +151,25 @@ public class FloorTileProjectViewModel : INotifyPropertyChanged
         {
             _isSelectingImage = true;
 
-            // Use MAUI FilePicker to select an image
-            var result = await FilePicker.PickAsync(new PickOptions
-            {
-                PickerTitle = "Select source image",
-                FileTypes = FilePickerFileType.Images
-            });
+            // Convert TileShape to cropping polygon
+            var tileShapeEnum = Enum.Parse<TileShape>(SelectedTileShape?.Value ?? "Full");
+            var croppingPolygon = TileShapeHelper.GetCroppingPolygon(tileShapeEnum);
 
-            if (result != null)
-            {
-                // Read image bytes
-                using var stream = await result.OpenReadAsync();
-                using var memoryStream = new MemoryStream();
-                await stream.CopyToAsync(memoryStream);
-                var bytes = memoryStream.ToArray();
+            // Get current image bytes (if any)
+            var currentImageBytes = SourceImageBytes;
 
+            // Show cropping editor
+            var croppedImage = await _imageCroppingService.ShowCroppingEditorAsync(
+                croppingPolygon,
+                currentImageBytes
+            );
+
+            if (croppedImage != null)
+            {
                 // Update JSON (store as base64 string, System.Text.Json default for byte[])
                 var imageData = new JsonObject
                 {
-                    ["Bytes"] = Convert.ToBase64String(bytes)
+                    ["Bytes"] = Convert.ToBase64String(croppedImage)
                 };
                 _propertiesJson["SourceImage"] = imageData;
 
@@ -177,7 +181,7 @@ public class FloorTileProjectViewModel : INotifyPropertyChanged
         catch (Exception ex)
         {
             // TODO: Error handling (future iteration)
-            System.Diagnostics.Debug.WriteLine($"Failed to load image: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Failed to load/crop image: {ex.Message}");
         }
         finally
         {

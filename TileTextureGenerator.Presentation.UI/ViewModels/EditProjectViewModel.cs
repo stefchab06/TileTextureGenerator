@@ -17,6 +17,7 @@ public class EditProjectViewModel : INotifyPropertyChanged
     private readonly ProjectTypeLocalizer _projectTypeLocalizer;
     private readonly TransformationTypeLocalizer _transformationTypeLocalizer;
     private readonly TileShapeLocalizer _tileShapeLocalizer;
+    private readonly ImageCroppingService _imageCroppingService;
     private readonly System.Text.Json.Nodes.JsonObject _propertiesJson;
     private TransformationTypeItem? _selectedTransformationType;
     private bool _isSaving;
@@ -27,17 +28,20 @@ public class EditProjectViewModel : INotifyPropertyChanged
         EditProjectUseCase editUseCase, 
         ProjectTypeLocalizer projectTypeLocalizer, 
         TransformationTypeLocalizer transformationTypeLocalizer,
-        TileShapeLocalizer tileShapeLocalizer)
+        TileShapeLocalizer tileShapeLocalizer,
+        ImageCroppingService imageCroppingService)
     {
         ArgumentNullException.ThrowIfNull(editUseCase);
         ArgumentNullException.ThrowIfNull(projectTypeLocalizer);
         ArgumentNullException.ThrowIfNull(transformationTypeLocalizer);
         ArgumentNullException.ThrowIfNull(tileShapeLocalizer);
+        ArgumentNullException.ThrowIfNull(imageCroppingService);
 
         _editUseCase = editUseCase;
         _projectTypeLocalizer = projectTypeLocalizer;
         _transformationTypeLocalizer = transformationTypeLocalizer;
         _tileShapeLocalizer = tileShapeLocalizer;
+        _imageCroppingService = imageCroppingService;
 
         // Get JSON once and share it with template ViewModels
         _propertiesJson = _editUseCase.GetPropertiesJson();
@@ -72,6 +76,11 @@ public class EditProjectViewModel : INotifyPropertyChanged
     /// Tile shape localizer (for template ViewModels).
     /// </summary>
     public TileShapeLocalizer TileShapeLocalizer => _tileShapeLocalizer;
+
+    /// <summary>
+    /// Image cropping service (for template ViewModels).
+    /// </summary>
+    public ImageCroppingService ImageCroppingService => _imageCroppingService;
 
     /// <summary>
     /// Project name for Shell title.

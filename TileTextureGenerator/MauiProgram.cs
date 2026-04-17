@@ -44,6 +44,7 @@ public static class MauiProgram
 		builder.Services.AddSingleton<ProjectTypeLocalizer>();
 		builder.Services.AddSingleton<TransformationTypeLocalizer>();
 		builder.Services.AddSingleton<TileShapeLocalizer>();
+		builder.Services.AddScoped<ImageCroppingService>(); // Image cropping orchestration
 
 		// Auto-register remaining services by conventions
 		// This scans all TileTextureGenerator assemblies and registers:

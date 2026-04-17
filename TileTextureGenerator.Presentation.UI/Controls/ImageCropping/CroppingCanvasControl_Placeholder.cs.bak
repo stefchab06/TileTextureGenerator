@@ -1,0 +1,49 @@
+namespace TileTextureGenerator.Presentation.UI.Controls.ImageCropping;
+
+/// <summary>
+/// Temporary placeholder control for debugging.
+/// Replace with SkiaSharp version once SkiaSharp initialization is fixed.
+/// </summary>
+public class CroppingCanvasControl : ContentView
+{
+    private IReadOnlyList<Point>? _croppingPolygon;
+    private byte[]? _currentImage;
+
+    public CroppingCanvasControl()
+    {
+        // Simple placeholder UI
+        Content = new Label
+        {
+            Text = "Cropping Canvas\n(Placeholder - SkiaSharp loading issue)",
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            HorizontalTextAlignment = TextAlignment.Center,
+            FontSize = 18,
+            TextColor = Colors.Gray
+        };
+    }
+
+    public void SetImage(byte[]? imageBytes, IReadOnlyList<Point>? croppingPolygon)
+    {
+        _currentImage = imageBytes;
+        _croppingPolygon = croppingPolygon;
+
+        // Update placeholder text
+        if (Content is Label label)
+        {
+            label.Text = imageBytes != null && imageBytes.Length > 0
+                ? $"Image loaded: {imageBytes.Length} bytes\nPolygon: {croppingPolygon?.Count ?? 0} points"
+                : "No image loaded\nClick 📁 to select";
+        }
+    }
+
+    public void SetTransformation(CroppingTransformation transformation)
+    {
+        // Not implemented yet
+    }
+
+    public byte[]? GetCroppedImage()
+    {
+        return _currentImage;
+    }
+}
